@@ -1,7 +1,7 @@
 package com.hedbanz.hedbanzAPI.entity;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.hedbanz.hedbanzAPI.deserialize.UpdateUserDataDeserializer;
+import com.hedbanz.hedbanzAPI.deserializer.UpdateUserDataDeserializer;
 
 import java.io.Serializable;
 

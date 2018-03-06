@@ -1,12 +1,12 @@
-package com.hedbanz.hedbanzAPI.loginAvailability;
+package com.hedbanz.hedbanzAPI.socket;
 
-public class LoginAvailabilityReviewerAnswer {
+public class LoginAvailabilityAnswer {
     private boolean isLoginAvailable;
 
-    public LoginAvailabilityReviewerAnswer(){
+    public LoginAvailabilityAnswer(){
     }
 
-    public LoginAvailabilityReviewerAnswer(boolean isLoginAvailable){
+    public LoginAvailabilityAnswer(boolean isLoginAvailable){
         this.isLoginAvailable = isLoginAvailable;
     }
 

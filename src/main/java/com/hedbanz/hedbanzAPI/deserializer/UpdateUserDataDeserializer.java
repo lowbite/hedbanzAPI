@@ -1,12 +1,9 @@
-package com.hedbanz.hedbanzAPI.deserialize;
+package com.hedbanz.hedbanzAPI.deserializer;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.IntNode;
-import com.fasterxml.jackson.databind.node.LongNode;
 import com.hedbanz.hedbanzAPI.entity.UpdateUserData;
 
 import java.io.IOException;

@@ -1,12 +1,12 @@
-package com.hedbanz.hedbanzAPI.loginAvailability;
+package com.hedbanz.hedbanzAPI.socket;
 
-public class LoginAvailabilityReviewerReceive {
+public class LoginAvailabilityReceiveMessage {
     private String login;
 
-    public LoginAvailabilityReviewerReceive() {
+    public LoginAvailabilityReceiveMessage() {
     }
 
-    public LoginAvailabilityReviewerReceive(String login) {
+    public LoginAvailabilityReceiveMessage(String login) {
         super();
         this.login = login;
     }

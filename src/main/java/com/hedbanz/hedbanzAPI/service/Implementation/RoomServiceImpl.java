@@ -1,15 +1,16 @@
-package com.hedbanz.hedbanzAPI.services.Implementation;
+package com.hedbanz.hedbanzAPI.service.Implementation;
 
 import com.hedbanz.hedbanzAPI.entity.Room;
 import com.hedbanz.hedbanzAPI.entity.RoomFilter;
 import com.hedbanz.hedbanzAPI.entity.User;
 import com.hedbanz.hedbanzAPI.entity.UserToRoom;
-import com.hedbanz.hedbanzAPI.entity.error.CustomError;
+import com.hedbanz.hedbanzAPI.entity.CustomError;
 import com.hedbanz.hedbanzAPI.entity.error.RoomError;
-import com.hedbanz.hedbanzAPI.exceptions.RoomException;
-import com.hedbanz.hedbanzAPI.repositories.RoomRepository;
-import com.hedbanz.hedbanzAPI.repositories.UserRepository;
-import com.hedbanz.hedbanzAPI.services.RoomService;
+import com.hedbanz.hedbanzAPI.exception.RoomException;
+import com.hedbanz.hedbanzAPI.repositorie.RoomRepository;
+import com.hedbanz.hedbanzAPI.repositorie.RoomRepositoryFunctional;
+import com.hedbanz.hedbanzAPI.repositorie.UserRepository;
+import com.hedbanz.hedbanzAPI.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -24,6 +25,9 @@ public class RoomServiceImpl implements RoomService{
 
     @Autowired
     private RoomRepository roomRepository;
+
+    @Autowired
+    private RoomRepositoryFunctional roomRepositoryFunctional;
 
     @Autowired
     private UserRepository userRepository;
@@ -54,57 +58,20 @@ public class RoomServiceImpl implements RoomService{
     public List<Room> getAllRooms(int pageNumber) {
         Pageable pageable = new PageRequest(pageNumber,PAGE_SIZE, Sort.Direction.DESC, "id");
         Page<Room> page = roomRepository.findAllRooms(pageable);
-        List<Room> rooms = page.getContent();
-        return rooms;
+
+        return page.getContent();
     }
 
     public List<Room> getRoomsByFilter(RoomFilter roomFilter, int pageNumber){
-        List<Room> rooms = new ArrayList<>();
-        Pageable pageable = new PageRequest(pageNumber,PAGE_SIZE, Sort.Direction.DESC, "id");
-        //Searching by id
-        if(roomFilter.getRoomName().charAt(0) == '#'){
-            long roomId = Long.valueOf(roomFilter.getRoomName().substring(1, roomFilter.getRoomName().length()));
-            if(roomFilter.isPrivate() == null )
-                if(roomFilter.getMaxPlayers() == null)
-                    rooms.addAll(roomRepository.findRoomById(roomId, pageable).getContent());
-                else
-                    rooms.addAll(roomRepository.findRoomByIdWithMaxPlayers(roomId, roomFilter.getMaxPlayers(), roomFilter.getMinPlayers(), pageable).getContent());
-            else if(roomFilter.isPrivate() == false)
-                if(roomFilter.getMaxPlayers() == null)
-                    rooms.addAll(roomRepository.findRoomByIdWithoutPassword(roomId, pageable).getContent());
-                else
-                    rooms.addAll(roomRepository.findRoomByIdWithoutPasswordWithMaxPlayers(roomId, roomFilter.getMaxPlayers(), roomFilter.getMinPlayers(), pageable).getContent());
-            else if(roomFilter.isPrivate() == true)
-                if(roomFilter.getMaxPlayers() == null)
-                    rooms.addAll(roomRepository.findRoomByIdWithPassword(roomId, pageable).getContent());
-                else
-                    rooms.addAll(roomRepository.findRoomByIdWithPasswordWithMaxPlayers(roomId, roomFilter.getMaxPlayers(), roomFilter.getMinPlayers(), pageable).getContent());
-            return rooms;
-        }
-
-        //Searching by room name
-        if(roomFilter.isPrivate() == null )
-            if(roomFilter.getMaxPlayers() == null)
-                rooms.addAll(roomRepository.findRoomByName(roomFilter.getRoomName(), pageable).getContent());
-            else
-                rooms.addAll(roomRepository.findRoomByNameWithMaxPlayers(roomFilter.getRoomName(), roomFilter.getMaxPlayers(), roomFilter.getMinPlayers(), pageable).getContent());
-        else if(roomFilter.isPrivate() == false)
-            if(roomFilter.getMaxPlayers() == null)
-                rooms.addAll(roomRepository.findRoomByNameWithoutPassword(roomFilter.getRoomName(), pageable).getContent());
-            else
-                rooms.addAll(roomRepository.findRoomByNameWithoutPasswordWithMaxPlayers(roomFilter.getRoomName(), roomFilter.getMaxPlayers(), roomFilter.getMinPlayers(), pageable).getContent());
-        else if(roomFilter.isPrivate() == true)
-            if(roomFilter.getMaxPlayers() == null)
-                rooms.addAll(roomRepository.findRoomByNameWithPassword(roomFilter.getRoomName(), pageable).getContent());
-            else
-                rooms.addAll(roomRepository.findRoomByNameWithPasswordWithMaxPlayers(roomFilter.getRoomName(), roomFilter.getMaxPlayers(), roomFilter.getMinPlayers(), pageable).getContent());
-
-        return rooms;
+        return roomRepositoryFunctional.findRoomsByFilter(roomFilter,pageNumber,PAGE_SIZE);
     }
 
     @CacheEvict(value = "rooms", allEntries = true)
     public Room addUserToRoom(UserToRoom userToRoom){
         Room foundRoom = roomRepository.findOne(userToRoom.getRoomId());
+
+        if(foundRoom.getUsers() == null)
+            foundRoom.setUsers(new HashSet<>());
 
         if(foundRoom.getUsers().size() == foundRoom.getMaxPlayers())
             throw new RoomException(new CustomError(RoomError.ROOM_FULL.getErrorCode(), RoomError.ROOM_FULL.getErrorMessage()));
@@ -113,14 +80,12 @@ public class RoomServiceImpl implements RoomService{
             throw new RoomException(new CustomError(RoomError.WRONG_PASSWORD.getErrorCode(),RoomError.WRONG_PASSWORD.getErrorMessage()));
 
         Set<User> users = foundRoom.getUsers();
-
         User user = userRepository.findOne(userToRoom.getUserId());
 
         if(user == null)
             throw new RoomException(new CustomError(RoomError.WRONG_USER.getErrorCode(), RoomError.WRONG_USER.getErrorMessage()));
 
         users.add(user);
-
         foundRoom = roomRepository.saveAndFlush(foundRoom);
 
         if(foundRoom == null)

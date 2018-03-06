@@ -1,13 +1,13 @@
-package com.hedbanz.hedbanzAPI.controllers;
+package com.hedbanz.hedbanzAPI.controller;
 
-import com.hedbanz.hedbanzAPI.CustomResponseBody;
+import com.hedbanz.hedbanzAPI.entity.CustomResponseBody;
 import com.hedbanz.hedbanzAPI.constant.ResultStatus;
 import com.hedbanz.hedbanzAPI.entity.Room;
 import com.hedbanz.hedbanzAPI.entity.RoomFilter;
 import com.hedbanz.hedbanzAPI.entity.User;
-import com.hedbanz.hedbanzAPI.exceptions.RoomException;
-import com.hedbanz.hedbanzAPI.exceptions.UserException;
-import com.hedbanz.hedbanzAPI.services.RoomService;
+import com.hedbanz.hedbanzAPI.exception.RoomException;
+import com.hedbanz.hedbanzAPI.exception.UserException;
+import com.hedbanz.hedbanzAPI.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -43,12 +43,12 @@ public class RoomController {
     @ExceptionHandler(UserException.class)
     @ResponseStatus(HttpStatus.OK)
     public CustomResponseBody<User> userError(UserException e){
-        return new CustomResponseBody<User>(ResultStatus.ERROR_STATUS, e.getError(), null);
+        return new CustomResponseBody<>(ResultStatus.ERROR_STATUS, e.getError(), null);
     }
 
     @ExceptionHandler(RoomException.class)
     @ResponseStatus(HttpStatus.OK)
     public CustomResponseBody<User> roomError(RoomException e){
-        return new CustomResponseBody<User>(ResultStatus.ERROR_STATUS, e.getError(), null);
+        return new CustomResponseBody<>(ResultStatus.ERROR_STATUS, e.getError(), null);
     }
 }

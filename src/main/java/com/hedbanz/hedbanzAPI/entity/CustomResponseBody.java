@@ -1,6 +1,4 @@
-package com.hedbanz.hedbanzAPI;
-
-import com.hedbanz.hedbanzAPI.entity.error.CustomError;
+package com.hedbanz.hedbanzAPI.entity;
 
 public class CustomResponseBody<T>{
     private String status;

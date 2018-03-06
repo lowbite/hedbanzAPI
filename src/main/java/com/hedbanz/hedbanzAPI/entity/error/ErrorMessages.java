@@ -10,6 +10,8 @@ public interface ErrorMessages {
      String SUCH_EMAIL_ALREADY_USING_MESSAGE = "Such email already using!";
      String EMPTY_EMAIL_MESSAGE = "Empty email field!";
 
+     String INCORRECT_INPUT = "Incorrect input!";
+
      String ROOM_IS_FULL = "Room is full!";
 
      String DB_ERROR = "Problems with database actions!";

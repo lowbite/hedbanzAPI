@@ -1,7 +1,7 @@
 package com.hedbanz.hedbanzAPI.entity;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.hedbanz.hedbanzAPI.deserialize.UserToRoomDeserializer;
+import com.hedbanz.hedbanzAPI.deserializer.UserToRoomDeserializer;
 
 @JsonDeserialize(using = UserToRoomDeserializer.class)
 public class UserToRoom {

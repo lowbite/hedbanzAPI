@@ -1,4 +1,4 @@
-package com.hedbanz.hedbanzAPI.repositories;
+package com.hedbanz.hedbanzAPI.repositorie;
 
 import com.hedbanz.hedbanzAPI.entity.User;
 import org.springframework.data.jpa.repository.Modifying;

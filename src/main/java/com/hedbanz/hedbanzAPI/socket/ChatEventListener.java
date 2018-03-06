@@ -1,4 +1,4 @@
-package com.hedbanz.hedbanzAPI;
+package com.hedbanz.hedbanzAPI.socket;
 
 import com.corundumstudio.socketio.SocketIONamespace;
 import com.corundumstudio.socketio.SocketIOServer;
@@ -8,8 +8,8 @@ import com.corundumstudio.socketio.listener.DisconnectListener;
 import com.hedbanz.hedbanzAPI.entity.Room;
 import com.hedbanz.hedbanzAPI.entity.User;
 import com.hedbanz.hedbanzAPI.entity.UserToRoom;
-import com.hedbanz.hedbanzAPI.services.RoomService;
-import com.hedbanz.hedbanzAPI.services.UserService;
+import com.hedbanz.hedbanzAPI.service.RoomService;
+import com.hedbanz.hedbanzAPI.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

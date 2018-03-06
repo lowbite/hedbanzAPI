@@ -1,14 +1,14 @@
-package com.hedbanz.hedbanzAPI.services.Implementation;
+package com.hedbanz.hedbanzAPI.service.Implementation;
 
 import com.hedbanz.hedbanzAPI.entity.UpdateUserData;
 import com.hedbanz.hedbanzAPI.entity.User;
-import com.hedbanz.hedbanzAPI.entity.error.CustomError;
+import com.hedbanz.hedbanzAPI.entity.CustomError;
 import com.hedbanz.hedbanzAPI.entity.error.LoginError;
 import com.hedbanz.hedbanzAPI.entity.error.RegistrationError;
 import com.hedbanz.hedbanzAPI.entity.error.UpdateError;
-import com.hedbanz.hedbanzAPI.exceptions.UserException;
-import com.hedbanz.hedbanzAPI.repositories.UserRepository;
-import com.hedbanz.hedbanzAPI.services.UserService;
+import com.hedbanz.hedbanzAPI.exception.UserException;
+import com.hedbanz.hedbanzAPI.repositorie.UserRepository;
+import com.hedbanz.hedbanzAPI.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 @Service
 public class UserServiceImpl implements UserService {
 
-    public final static String EMAIL_PATTERN = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}";
+    private final static String EMAIL_PATTERN = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}";
 
     @Autowired
     private UserRepository userRepository;
@@ -54,7 +54,7 @@ public class UserServiceImpl implements UserService {
     public User updateUserData(UpdateUserData userData) {
         long id = userData.getId();
         String login = userData.getNewLogin();
-        String newPassword = userData.getNewPassword() != "" ? userData.getNewPassword() : userData.getOldPassword();
+        String newPassword = userData.getNewPassword().equals("") ? userData.getNewPassword() : userData.getOldPassword();
         String oldPassword = userData.getOldPassword();
 
         int rowsUpdated = userRepository.updateUserData(id, login, newPassword, oldPassword);
@@ -62,9 +62,7 @@ public class UserServiceImpl implements UserService {
         if(rowsUpdated != 1)
             throw new UserException(new CustomError(UpdateError.WRONG_PASSWORD.getErrorCode(), UpdateError.WRONG_PASSWORD.getErrorMessage()));
 
-        User foundUser = userRepository.findUserByLogin(login);
-
-        return foundUser;
+        return  userRepository.findUserByLogin(login);
     }
 
     public User register(User user) {

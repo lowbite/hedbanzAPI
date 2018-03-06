@@ -1,4 +1,4 @@
-package com.hedbanz.hedbanzAPI.services;
+package com.hedbanz.hedbanzAPI.service;
 
 import com.hedbanz.hedbanzAPI.entity.UpdateUserData;
 import com.hedbanz.hedbanzAPI.entity.User;

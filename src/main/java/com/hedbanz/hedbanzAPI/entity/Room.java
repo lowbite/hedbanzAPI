@@ -1,7 +1,7 @@
 package com.hedbanz.hedbanzAPI.entity;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.hedbanz.hedbanzAPI.deserialize.RoomDeserializer;
+import com.hedbanz.hedbanzAPI.deserializer.RoomDeserializer;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -15,7 +15,7 @@ public class Room implements Serializable{
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "room_id")
-    private long id;
+    private Long id;
 
     @Column(name = "name")
     private String name;
@@ -26,11 +26,11 @@ public class Room implements Serializable{
     @Column(name = "max_players")
     private int maxPlayers;
 
-    @OneToMany(orphanRemoval = true)
+    @OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     @JoinTable(name = "user_room",
                 joinColumns = @JoinColumn(name = "room_id"),
                 inverseJoinColumns = @JoinColumn(name = "user_id"))
-    Set<User> users;
+    private Set<User> users;
 
     @Column(name = "current_players_number")
     private int currentPlayersNumber;
@@ -39,7 +39,7 @@ public class Room implements Serializable{
 
     }
 
-    public Room(long id, String name, String password, int maxPlayers, int currentPlayersNumber) {
+    public Room(Long id, String name, String password, int maxPlayers, int currentPlayersNumber) {
         this.id = id;
         this.name = name;
         this.password = password;
@@ -55,11 +55,11 @@ public class Room implements Serializable{
         this.users = users;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
