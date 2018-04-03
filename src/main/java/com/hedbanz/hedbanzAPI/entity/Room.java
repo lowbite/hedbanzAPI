@@ -1,15 +1,16 @@
 package com.hedbanz.hedbanzAPI.entity;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.hedbanz.hedbanzAPI.deserializer.RoomDeserializer;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Entity
 @Table(name = "room")
-@JsonDeserialize(using = RoomDeserializer.class)
 public class Room implements Serializable{
 
     @Id
@@ -18,41 +19,54 @@ public class Room implements Serializable{
     private Long id;
 
     @Column(name = "name")
+    @NotNull
     private String name;
 
+    @JsonIgnore
     @Column(name = "password")
     private String password;
 
     @Column(name = "max_players")
-    private int maxPlayers;
-
-    @OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
-    @JoinTable(name = "user_room",
-                joinColumns = @JoinColumn(name = "room_id"),
-                inverseJoinColumns = @JoinColumn(name = "user_id"))
-    private Set<User> users;
+    @NotNull
+    private Integer maxPlayers;
 
     @Column(name = "current_players_number")
-    private int currentPlayersNumber;
+    @NotNull
+    private Integer currentPlayersNumber;
+
+    @Column(name = "is_private")
+    @NotNull
+    private Boolean isPrivate;
+
+    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.DETACH})
+    @JoinTable(name = "user_room",
+            joinColumns = @JoinColumn(name = "room_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id"))
+    private Set<User> users;
+
+    @OneToMany(cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private List<Message> messages = new ArrayList<>();
 
     public Room(){
 
     }
 
-    public Room(Long id, String name, String password, int maxPlayers, int currentPlayersNumber) {
+    public Room(Long id, String name, boolean isPrivate, int maxPlayers, int currentPlayersNumber) {
         this.id = id;
         this.name = name;
-        this.password = password;
+        this.isPrivate = isPrivate;
         this.maxPlayers = maxPlayers;
         this.currentPlayersNumber = currentPlayersNumber;
     }
 
-    public Set<User> getUsers() {
-        return users;
+
+    public Set<User> getUsers(){
+        return this.users;
     }
 
     public void setUsers(Set<User> users) {
-        this.users = users;
+        this.users= users;
     }
 
     public Long getId() {
@@ -93,5 +107,46 @@ public class Room implements Serializable{
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean getIsPrivate() {
+        return isPrivate;
+    }
+
+    public void setIsPrivate(boolean aPrivate) {
+        isPrivate = aPrivate;
+    }
+
+    public void setMessages(List<Message> messages){
+        this.messages = messages;
+    }
+
+    public List<Message> getMessages() {
+        return messages;
+    }
+
+    public boolean addUser(User user){
+        if(!this.users.contains(user)){
+            this.users.add(user);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean removeUser(User user){
+        if(this.users.contains(user)){
+            this.users.remove(user);
+            return true;
+        }
+        return false;
+    }
+
+    public int getUserCount(){
+        return this.users.size();
+    }
+
+    public void addMessage(Message message){
+        messages.size();
+        messages.add(message);
     }
 }

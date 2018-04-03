@@ -1,20 +1,30 @@
 package com.hedbanz.hedbanzAPI.service;
 
-import com.hedbanz.hedbanzAPI.entity.Room;
-import com.hedbanz.hedbanzAPI.entity.RoomFilter;
-import com.hedbanz.hedbanzAPI.entity.UserToRoom;
+import com.hedbanz.hedbanzAPI.entity.Message;
+import com.hedbanz.hedbanzAPI.entity.DTO.MessageDTO;
+import com.hedbanz.hedbanzAPI.entity.DTO.RoomDTO;
+import com.hedbanz.hedbanzAPI.entity.DTO.RoomFilterDTO;
+import com.hedbanz.hedbanzAPI.entity.DTO.UserToRoomDTO;
 
 import java.util.List;
 
 public interface RoomService {
 
-    Room addRoom(Room room);
+    RoomDTO addRoom(RoomDTO roomDTO);
 
-    List<Room> getAllRooms(int page);
+    void deleteRoom(long roomId);
 
-    List<Room> getRoomsByFilter(RoomFilter roomFilter, int pageNumber);
+    RoomDTO getRoom(long roomId);
 
-    Room addUserToRoom(UserToRoom userToRoom);
+    List<RoomDTO> getAllRooms(int page);
 
-    void leaveRoom(UserToRoom userToRoom);
+    List<RoomDTO> getRoomsByFilter(RoomFilterDTO roomFilterDTO, int pageNumber);
+
+    RoomDTO addUserToRoom(UserToRoomDTO userToRoomDTO);
+
+    void leaveRoom(UserToRoomDTO userToRoomDTO);
+
+    void addMessage(MessageDTO messageDTO);
+
+    List<Message> getAllMessages(long roomId, int pageNumber);
 }

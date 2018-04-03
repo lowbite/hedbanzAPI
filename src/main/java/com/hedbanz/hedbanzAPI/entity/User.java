@@ -1,19 +1,28 @@
 package com.hedbanz.hedbanzAPI.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import org.hibernate.validator.constraints.NotBlank;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.Date;
+import java.util.Set;
 
 @Entity
 @Table(name = "user")
 public class User implements Serializable {
-
     public User(){
 
+    }
+
+    public User(Long id, String login, Integer money, Date registrationDate, String imagePath, String email) {
+        this.id = id;
+        this.login = login;
+        this.money = money;
+        this.registrationDate = new Timestamp(registrationDate.getTime());
+        this.imagePath = imagePath;
+        this.email = email;
     }
 
     @Id
@@ -34,7 +43,6 @@ public class User implements Serializable {
     private Integer money;
 
     @Column(name = "registration_date")
-    @NotNull
     private Timestamp registrationDate;
 
     @Column(name = "image_path")
@@ -44,6 +52,16 @@ public class User implements Serializable {
     @Column(name = "email")
     @NotNull
     private String email;
+
+    @Column(name = "token")
+    private String token;
+
+    @ManyToMany(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @JoinTable(name = "friendship",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "friend_id"))
+    @JsonIgnore
+    private Set<User> friends;
 
     public Long getId() {
         return id;
@@ -101,32 +119,46 @@ public class User implements Serializable {
         this.email = email;
     }
 
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public void setFriends(Set<User> friends) {
+        this.friends = friends;
+    }
+
+    public boolean addFriend(User user){
+        if(!friends.contains(user)){
+            friends.add(user);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean removeFriend(User user){
+        if(friends.contains(user)){
+            friends.remove(user);
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        User user = (User) o;
+        User userDTO = (User) o;
 
-        if (id != null ? !id.equals(user.id) : user.id != null) return false;
-        if (login != null ? !login.equals(user.login) : user.login != null) return false;
-        if (password != null ? !password.equals(user.password) : user.password != null) return false;
-        if (money != null ? !money.equals(user.money) : user.money != null) return false;
-        if (registrationDate != null ? !registrationDate.equals(user.registrationDate) : user.registrationDate != null)
-            return false;
-        if (imagePath != null ? !imagePath.equals(user.imagePath) : user.imagePath != null) return false;
-        return email != null ? email.equals(user.email) : user.email == null;
+        return id.equals(userDTO.id);
     }
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (login != null ? login.hashCode() : 0);
-        result = 31 * result + (password != null ? password.hashCode() : 0);
-        result = 31 * result + (money != null ? money.hashCode() : 0);
-        result = 31 * result + (registrationDate != null ? registrationDate.hashCode() : 0);
-        result = 31 * result + (imagePath != null ? imagePath.hashCode() : 0);
-        result = 31 * result + (email != null ? email.hashCode() : 0);
-        return result;
+        return id.hashCode();
     }
 }

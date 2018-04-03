@@ -1,8 +1,8 @@
-package com.hedbanz.hedbanzAPI.entity;
+package com.hedbanz.hedbanzAPI.entity.DTO;
 
 import java.io.Serializable;
 
-public class RoomFilter implements Serializable{
+public class RoomFilterDTO implements Serializable{
     private String roomName;
     private Integer maxPlayers;
     private Integer minPlayers;

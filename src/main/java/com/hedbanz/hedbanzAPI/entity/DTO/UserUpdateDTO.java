@@ -1,20 +1,18 @@
-package com.hedbanz.hedbanzAPI.entity;
+package com.hedbanz.hedbanzAPI.entity.DTO;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.hedbanz.hedbanzAPI.deserializer.UpdateUserDataDeserializer;
 
-import java.io.Serializable;
-
 @JsonDeserialize(using = UpdateUserDataDeserializer.class)
-public class UpdateUserData implements Serializable{
+public class UserUpdateDTO {
 
-    public UpdateUserData(){
+    public UserUpdateDTO(){
 
     }
 
     private Long id;
 
-    private String newLogin;
+    private String login;
 
     private String newPassword;
 
@@ -28,12 +26,12 @@ public class UpdateUserData implements Serializable{
         this.id = id;
     }
 
-    public String getNewLogin() {
-        return newLogin;
+    public String getLogin() {
+        return login;
     }
 
-    public void setNewLogin(String newLogin) {
-        this.newLogin = newLogin;
+    public void setLogin(String login) {
+        this.login = login;
     }
 
     public String getNewPassword() {

@@ -1,24 +1,24 @@
-package com.hedbanz.hedbanzAPI.entity;
+package com.hedbanz.hedbanzAPI.entity.DTO;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.hedbanz.hedbanzAPI.deserializer.UserToRoomDeserializer;
 
 @JsonDeserialize(using = UserToRoomDeserializer.class)
-public class UserToRoom {
+public class UserToRoomDTO {
     private Long userId;
     private Long roomId;
     private String password;
 
-    public UserToRoom(){
+    public UserToRoomDTO(){
 
     }
 
-    public UserToRoom(Long userId, Long roomId) {
+    public UserToRoomDTO(Long userId, Long roomId) {
         this.userId = userId;
         this.roomId = roomId;
     }
 
-    public UserToRoom(Long userId, Long roomId, String password) {
+    public UserToRoomDTO(Long userId, Long roomId, String password) {
         this.userId = userId;
         this.roomId = roomId;
         this.password = password;
@@ -53,7 +53,7 @@ public class UserToRoom {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        UserToRoom that = (UserToRoom) o;
+        UserToRoomDTO that = (UserToRoomDTO) o;
 
         if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
         if (roomId != null ? !roomId.equals(that.roomId) : that.roomId != null) return false;

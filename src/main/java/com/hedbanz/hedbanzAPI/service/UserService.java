@@ -1,15 +1,24 @@
 package com.hedbanz.hedbanzAPI.service;
 
-import com.hedbanz.hedbanzAPI.entity.UpdateUserData;
-import com.hedbanz.hedbanzAPI.entity.User;
+import com.hedbanz.hedbanzAPI.entity.DTO.FriendDTO;
+import com.hedbanz.hedbanzAPI.entity.DTO.UserDTO;
+import com.hedbanz.hedbanzAPI.entity.DTO.UserUpdateDTO;
+
+import java.util.List;
 
 public interface UserService {
 
-    User authenticate(User user);
+    UserDTO authenticate(UserDTO userDDTO);
 
-    User register(User user);
+    UserDTO register(UserDTO userDDTO);
 
-    User updateUserData(UpdateUserData userData);
+    UserDTO updateUserData(UserUpdateDTO userData);
 
-    User getUser(long userId);
+    UserDTO getUser(long userId);
+
+    List<FriendDTO> getUserFriends(long userId);
+
+    void setUserToken(long userId, String token);
+
+    void releaseUserToken(long userId);
 }

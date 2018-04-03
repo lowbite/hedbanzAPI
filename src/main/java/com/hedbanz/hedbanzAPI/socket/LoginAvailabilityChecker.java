@@ -7,7 +7,7 @@ import com.corundumstudio.socketio.listener.ConnectListener;
 import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;
 import com.hedbanz.hedbanzAPI.entity.User;
-import com.hedbanz.hedbanzAPI.repositorie.UserRepository;
+import com.hedbanz.hedbanzAPI.repository.CRUDUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +17,7 @@ public class LoginAvailabilityChecker {
     private final SocketIOServer server;
 
     @Autowired
-    private UserRepository userRepository;
+    private CRUDUserRepository CRUDUserRepository;
 
     @Autowired
     public LoginAvailabilityChecker(SocketIOServer server){
@@ -30,8 +30,8 @@ public class LoginAvailabilityChecker {
 
     private DataListener<LoginAvailabilityReceiveMessage> onRecieved() {
         return (client, data, ackSender) -> {
-            User foundUser = userRepository.findUserByLogin(data.getLogin());
-            boolean isLoginAvailable = foundUser == null;
+            User foundUserDTO = CRUDUserRepository.findUserByLogin(data.getLogin());
+            boolean isLoginAvailable = foundUserDTO == null;
             socketIONamespace.getBroadcastOperations().sendEvent("loginResult", new LoginAvailabilityAnswer(isLoginAvailable));
         };
     }
