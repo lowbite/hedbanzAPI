@@ -3,7 +3,7 @@ package com.hedbanz.hedbanzAPI.entity.DTO;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.hedbanz.hedbanzAPI.deserializer.RoomDeserializer;
 
-import java.util.Set;
+import java.util.List;
 
 
 @JsonDeserialize(using = RoomDeserializer.class)
@@ -12,7 +12,7 @@ public class RoomDTO {
     private String name;
     private String password;
     private Integer maxPlayers;
-    private Set<UserDTO> users;
+    private List<UserDTO> users;
     private Integer currentPlayersNumber;
     private Boolean isPrivate;
 
@@ -52,35 +52,35 @@ public class RoomDTO {
         this.password = password;
     }
 
-    public int getMaxPlayers() {
+    public Integer getMaxPlayers() {
         return maxPlayers;
     }
 
-    public void setMaxPlayers(int maxPlayers) {
+    public void setMaxPlayers(Integer maxPlayers) {
         this.maxPlayers = maxPlayers;
     }
 
-    public Set<UserDTO> getUsers() {
+    public List<UserDTO> getUsers() {
         return users;
     }
 
-    public void setUsers(Set<UserDTO> users) {
+    public void setUsers(List<UserDTO> users) {
         this.users = users;
     }
 
-    public int getCurrentPlayersNumber() {
+    public Integer getCurrentPlayersNumber() {
         return currentPlayersNumber;
     }
 
-    public void setCurrentPlayersNumber(int currentPlayersNumber) {
+    public void setCurrentPlayersNumber(Integer currentPlayersNumber) {
         this.currentPlayersNumber = currentPlayersNumber;
     }
 
-    public boolean getIsPrivate() {
+    public Boolean getIsPrivate() {
         return isPrivate;
     }
 
-    public void setIsPrivate(boolean aPrivate) {
+    public void setIsPrivate(Boolean aPrivate) {
         isPrivate = aPrivate;
     }
 }

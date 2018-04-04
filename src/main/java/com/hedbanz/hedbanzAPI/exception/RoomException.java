@@ -1,15 +1,27 @@
 package com.hedbanz.hedbanzAPI.exception;
 
-import com.hedbanz.hedbanzAPI.entity.error.CustomError;
+import com.hedbanz.hedbanzAPI.entity.error.RoomError;
+
+import java.text.MessageFormat;
 
 public class RoomException extends RuntimeException {
-    private CustomError error;
+    private final RoomError error;
 
-    public RoomException(CustomError error){
+    public RoomException(RoomError error, Object... messageArguments) {
+        super(MessageFormat.format(error.getErrorMessage(), messageArguments));
         this.error = error;
     }
 
-    public CustomError getError(){
-        return this.error;
+    public RoomException(RoomError error, final Throwable cause, Object... messageArguments) {
+        super(MessageFormat.format(error.getErrorMessage(), messageArguments), cause);
+        this.error = error;
+    }
+
+    public int getCode() {
+        return error.getErrorCode();
+    }
+
+    public String getMessage(){
+        return error.getErrorMessage();
     }
 }

@@ -24,7 +24,7 @@ public class UserToRoomDTO {
         this.password = password;
     }
 
-    public long getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
@@ -32,7 +32,7 @@ public class UserToRoomDTO {
         this.userId = userId;
     }
 
-    public long getRoomId() {
+    public Long getRoomId() {
         return roomId;
     }
 

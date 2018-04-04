@@ -1,10 +1,9 @@
 package com.hedbanz.hedbanzAPI.repository.Implementation;
 
-import com.hedbanz.hedbanzAPI.entity.error.CustomError;
 import com.hedbanz.hedbanzAPI.entity.DTO.RoomDTO;
 import com.hedbanz.hedbanzAPI.entity.DTO.RoomFilterDTO;
 import com.hedbanz.hedbanzAPI.entity.error.RoomError;
-import com.hedbanz.hedbanzAPI.exception.RoomException;
+import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
 import com.hedbanz.hedbanzAPI.repository.RoomRepositoryFunctional;
 import org.springframework.stereotype.Component;
 
@@ -34,7 +33,7 @@ public class RoomRepositoryFunctionalImpl implements RoomRepositoryFunctional {
             }
         }else if(roomFilterDTO.getRoomName().charAt(0) == '#'){
             if(roomFilterDTO.getRoomName().length() == 1)
-                throw new RoomException(new CustomError(RoomError.INCORRECT_INPUT.getErrorCode(), RoomError.INCORRECT_INPUT.getErrorMessage()));
+                throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
 
             long roomId = Long.valueOf(roomFilterDTO.getRoomName().substring(1, roomFilterDTO.getRoomName().length()));
             queryText.append(SEARCH_BY_ID + roomId  + " AND ");

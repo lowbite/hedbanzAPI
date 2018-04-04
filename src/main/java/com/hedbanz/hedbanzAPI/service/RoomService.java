@@ -1,10 +1,10 @@
 package com.hedbanz.hedbanzAPI.service;
 
-import com.hedbanz.hedbanzAPI.entity.Message;
 import com.hedbanz.hedbanzAPI.entity.DTO.MessageDTO;
 import com.hedbanz.hedbanzAPI.entity.DTO.RoomDTO;
 import com.hedbanz.hedbanzAPI.entity.DTO.RoomFilterDTO;
 import com.hedbanz.hedbanzAPI.entity.DTO.UserToRoomDTO;
+import com.hedbanz.hedbanzAPI.entity.Message;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ public interface RoomService {
 
     void leaveRoom(UserToRoomDTO userToRoomDTO);
 
-    void addMessage(MessageDTO messageDTO);
+    MessageDTO addMessage(MessageDTO messageDTO);
 
     List<Message> getAllMessages(long roomId, int pageNumber);
 }

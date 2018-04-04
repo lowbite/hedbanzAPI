@@ -3,52 +3,51 @@ package com.hedbanz.hedbanzAPI.entity.DTO;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.hedbanz.hedbanzAPI.deserializer.MessageDeserializer;
 
-import java.sql.Timestamp;
 import java.util.Date;
 
 
 @JsonDeserialize(using = MessageDeserializer.class)
 public class MessageDTO {
-    private long id;
-    private long senderId;
-    private long roomId;
+    private Long clientMessageId;
+    private Long senderId;
+    private Long roomId;
     private String text;
-    private int type;
-    private Timestamp createDate;
+    private Integer type;
+    private Long createDate;
 
     public MessageDTO() {
     }
 
-    public MessageDTO(long id, long senderId, long roomId, String text, int type, Date createDate) {
-        this.id = id;
+    public MessageDTO(long clientMessageId, long senderId, long roomId, String text, int type, Date createDate) {
+        this.clientMessageId = clientMessageId;
         this.senderId = senderId;
         this.roomId = roomId;
         this.text = text;
         this.type = type;
-        this.createDate = new Timestamp(createDate.getTime());
+        this.createDate = createDate.getTime();
     }
 
-    public long getId() {
-        return id;
+    public Long getClientMessageId() {
+        return clientMessageId;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setClientMessageId(Long clientMessageId) {
+        this.clientMessageId = clientMessageId;
     }
 
-    public long getSenderId() {
+    public Long getSenderId() {
         return senderId;
     }
 
-    public void setSenderId(long senderId) {
+    public void setSenderId(Long senderId) {
         this.senderId = senderId;
     }
 
-    public long getRoomId() {
+    public Long getRoomId() {
         return roomId;
     }
 
-    public void setRoomId(long roomId) {
+    public void setRoomId(Long roomId) {
         this.roomId = roomId;
     }
 
@@ -60,19 +59,19 @@ public class MessageDTO {
         this.text = text;
     }
 
-    public int getType() {
+    public Integer getType() {
         return type;
     }
 
-    public void setType(int type) {
+    public void setType(Integer type) {
         this.type = type;
     }
 
-    public Timestamp getCreateDate() {
+    public Long getCreateDate() {
         return createDate;
     }
 
-    public void setCreateDate(Timestamp createDate) {
+    public void setCreateDate(Long   createDate) {
         this.createDate = createDate;
     }
 }

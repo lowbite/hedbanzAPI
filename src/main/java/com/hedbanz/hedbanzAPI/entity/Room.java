@@ -5,8 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -42,11 +41,15 @@ public class Room implements Serializable{
     @JoinTable(name = "user_room",
             joinColumns = @JoinColumn(name = "room_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))
-    private Set<User> users;
+    private Set<User> users = new HashSet<>();
+
+    @Column(name = "admin")
+    @NotNull
+    private Long roomAdmin;
 
     @OneToMany(cascade = CascadeType.ALL,
             orphanRemoval = true)
-    private List<Message> messages = new ArrayList<>();
+    private Set<Message> messages = new HashSet<>();
 
     public Room(){
 
@@ -85,19 +88,19 @@ public class Room implements Serializable{
         this.password = password;
     }
 
-    public int getMaxPlayers() {
+    public Integer getMaxPlayers() {
         return maxPlayers;
     }
 
-    public void setMaxPlayers(int maxPlayers) {
+    public void setMaxPlayers(Integer maxPlayers) {
         this.maxPlayers = maxPlayers;
     }
 
-    public int getCurrentPlayersNumber() {
+    public Integer getCurrentPlayersNumber() {
         return currentPlayersNumber;
     }
 
-    public void setCurrentPlayersNumber(int currentPlayersNumber) {
+    public void setCurrentPlayersNumber(Integer currentPlayersNumber) {
         this.currentPlayersNumber = currentPlayersNumber;
     }
 
@@ -109,24 +112,32 @@ public class Room implements Serializable{
         this.name = name;
     }
 
-    public boolean getIsPrivate() {
+    public Boolean getIsPrivate() {
         return isPrivate;
     }
 
-    public void setIsPrivate(boolean aPrivate) {
+    public void setIsPrivate(Boolean aPrivate) {
         isPrivate = aPrivate;
     }
 
-    public void setMessages(List<Message> messages){
+    public void setMessages(Set<Message> messages){
         this.messages = messages;
     }
 
-    public List<Message> getMessages() {
+    public Set<Message> getMessages() {
         return messages;
     }
 
+    public Long getRoomAdmin() {
+        return roomAdmin;
+    }
+
+    public void setRoomAdmin(Long roomAdmin) {
+        this.roomAdmin = roomAdmin;
+    }
+
     public boolean addUser(User user){
-        if(!this.users.contains(user)){
+        if(!this.users.contains(user)) {
             this.users.add(user);
             return true;
         }

@@ -9,8 +9,8 @@ import com.hedbanz.hedbanzAPI.entity.DTO.UserDTO;
 import org.apache.http.util.TextUtils;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RoomDeserializer extends JsonDeserializer<RoomDTO> {
     @Override
@@ -25,7 +25,7 @@ public class RoomDeserializer extends JsonDeserializer<RoomDTO> {
             isPrivate = false;
         else
             isPrivate = true;
-        Set<UserDTO> userDTOS = new HashSet<>();
+        List<UserDTO> userDTOS = new ArrayList<>();
         UserDTO userDTO = new UserDTO();
         userDTO.setId(userId);
         userDTOS.add(userDTO);

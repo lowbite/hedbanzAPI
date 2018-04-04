@@ -1,12 +1,11 @@
 package com.hedbanz.hedbanzAPI.service.Implementation;
 
 import com.hedbanz.hedbanzAPI.entity.DTO.FriendDTO;
-import com.hedbanz.hedbanzAPI.entity.error.CustomError;
-import com.hedbanz.hedbanzAPI.entity.User;
 import com.hedbanz.hedbanzAPI.entity.DTO.UserDTO;
 import com.hedbanz.hedbanzAPI.entity.DTO.UserUpdateDTO;
+import com.hedbanz.hedbanzAPI.entity.User;
 import com.hedbanz.hedbanzAPI.entity.error.UserError;
-import com.hedbanz.hedbanzAPI.exception.UserException;
+import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
 import com.hedbanz.hedbanzAPI.repository.CRUDUserRepository;
 import com.hedbanz.hedbanzAPI.service.UserService;
 import org.apache.http.util.TextUtils;
@@ -36,13 +35,9 @@ public class UserServiceImpl implements UserService {
 
     public UserDTO authenticate(UserDTO userDTO){
         if(TextUtils.isEmpty(userDTO.getLogin()))
-            throw new UserException(new CustomError(
-                    UserError.EMPTY_LOGIN.getErrorCode(),
-                    UserError.EMPTY_LOGIN.getErrorMessage()));
+            throw ExceptionFactory.create(UserError.EMPTY_LOGIN);
         if(TextUtils.isEmpty(userDTO.getPassword()))
-            throw new UserException(new CustomError(
-                    UserError.EMPTY_PASSWORD.getErrorCode(),
-                    UserError.EMPTY_PASSWORD.getErrorMessage()));
+            throw ExceptionFactory.create(UserError.EMPTY_PASSWORD);
 
         Pattern pattern = Pattern.compile(EMAIL_REGEX);
         Matcher matcher = pattern.matcher(userDTO.getLogin());
@@ -55,13 +50,9 @@ public class UserServiceImpl implements UserService {
         }
 
         if(foundUser == null)
-            throw new UserException(new CustomError(
-                    UserError.NO_SUCH_USER.getErrorCode(),
-                    UserError.NO_SUCH_USER.getErrorMessage()));
+            throw ExceptionFactory.create(UserError.INCORRECT_PASSWORD);
         if(!foundUser.getPassword().equals(userDTO.getPassword()))
-            throw new UserException(new CustomError(
-                    UserError.INCORRECT_PASSWORD.getErrorCode(),
-                    UserError.INCORRECT_PASSWORD.getErrorMessage()));
+            throw ExceptionFactory.create(UserError.INCORRECT_PASSWORD);
 
         return conversionService.convert(foundUser, UserDTO.class);
     }
@@ -69,17 +60,11 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserDTO updateUserData(UserUpdateDTO userData) {
         if(userData.getId() == null)
-            throw new UserException( new CustomError(
-                    UserError.INCORRECT_USER_ID.getErrorCode(),
-                    UserError.INCORRECT_USER_ID.getErrorMessage()));
+            throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
         if(TextUtils.isEmpty(userData.getLogin()))
-            throw new UserException(new CustomError(
-                    UserError.EMPTY_LOGIN.getErrorCode(),
-                    UserError.EMPTY_LOGIN.getErrorMessage()));
+            throw ExceptionFactory.create(UserError.EMPTY_LOGIN);
         if(TextUtils.isEmpty(userData.getOldPassword()))
-            throw new UserException(new CustomError(
-                    UserError.EMPTY_EMAIL.getErrorCode(),
-                    UserError.EMPTY_EMAIL.getErrorMessage()));
+            throw ExceptionFactory.create(UserError.EMPTY_EMAIL);
 
         long id = userData.getId();
         String login = userData.getLogin();
@@ -88,9 +73,7 @@ public class UserServiceImpl implements UserService {
         int rowsUpdated = CRUDUserRepository.updateUserData(id, login, newPassword);
 
         if(rowsUpdated != 1)
-            throw new UserException(new CustomError(
-                    UserError.INCORRECT_USER_ID.getErrorCode(),
-                    UserError.INCORRECT_USER_ID.getErrorMessage()));
+            throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
 
         User user = CRUDUserRepository.findUserByLogin(login);
         return conversionService.convert(user, UserDTO.class);
@@ -98,50 +81,34 @@ public class UserServiceImpl implements UserService {
 
     public UserDTO register(UserDTO userDTO) {
         if(TextUtils.isEmpty(userDTO.getLogin()))
-            throw new UserException(new CustomError(
-                    UserError.EMPTY_LOGIN.getErrorCode(),
-                    UserError.EMPTY_LOGIN.getErrorMessage()));
+            throw ExceptionFactory.create(UserError.EMPTY_LOGIN);
         if(TextUtils.isEmpty(userDTO.getPassword()))
-            throw new UserException(new CustomError(
-                    UserError.EMPTY_PASSWORD.getErrorCode(),
-                    UserError.EMPTY_PASSWORD.getErrorMessage()));
+            throw ExceptionFactory.create(UserError.EMPTY_PASSWORD);
         if(TextUtils.isEmpty(userDTO.getEmail()))
-            throw new UserException(new CustomError(
-                    UserError.EMPTY_EMAIL.getErrorCode(),
-                    UserError.EMPTY_EMAIL.getErrorMessage()));
+            throw ExceptionFactory.create(UserError.EMPTY_EMAIL);
 
         Pattern pattern = Pattern.compile(LOGIN_REGEX);
         Matcher matcher = pattern.matcher(userDTO.getLogin());
         if(!matcher.find())
-            throw new UserException(new CustomError(
-                    UserError.INVALID_LOGIN.getErrorCode(),
-                    UserError.INVALID_LOGIN.getErrorMessage()));
+            throw ExceptionFactory.create(UserError.INVALID_LOGIN);
         pattern = Pattern.compile(EMAIL_REGEX);
         matcher = pattern.matcher(userDTO.getEmail());
         if(!matcher.find())
-            throw new UserException(new CustomError(
-                    UserError.INVALID_EMAIL.getErrorCode(),
-                    UserError.INVALID_EMAIL.getErrorMessage()));
+            throw ExceptionFactory.create(UserError.INVALID_EMAIL);
         pattern = Pattern.compile(PASSWORD_REGEX);
         matcher = pattern.matcher(userDTO.getPassword());
         if(!matcher.find())
-            throw new UserException(new CustomError(
-                    UserError.INVALID_PASSWORD.getErrorCode(),
-                    UserError.INCORRECT_PASSWORD.getErrorMessage()));
+            throw ExceptionFactory.create(UserError.INCORRECT_PASSWORD);
 
         User foundUser = CRUDUserRepository.findUserByEmail(userDTO.getEmail());
 
         if (foundUser != null)
-            throw new UserException(new CustomError(
-                    UserError.SUCH_EMAIL_ALREADY_USING.getErrorCode(),
-                    UserError.SUCH_EMAIL_ALREADY_USING.getErrorMessage()));
+            throw ExceptionFactory.create(UserError.SUCH_EMAIL_ALREADY_USING);
 
         foundUser = CRUDUserRepository.findUserByLogin(userDTO.getLogin());
 
         if(foundUser != null)
-            throw new UserException(new CustomError(
-                    UserError.SUCH_LOGIN_ALREADY_EXIST.getErrorCode(),
-                    UserError.SUCH_LOGIN_ALREADY_EXIST.getErrorMessage()));
+            throw ExceptionFactory.create(UserError.SUCH_LOGIN_ALREADY_EXIST);
 
         userDTO.setImagePath("source/image.jpg");
         userDTO.setMoney(0);
@@ -166,15 +133,11 @@ public class UserServiceImpl implements UserService {
 
     public void setUserToken(long userId, String token) {
         if(CRUDUserRepository.updateUserToken(token, userId) == 0)
-            throw new UserException(new CustomError(
-                    UserError.INCORRECT_USER_ID.getErrorCode(),
-                    UserError.INCORRECT_USER_ID.getErrorMessage()));
+            throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
     }
 
     public void releaseUserToken(long userId) {
         if(CRUDUserRepository.deleteUserToken(userId) == 0)
-            throw new UserException(new CustomError(
-                    UserError.INCORRECT_USER_ID.getErrorCode(),
-                    UserError.INCORRECT_USER_ID.getErrorMessage()));
+            throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
     }
 }

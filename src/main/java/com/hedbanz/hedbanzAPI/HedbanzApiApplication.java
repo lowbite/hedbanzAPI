@@ -64,8 +64,13 @@ public class HedbanzApiApplication extends SpringBootServletInitializer {
     }
 
     @Bean
-	public MessageDTOToMessageConverter messageToMessageDTOConverter(){
+	public MessageDTOToMessageConverter messageDTOToMessageConverter(){
 		return new MessageDTOToMessageConverter();
+	}
+
+	@Bean
+	public MessageToMessageDTOConverter messageToMessageDTOConverter(){
+		return new MessageToMessageDTOConverter();
 	}
 
 	@Bean(name = "APIConversionService")
@@ -79,6 +84,7 @@ public class HedbanzApiApplication extends SpringBootServletInitializer {
 		converters.add(userDTOToUserConverter());
 		converters.add(userToUserDTOConverter());
 		converters.add(messageToMessageDTOConverter());
+		converters.add(messageDTOToMessageConverter());
 
 		bean.setConverters(converters);
 		bean.afterPropertiesSet();

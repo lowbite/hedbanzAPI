@@ -152,13 +152,29 @@ public class User implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        User userDTO = (User) o;
+        User user = (User) o;
 
-        return id.equals(userDTO.id);
+        if (id != null ? !id.equals(user.id) : user.id != null) return false;
+        if (login != null ? !login.equals(user.login) : user.login != null) return false;
+        if (password != null ? !password.equals(user.password) : user.password != null) return false;
+        if (money != null ? !money.equals(user.money) : user.money != null) return false;
+        if (registrationDate != null ? !registrationDate.equals(user.registrationDate) : user.registrationDate != null)
+            return false;
+        if (imagePath != null ? !imagePath.equals(user.imagePath) : user.imagePath != null) return false;
+        if (email != null ? !email.equals(user.email) : user.email != null) return false;
+        return token != null ? token.equals(user.token) : user.token == null;
     }
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (login != null ? login.hashCode() : 0);
+        result = 31 * result + (password != null ? password.hashCode() : 0);
+        result = 31 * result + (money != null ? money.hashCode() : 0);
+        result = 31 * result + (registrationDate != null ? registrationDate.hashCode() : 0);
+        result = 31 * result + (imagePath != null ? imagePath.hashCode() : 0);
+        result = 31 * result + (email != null ? email.hashCode() : 0);
+        result = 31 * result + (token != null ? token.hashCode() : 0);
+        return result;
     }
 }

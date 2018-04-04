@@ -21,24 +21,24 @@ public class Message {
     private String text;
 
     @Column(name = "type")
-    private int type;
+    private Integer type;
 
     @Column(name = "create_date")
     private Timestamp createDate;
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public long getSenderId() {
+    public Long getSenderId() {
         return senderId;
     }
 
-    public void setSenderId(long senderId) {
+    public void setSenderId(Long senderId) {
         this.senderId = senderId;
     }
 
@@ -58,11 +58,11 @@ public class Message {
         this.text = text;
     }
 
-    public int getType() {
+    public Integer getType() {
         return type;
     }
 
-    public void setType(int type) {
+    public void setType(Integer type) {
         this.type = type;
     }
 
@@ -79,13 +79,24 @@ public class Message {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Message that = (Message) o;
+        Message message = (Message) o;
 
-        return id.equals(that.id);
+        if (id != null ? !id.equals(message.id) : message.id != null) return false;
+        if (senderId != null ? !senderId.equals(message.senderId) : message.senderId != null) return false;
+        if (roomId != null ? !roomId.equals(message.roomId) : message.roomId != null) return false;
+        if (text != null ? !text.equals(message.text) : message.text != null) return false;
+        if (type != null ? !type.equals(message.type) : message.type != null) return false;
+        return createDate != null ? createDate.equals(message.createDate) : message.createDate == null;
     }
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (senderId != null ? senderId.hashCode() : 0);
+        result = 31 * result + (roomId != null ? roomId.hashCode() : 0);
+        result = 31 * result + (text != null ? text.hashCode() : 0);
+        result = 31 * result + (type != null ? type.hashCode() : 0);
+        result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
+        return result;
     }
 }

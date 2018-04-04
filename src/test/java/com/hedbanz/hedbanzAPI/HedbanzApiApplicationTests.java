@@ -21,9 +21,9 @@ public class HedbanzApiApplicationTests {
 	@Test
 	public void testMessaging(){
 		MessageDTO messageDDTO = new MessageDTO();
-		messageDDTO.setSenderId(11);
+		messageDDTO.setSenderId(11l);
 		messageDDTO.setText("asdasda");
-		messageDDTO.setRoomId(156);
+		messageDDTO.setRoomId(156l);
 		messageDDTO.setType(1);
 		roomService.addMessage(messageDDTO);
 	}

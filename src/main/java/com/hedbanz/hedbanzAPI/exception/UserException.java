@@ -1,15 +1,27 @@
 package com.hedbanz.hedbanzAPI.exception;
 
-import com.hedbanz.hedbanzAPI.entity.error.CustomError;
+import com.hedbanz.hedbanzAPI.entity.error.UserError;
+
+import java.text.MessageFormat;
 
 public class UserException extends RuntimeException {
-    private CustomError error;
+    private final UserError error;
 
-    public UserException(CustomError error){
+    public UserException(UserError error, Object... messageArguments) {
+        super(MessageFormat.format(error.getErrorMessage(), messageArguments));
         this.error = error;
     }
 
-    public CustomError getError(){
-        return this.error;
+    public UserException(UserError error, final Throwable cause, Object... messageArguments) {
+        super(MessageFormat.format(error.getErrorMessage(), messageArguments), cause);
+        this.error = error;
+    }
+
+    public int getCode() {
+        return error.getErrorCode();
+    }
+
+    public String getMessage(){
+        return error.getErrorMessage();
     }
 }

@@ -5,17 +5,17 @@ public class FriendDTO {
     private Long id;
     private String login;
     private String imagePath;
-    private boolean isAccepted;
+    private Boolean isAccepted;
 
     public FriendDTO(){};
 
-    public FriendDTO(long id, String login, String imagePath){
+    public FriendDTO(Long id, String login, String imagePath){
         this.id = id;
         this.login = login;
         this.imagePath = imagePath;
     }
 
-    public FriendDTO(long id, String login, String imagePath, int isAccepted){
+    public FriendDTO(Long id, String login, String imagePath, int isAccepted){
         this.id = id;
         this.login = login;
         this.imagePath = imagePath;
@@ -46,11 +46,11 @@ public class FriendDTO {
         this.imagePath = imagePath;
     }
 
-    public boolean getIsAccepted() {
+    public Boolean getIsAccepted() {
         return isAccepted;
     }
 
-    public void setIsAccepted(boolean isAccepted) {
+    public void setIsAccepted(Boolean isAccepted) {
         isAccepted = isAccepted;
     }
 

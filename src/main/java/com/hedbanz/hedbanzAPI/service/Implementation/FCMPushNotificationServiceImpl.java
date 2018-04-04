@@ -2,11 +2,10 @@ package com.hedbanz.hedbanzAPI.service.Implementation;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hedbanz.hedbanzAPI.entity.error.CustomError;
-import com.hedbanz.hedbanzAPI.entity.User;
 import com.hedbanz.hedbanzAPI.entity.HeaderRequestInterceptor;
+import com.hedbanz.hedbanzAPI.entity.User;
 import com.hedbanz.hedbanzAPI.entity.error.UserError;
-import com.hedbanz.hedbanzAPI.exception.UserException;
+import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
 import com.hedbanz.hedbanzAPI.repository.CRUDUserRepository;
 import com.hedbanz.hedbanzAPI.service.FCMPushNotificationService;
 import org.json.JSONObject;
@@ -55,19 +54,15 @@ public class FCMPushNotificationServiceImpl implements FCMPushNotificationServic
             int success = responseObj.get("success").asInt();
 
             if(success == 0){
-                throw new UserException(new CustomError(
-                        UserError.CANT_SEND_FRIENDSHIP_REQUEST.getErrorCode(),
-                        UserError.CANT_SEND_FRIENDSHIP_REQUEST.getErrorMessage()));
+                throw ExceptionFactory.create(UserError.CANT_SEND_FRIENDSHIP_REQUEST);
             }
             if(!userDTO.addFriend(friend)){
-                throw new UserException(new CustomError(
-                        UserError.ALREADY_FRIENDS.getErrorCode(),
-                        UserError.ALREADY_FRIENDS.getErrorMessage()));
+                throw ExceptionFactory.create(UserError.ALREADY_FRIENDS);
             }
             CRUDUserRepository.save(userDTO);
 
         } catch (InterruptedException | ExecutionException | IOException e) {
-            throw new UserException(new CustomError(UserError.CANT_SEND_FRIENDSHIP_REQUEST.getErrorCode(), UserError.CANT_SEND_FRIENDSHIP_REQUEST.getErrorMessage()));
+            throw ExceptionFactory.create(UserError.CANT_SEND_FRIENDSHIP_REQUEST);
         }
     }
 
@@ -77,9 +72,7 @@ public class FCMPushNotificationServiceImpl implements FCMPushNotificationServic
         User userDTO = CRUDUserRepository.findOne(userId);
 
         if(!userDTO.addFriend(friend)){
-            throw new UserException(new CustomError(
-                    UserError.ALREADY_FRIENDS.getErrorCode(),
-                    UserError.ALREADY_FRIENDS.getErrorMessage()));
+            throw ExceptionFactory.create(UserError.ALREADY_FRIENDS);
         }
         CRUDUserRepository.save(userDTO);
     }

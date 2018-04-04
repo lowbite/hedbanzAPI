@@ -6,17 +6,14 @@ import com.hedbanz.hedbanzAPI.deserializer.UpdateUserDataDeserializer;
 @JsonDeserialize(using = UpdateUserDataDeserializer.class)
 public class UserUpdateDTO {
 
+    private Long id;
+    private String login;
+    private String newPassword;
+    private String oldPassword;
+
     public UserUpdateDTO(){
 
     }
-
-    private Long id;
-
-    private String login;
-
-    private String newPassword;
-
-    private String oldPassword;
 
     public Long getId() {
         return id;
