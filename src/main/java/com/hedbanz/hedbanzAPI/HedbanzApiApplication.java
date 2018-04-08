@@ -7,8 +7,6 @@ import com.hedbanz.hedbanzAPI.converter.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.ConversionServiceFactoryBean;
@@ -20,7 +18,7 @@ import java.util.Set;
 
 @EnableCaching
 @SpringBootApplication
-public class HedbanzApiApplication extends SpringBootServletInitializer {
+public class HedbanzApiApplication {
 
 	@Value("${socketIO.hostname}")
 	private String socketIOHostname;
@@ -93,11 +91,5 @@ public class HedbanzApiApplication extends SpringBootServletInitializer {
 
 	public static void main(String[] args) {
 		SpringApplication.run(HedbanzApiApplication.class, args);
-	}
-
-
-	@Override
-	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-		return application.sources(HedbanzApiApplication.class);
 	}
 }
