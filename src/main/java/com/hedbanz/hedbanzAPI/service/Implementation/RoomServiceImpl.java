@@ -25,11 +25,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 public class RoomServiceImpl implements RoomService{
@@ -114,12 +113,11 @@ public class RoomServiceImpl implements RoomService{
             throw ExceptionFactory.create(RoomError.DB_ERROR);
 
         RoomDTO roomDTO = conversionService.convert(foundRoom, RoomDTO.class);
-        roomDTO.setUsers(foundRoom.getUsers().stream().map(new Function<User, UserDTO>() {
-            @Override
-            public UserDTO apply(User user) {
-               return conversionService.convert(user, UserDTO.class);
-            }
-        }).collect(Collectors.toList()));
+        List<UserDTO> users = new ArrayList<>();
+        for (User user: foundRoom.getUsers()) {
+            users.add(conversionService.convert(user, UserDTO.class));
+        }
+        roomDTO.setUsers(users);
         return roomDTO;
     }
 

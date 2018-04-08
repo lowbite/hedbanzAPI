@@ -41,7 +41,7 @@ public class LoginAvailabilityChecker {
         return new DisconnectListener() {
             @Override
             public void onDisconnect(SocketIOClient client) {
-                
+
             }
         };
     }

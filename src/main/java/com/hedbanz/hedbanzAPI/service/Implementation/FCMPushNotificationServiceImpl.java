@@ -1,8 +1,5 @@
 package com.hedbanz.hedbanzAPI.service.Implementation;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hedbanz.hedbanzAPI.entity.HeaderRequestInterceptor;
 import com.hedbanz.hedbanzAPI.entity.User;
 import com.hedbanz.hedbanzAPI.entity.error.UserError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
@@ -11,14 +8,7 @@ import com.hedbanz.hedbanzAPI.service.FCMPushNotificationService;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 @Service
 public class FCMPushNotificationServiceImpl implements FCMPushNotificationService {
@@ -44,7 +34,7 @@ public class FCMPushNotificationServiceImpl implements FCMPushNotificationServic
 
         HttpEntity<String> entity = new HttpEntity<>(body.toString());
 
-        CompletableFuture<String> pushNotification = sendRequest(entity);
+        /*CompletableFuture<String> pushNotification = sendRequest(entity);
         CompletableFuture.allOf(pushNotification).join();
 
         try {
@@ -63,7 +53,7 @@ public class FCMPushNotificationServiceImpl implements FCMPushNotificationServic
 
         } catch (InterruptedException | ExecutionException | IOException e) {
             throw ExceptionFactory.create(UserError.CANT_SEND_FRIENDSHIP_REQUEST);
-        }
+        }*/
     }
 
 
@@ -78,7 +68,7 @@ public class FCMPushNotificationServiceImpl implements FCMPushNotificationServic
     }
 
 
-    private CompletableFuture<String> sendRequest(HttpEntity<String> entity){
+    /*private CompletableFuture<String> sendRequest(HttpEntity<String> entity){
         RestTemplate restTemplate = new RestTemplate();
         ArrayList<ClientHttpRequestInterceptor> interceptors = new ArrayList<>();
         interceptors.add(new HeaderRequestInterceptor("Authorization", "key=" + FIREBASE_SERVER_KEY));
@@ -87,5 +77,5 @@ public class FCMPushNotificationServiceImpl implements FCMPushNotificationServic
 
         String firebaseResponse = restTemplate.postForObject(FIREBASE_API_URL, entity, String.class);
         return CompletableFuture.completedFuture(firebaseResponse);
-    }
+    }*/
 }

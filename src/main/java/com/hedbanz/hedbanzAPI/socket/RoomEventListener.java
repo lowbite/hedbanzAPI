@@ -134,8 +134,8 @@ public class RoomEventListener {
             public void onDisconnect(SocketIOClient client) {
                 client.disconnect();
                 UserToRoomDTO userToRoomDTO = new UserToRoomDTO();
-                userToRoomDTO.setUserId(client.get(USER_ID_FIELD));
-                userToRoomDTO.setRoomId(client.get(ROOM_ID_FIELD));
+                userToRoomDTO.setUserId((Long)client.get(USER_ID_FIELD));
+                userToRoomDTO.setRoomId((Long)client.get(ROOM_ID_FIELD));
                 roomService.leaveRoom(userToRoomDTO);
                 System.out.println("Client disconnected!" + client.getHandshakeData().getAddress());
             }
