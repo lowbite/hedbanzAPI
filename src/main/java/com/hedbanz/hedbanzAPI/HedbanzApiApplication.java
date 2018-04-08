@@ -37,7 +37,6 @@ public class HedbanzApiApplication {
 		configuration.setPingTimeout(1000);
 		configuration.setTransports(Transport.WEBSOCKET);
 		configuration.setSocketConfig(socketConfig);
-		configuration.
 
 		configuration.setPort(socketIOPort);
 		return new SocketIOServer(configuration);
