@@ -3,7 +3,6 @@ package com.hedbanz.hedbanzAPI;
 import com.corundumstudio.socketio.Configuration;
 import com.corundumstudio.socketio.SocketConfig;
 import com.corundumstudio.socketio.SocketIOServer;
-import com.corundumstudio.socketio.Transport;
 import com.hedbanz.hedbanzAPI.converter.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -35,7 +34,6 @@ public class HedbanzApiApplication {
 		SocketConfig socketConfig = new SocketConfig();
 		socketConfig.setReuseAddress(true);
 		configuration.setPingTimeout(1000);
-		configuration.setTransports(Transport.WEBSOCKET);
 		configuration.setSocketConfig(socketConfig);
 
 		configuration.setPort(socketIOPort);
