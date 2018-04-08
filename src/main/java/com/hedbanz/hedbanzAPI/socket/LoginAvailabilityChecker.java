@@ -1,8 +1,6 @@
 package com.hedbanz.hedbanzAPI.socket;
 
-import com.corundumstudio.socketio.HandshakeData;
-import com.corundumstudio.socketio.SocketIONamespace;
-import com.corundumstudio.socketio.SocketIOServer;
+import com.corundumstudio.socketio.*;
 import com.corundumstudio.socketio.listener.ConnectListener;
 import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;
@@ -29,10 +27,13 @@ public class LoginAvailabilityChecker {
     }
 
     private DataListener<LoginAvailabilityReceiveMessage> onRecieved() {
-        return (client, data, ackSender) -> {
-            User foundUserDTO = CRUDUserRepository.findUserByLogin(data.getLogin());
-            boolean isLoginAvailable = foundUserDTO == null;
-            socketIONamespace.getBroadcastOperations().sendEvent("loginResult", new LoginAvailabilityAnswer(isLoginAvailable));
+        return new DataListener<LoginAvailabilityReceiveMessage>() {
+            @Override
+            public void onData(SocketIOClient client, LoginAvailabilityReceiveMessage data, AckRequest ackSender) throws Exception {
+                User foundUserDTO = CRUDUserRepository.findUserByLogin(data.getLogin());
+                boolean isLoginAvailable = foundUserDTO == null;
+                socketIONamespace.getBroadcastOperations().sendEvent("loginResult", new LoginAvailabilityAnswer(isLoginAvailable));
+            }
         };
     }
 
@@ -41,8 +42,11 @@ public class LoginAvailabilityChecker {
     }
 
     private ConnectListener onConnected() {
-        return client -> {
-            HandshakeData handshakeData = client.getHandshakeData();
+        return new ConnectListener() {
+            @Override
+            public void onConnect(SocketIOClient client) {
+                HandshakeData handshakeData = client.getHandshakeData();
+            }
         };
     }
 }

@@ -1,4 +1,4 @@
-package com.hedbanz.hedbanzAPI.socket;
+package com.hedbanz.hedbanzAPI;
 
 import com.hedbanz.hedbanzAPI.HedbanzApiApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;

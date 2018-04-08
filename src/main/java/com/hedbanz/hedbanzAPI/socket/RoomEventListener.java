@@ -1,5 +1,6 @@
 package com.hedbanz.hedbanzAPI.socket;
 
+import com.corundumstudio.socketio.AckRequest;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIONamespace;
 import com.corundumstudio.socketio.SocketIOServer;
@@ -66,43 +67,58 @@ public class RoomEventListener {
     }
 
     private DataListener<UserToRoomDTO> leaveUserFromRoom() {
-        return (client, data, ackSender) -> {
-            roomService.leaveRoom(data);
-            UserDTO userDTO = userService.getUser(data.getUserId());
-            client.leaveRoom(String.valueOf(data.getRoomId()));
-            socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(LEFT_USER_EVENT, userDTO);
+        return new DataListener<UserToRoomDTO>() {
+            @Override
+            public void onData(SocketIOClient client, UserToRoomDTO data, AckRequest ackSender) throws Exception {
+                roomService.leaveRoom(data);
+                UserDTO userDTO = userService.getUser(data.getUserId());
+                client.leaveRoom(String.valueOf(data.getRoomId()));
+                socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(LEFT_USER_EVENT, userDTO);
+            }
         };
     }
 
     private DataListener<UserToRoomDTO> joinUserToRoom() {
-        return (client, data, ackSender) -> {
-            client.set(USER_ID_FIELD, data.getUserId());
-            client.set(ROOM_ID_FIELD, data.getRoomId());
-            RoomDTO roomDTO = roomService.addUserToRoom(data);
-            UserDTO userDTO = userService.getUser(data.getUserId());
-            client.joinRoom(String.valueOf(roomDTO.getId()));
-            client.sendEvent(ROOM_INFO_EVENT, roomDTO);
-            socketIONamespace.getRoomOperations(String.valueOf(roomDTO.getId())).sendEvent(JOINED_USER_EVENT, userDTO);
+        return new DataListener<UserToRoomDTO>() {
+            @Override
+            public void onData(SocketIOClient client, UserToRoomDTO data, AckRequest ackSender) throws Exception {
+                client.set(USER_ID_FIELD, data.getUserId());
+                client.set(ROOM_ID_FIELD, data.getRoomId());
+                RoomDTO roomDTO = roomService.addUserToRoom(data);
+                UserDTO userDTO = userService.getUser(data.getUserId());
+                client.joinRoom(String.valueOf(roomDTO.getId()));
+                client.sendEvent(ROOM_INFO_EVENT, roomDTO);
+                socketIONamespace.getRoomOperations(String.valueOf(roomDTO.getId())).sendEvent(JOINED_USER_EVENT, userDTO);
+            }
         };
     }
 
     private DataListener<UserToRoomDTO> userStartTyping(){
-        return ((client, data, ackSender) -> {
-            userTyping(client, data, SERVER_TYPING_EVENT);
-        });
+        return new DataListener<UserToRoomDTO>() {
+            @Override
+            public void onData(SocketIOClient client, UserToRoomDTO data, AckRequest ackSender) throws Exception {
+                userTyping(client, data, SERVER_TYPING_EVENT);
+            }
+        };
     }
 
     private DataListener<UserToRoomDTO> userStopTyping(){
-        return ((client, data, ackSender) -> {
-            userTyping(client, data, SERVER_STOP_TYPING_EVENT);
-        });
+        return new DataListener<UserToRoomDTO>() {
+            @Override
+            public void onData(SocketIOClient client, UserToRoomDTO data, AckRequest ackSender) throws Exception {
+                userTyping(client, data, SERVER_STOP_TYPING_EVENT);
+            }
+        };
     }
 
     private DataListener<MessageDTO> sendUserMessage(){
-        return ((client, data, ackSender) -> {
-            MessageDTO message = roomService.addMessage(data);
-            socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(SERVER_MESSAGE_EVENT, message);
-        });
+        return new DataListener<MessageDTO>() {
+            @Override
+            public void onData(SocketIOClient client, MessageDTO data, AckRequest ackSender) throws Exception {
+                MessageDTO message = roomService.addMessage(data);
+                socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(SERVER_MESSAGE_EVENT, message);
+            }
+        };
     }
 
     private void userTyping(SocketIOClient client, UserToRoomDTO data, String event){
@@ -113,19 +129,25 @@ public class RoomEventListener {
     }
 
     private DisconnectListener onDisconnected() {
-        return client -> {
-            client.disconnect();
-            UserToRoomDTO userToRoomDTO = new UserToRoomDTO();
-            userToRoomDTO.setUserId(client.get(USER_ID_FIELD));
-            userToRoomDTO.setRoomId(client.get(ROOM_ID_FIELD));
-            roomService.leaveRoom(userToRoomDTO);
-            System.out.println("Client disconnected!" + client.getHandshakeData().getAddress());
+        return new DisconnectListener() {
+            @Override
+            public void onDisconnect(SocketIOClient client) {
+                client.disconnect();
+                UserToRoomDTO userToRoomDTO = new UserToRoomDTO();
+                userToRoomDTO.setUserId(client.get(USER_ID_FIELD));
+                userToRoomDTO.setRoomId(client.get(ROOM_ID_FIELD));
+                roomService.leaveRoom(userToRoomDTO);
+                System.out.println("Client disconnected!" + client.getHandshakeData().getAddress());
+            }
         };
     }
 
     private ConnectListener onConnected() {
-        return client -> {
-            System.out.println("Client connected!" + client.getHandshakeData().getAddress());
+        return new ConnectListener() {
+            @Override
+            public void onConnect(SocketIOClient client) {
+                System.out.println("Client connected!" + client.getHandshakeData().getAddress());
+            }
         };
     }
 }
