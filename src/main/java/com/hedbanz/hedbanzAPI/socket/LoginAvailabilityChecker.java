@@ -1,6 +1,8 @@
 package com.hedbanz.hedbanzAPI.socket;
 
-import com.corundumstudio.socketio.*;
+import com.corundumstudio.socketio.HandshakeData;
+import com.corundumstudio.socketio.SocketIONamespace;
+import com.corundumstudio.socketio.SocketIOServer;
 import com.corundumstudio.socketio.listener.ConnectListener;
 import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;
@@ -27,31 +29,20 @@ public class LoginAvailabilityChecker {
     }
 
     private DataListener<LoginAvailabilityReceiveMessage> onRecieved() {
-        return new DataListener<LoginAvailabilityReceiveMessage>() {
-            @Override
-            public void onData(SocketIOClient client, LoginAvailabilityReceiveMessage data, AckRequest ackSender) throws Exception {
-                User foundUserDTO = CRUDUserRepository.findUserByLogin(data.getLogin());
-                boolean isLoginAvailable = foundUserDTO == null;
-                socketIONamespace.getBroadcastOperations().sendEvent("loginResult", new LoginAvailabilityAnswer(isLoginAvailable));
-            }
+        return (client, data, ackSender) -> {
+            User foundUserDTO = CRUDUserRepository.findUserByLogin(data.getLogin());
+            boolean isLoginAvailable = foundUserDTO == null;
+            socketIONamespace.getBroadcastOperations().sendEvent("loginResult", new LoginAvailabilityAnswer(isLoginAvailable));
         };
     }
 
     private DisconnectListener onDisconnected() {
-        return new DisconnectListener() {
-            @Override
-            public void onDisconnect(SocketIOClient client) {
-
-            }
-        };
+        return client -> {};
     }
 
     private ConnectListener onConnected() {
-        return new ConnectListener() {
-            @Override
-            public void onConnect(SocketIOClient client) {
-                HandshakeData handshakeData = client.getHandshakeData();
-            }
+        return client -> {
+            HandshakeData handshakeData = client.getHandshakeData();
         };
     }
 }
