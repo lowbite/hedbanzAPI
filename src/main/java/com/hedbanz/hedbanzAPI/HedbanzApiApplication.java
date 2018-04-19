@@ -70,6 +70,16 @@ public class HedbanzApiApplication {
 		return new MessageToMessageDTOConverter();
 	}
 
+	@Bean
+	public UserToPlayerConverter userToPlayerConverter(){
+		return new UserToPlayerConverter();
+	}
+
+	@Bean
+	public PlayerToUserDTOConverter playerToUserDTOConverter(){
+		return new PlayerToUserDTOConverter();
+	}
+
 	@Bean(name = "APIConversionService")
 	public ConversionService getConversionService(){
 		ConversionServiceFactoryBean bean = new ConversionServiceFactoryBean();
@@ -82,6 +92,8 @@ public class HedbanzApiApplication {
 		converters.add(userToUserDTOConverter());
 		converters.add(messageToMessageDTOConverter());
 		converters.add(messageDTOToMessageConverter());
+		converters.add(userToPlayerConverter());
+		converters.add(playerToUserDTOConverter());
 
 		bean.setConverters(converters);
 		bean.afterPropertiesSet();

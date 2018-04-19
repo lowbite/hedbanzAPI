@@ -37,11 +37,8 @@ public class Room implements Serializable{
     @NotNull
     private Boolean isPrivate;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.DETACH})
-    @JoinTable(name = "user_room",
-            joinColumns = @JoinColumn(name = "room_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id"))
-    private Set<User> users = new HashSet<>();
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Player> players = new HashSet<>();
 
     @Column(name = "admin")
     @NotNull
@@ -64,12 +61,12 @@ public class Room implements Serializable{
     }
 
 
-    public Set<User> getUsers(){
-        return this.users;
+    public Set<Player> getPlayers(){
+        return this.players;
     }
 
-    public void setUsers(Set<User> users) {
-        this.users= users;
+    public void setPlayers(Set<Player> users) {
+        this.players = users;
     }
 
     public Long getId() {
@@ -136,24 +133,24 @@ public class Room implements Serializable{
         this.roomAdmin = roomAdmin;
     }
 
-    public boolean addUser(User user){
-        if(!this.users.contains(user)) {
-            this.users.add(user);
+    public boolean addPlayer(Player player){
+        if(!this.players.contains(player)) {
+            this.players.add(player);
             return true;
         }
         return false;
     }
 
-    public boolean removeUser(User user){
-        if(this.users.contains(user)){
-            this.users.remove(user);
+    public boolean removePlayer(Player player){
+        if(this.players.contains(player)){
+            this.players.remove(player);
             return true;
         }
         return false;
     }
 
     public int getUserCount(){
-        return this.users.size();
+        return this.players.size();
     }
 
     public void addMessage(Message message){

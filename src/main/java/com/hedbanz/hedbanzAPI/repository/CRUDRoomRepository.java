@@ -3,9 +3,11 @@ package com.hedbanz.hedbanzAPI.repository;
 import com.hedbanz.hedbanzAPI.entity.Message;
 import com.hedbanz.hedbanzAPI.entity.Room;
 import com.hedbanz.hedbanzAPI.entity.DTO.RoomDTO;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
@@ -19,4 +21,8 @@ public interface CRUDRoomRepository extends JpaRepository<Room, Long>, PagingAnd
 
     @Query("SELECT m FROM Room r JOIN r.messages m WHERE r.id = :roomId")
     Page<Message> findAllMessages(Pageable pageable, @Param("roomId") long roomId);
+
+    @Modifying
+    @Query("UPDATE r.players p  SET p.word = :word WHERE p.id = :id")
+    int setPlayerWord(@Param("word") String word, @Param("id") long id);
 }

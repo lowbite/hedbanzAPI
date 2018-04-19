@@ -2,6 +2,7 @@ package com.hedbanz.hedbanzAPI.entity.DTO;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.hedbanz.hedbanzAPI.deserializer.RoomDeserializer;
+import com.hedbanz.hedbanzAPI.entity.error.CustomError;
 
 import java.util.List;
 
@@ -15,6 +16,7 @@ public class RoomDTO {
     private List<UserDTO> users;
     private Integer currentPlayersNumber;
     private Boolean isPrivate;
+    private CustomError customError;
 
     public RoomDTO(){
 
@@ -82,5 +84,13 @@ public class RoomDTO {
 
     public void setIsPrivate(Boolean aPrivate) {
         isPrivate = aPrivate;
+    }
+
+    public CustomError getCustomError() {
+        return customError;
+    }
+
+    public void setCustomError(CustomError customError) {
+        this.customError = customError;
     }
 }

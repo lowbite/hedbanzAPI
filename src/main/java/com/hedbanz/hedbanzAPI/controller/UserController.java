@@ -5,7 +5,11 @@ import com.hedbanz.hedbanzAPI.entity.DTO.CustomResponseBody;
 import com.hedbanz.hedbanzAPI.entity.DTO.FriendDTO;
 import com.hedbanz.hedbanzAPI.entity.DTO.UserDTO;
 import com.hedbanz.hedbanzAPI.entity.DTO.UserUpdateDTO;
+import com.hedbanz.hedbanzAPI.entity.Room;
 import com.hedbanz.hedbanzAPI.entity.User;
+import com.hedbanz.hedbanzAPI.entity.error.CustomError;
+import com.hedbanz.hedbanzAPI.exception.RoomException;
+import com.hedbanz.hedbanzAPI.exception.UserException;
 import com.hedbanz.hedbanzAPI.service.FCMPushNotificationService;
 import com.hedbanz.hedbanzAPI.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,5 +88,21 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public CustomResponseBody<List<FriendDTO>> getFriendList(@RequestParam("userId") String userId){
         return new CustomResponseBody<>(ResultStatus.SUCCESS_STATUS, null, userService.getUserFriends(Long.valueOf(userId)));
+    }
+
+
+
+    @ExceptionHandler(RoomException.class)
+    @ResponseStatus(HttpStatus.OK)
+    public CustomResponseBody<Room> roomError(RoomException e){
+        return new CustomResponseBody<>(ResultStatus.ERROR_STATUS,
+                new CustomError(e.getCode(), e.getMessage()), null);
+    }
+
+    @ExceptionHandler(UserException.class)
+    @ResponseStatus(HttpStatus.OK)
+    public CustomResponseBody<User> userError(UserException e){
+        return new CustomResponseBody<>(ResultStatus.ERROR_STATUS,
+                new CustomError(e.getCode(), e.getMessage()), null);
     }
 }

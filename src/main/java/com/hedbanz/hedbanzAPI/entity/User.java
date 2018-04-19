@@ -12,19 +12,6 @@ import java.util.Set;
 @Entity
 @Table(name = "user")
 public class User implements Serializable {
-    public User(){
-
-    }
-
-    public User(Long id, String login, Integer money, Date registrationDate, String imagePath, String email) {
-        this.id = id;
-        this.login = login;
-        this.money = money;
-        this.registrationDate = new Timestamp(registrationDate.getTime());
-        this.imagePath = imagePath;
-        this.email = email;
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "user_id")
@@ -62,6 +49,21 @@ public class User implements Serializable {
             inverseJoinColumns = @JoinColumn(name = "friend_id"))
     @JsonIgnore
     private Set<User> friends;
+
+
+    public User(){
+
+    }
+
+    public User(Long id, String login, Integer money, Date registrationDate, String imagePath, String email) {
+        this.id = id;
+        this.login = login;
+        this.money = money;
+        this.registrationDate = new Timestamp(registrationDate.getTime());
+        this.imagePath = imagePath;
+        this.email = email;
+    }
+
 
     public Long getId() {
         return id;

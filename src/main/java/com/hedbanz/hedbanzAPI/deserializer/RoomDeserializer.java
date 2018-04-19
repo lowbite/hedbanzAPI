@@ -26,7 +26,7 @@ public class RoomDeserializer extends JsonDeserializer<RoomDTO> {
         else
             isPrivate = true;
         List<UserDTO> userDTOS = new ArrayList<>();
-        UserDTO userDTO = new UserDTO();
+        UserDTO userDTO = new UserDTO.UserDTOBuilder().createUserDTO();
         userDTO.setId(userId);
         userDTOS.add(userDTO);
 

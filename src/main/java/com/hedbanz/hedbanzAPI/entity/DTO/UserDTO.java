@@ -1,5 +1,7 @@
 package com.hedbanz.hedbanzAPI.entity.DTO;
 
+import com.hedbanz.hedbanzAPI.entity.error.CustomError;
+
 import java.sql.Timestamp;
 
 public class UserDTO {
@@ -12,9 +14,19 @@ public class UserDTO {
     private String imagePath;
     private String email;
     private String token;
+    private CustomError customError;
 
     public UserDTO(){
 
+    }
+
+    UserDTO(Long id, String login, Integer money, Timestamp registrationDate, String imagePath, String email) {
+        this.id = id;
+        this.login = login;
+        this.money = money;
+        this.registrationDate = registrationDate;
+        this.imagePath = imagePath;
+        this.email = email;
     }
 
     public Long getId() {
@@ -79,5 +91,56 @@ public class UserDTO {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public CustomError getCustomError() {
+        return customError;
+    }
+
+    public void setCustomError(CustomError customError) {
+        this.customError = customError;
+    }
+
+    public static class UserDTOBuilder {
+        private Long id;
+        private String login;
+        private Integer money;
+        private Timestamp registrationDate;
+        private String imagePath;
+        private String email;
+
+        public UserDTOBuilder setId(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        public UserDTOBuilder setLogin(String login) {
+            this.login = login;
+            return this;
+        }
+
+        public UserDTOBuilder setMoney(Integer money) {
+            this.money = money;
+            return this;
+        }
+
+        public UserDTOBuilder setRegistrationDate(Timestamp registrationDate) {
+            this.registrationDate = registrationDate;
+            return this;
+        }
+
+        public UserDTOBuilder setImagePath(String imagePath) {
+            this.imagePath = imagePath;
+            return this;
+        }
+
+        public UserDTOBuilder setEmail(String email) {
+            this.email = email;
+            return this;
+        }
+
+        public UserDTO createUserDTO() {
+            return new UserDTO(id, login, money, registrationDate, imagePath, email);
+        }
     }
 }

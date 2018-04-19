@@ -11,7 +11,7 @@ public class AdminPanelController {
     @GetMapping(value = "/admin")
     public ModelAndView getAdminPage(ModelAndView modelAndView){
         modelAndView.setViewName("admin_login");
-        modelAndView.addObject("user", new UserDTO());
+        modelAndView.addObject("user", new UserDTO.UserDTOBuilder().createUserDTO());
         return modelAndView;
     }
 
