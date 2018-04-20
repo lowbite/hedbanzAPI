@@ -1,9 +1,7 @@
 package com.hedbanz.hedbanzAPI.controller;
 
 import com.hedbanz.hedbanzAPI.constant.ResultStatus;
-import com.hedbanz.hedbanzAPI.entity.DTO.CustomResponseBody;
-import com.hedbanz.hedbanzAPI.entity.DTO.RoomDTO;
-import com.hedbanz.hedbanzAPI.entity.DTO.RoomFilterDTO;
+import com.hedbanz.hedbanzAPI.entity.DTO.*;
 import com.hedbanz.hedbanzAPI.entity.Message;
 import com.hedbanz.hedbanzAPI.entity.Room;
 import com.hedbanz.hedbanzAPI.entity.User;
@@ -19,8 +17,12 @@ import java.util.List;
 
 @RestController
 public class RoomController {
+    private final RoomService roomService;
+
     @Autowired
-    private RoomService roomService;
+    public RoomController(RoomService roomService) {
+        this.roomService = roomService;
+    }
 
     @RequestMapping(method = RequestMethod.PUT, value = "/rooms", consumes = "application/json")
     @ResponseStatus(HttpStatus.OK)
@@ -52,24 +54,15 @@ public class RoomController {
 
     @RequestMapping(method = RequestMethod.GET, value = "/rooms/messages")
     @ResponseStatus(HttpStatus.OK)
-    public CustomResponseBody<List<Message>> findAllMessages(@RequestParam("roomId") long roomId, @RequestParam("page") int pageNumber){
-        List<Message> messages = roomService.getAllMessages(roomId, pageNumber);
+    public CustomResponseBody<List<MessageDTO>> findAllMessages(@RequestParam("roomId") long roomId, @RequestParam("page") int pageNumber){
+        List<MessageDTO> messages = roomService.getAllMessages(roomId, pageNumber);
         return new CustomResponseBody<>(ResultStatus.SUCCESS_STATUS, null, messages);
     }
 
-
-
-    @ExceptionHandler(RoomException.class)
+    @RequestMapping(method = RequestMethod.POST, value = "/rooms/password")
     @ResponseStatus(HttpStatus.OK)
-    public CustomResponseBody<Room> roomError(RoomException e){
-        return new CustomResponseBody<>(ResultStatus.ERROR_STATUS,
-                new CustomError(e.getCode(), e.getMessage()), null);
-    }
-
-    @ExceptionHandler(UserException.class)
-    @ResponseStatus(HttpStatus.OK)
-    public CustomResponseBody<User> userError(UserException e){
-        return new CustomResponseBody<>(ResultStatus.ERROR_STATUS,
-                new CustomError(e.getCode(), e.getMessage()), null);
+    public CustomResponseBody<UserToRoomDTO> checkPassword(@RequestBody UserToRoomDTO userToRoomDTO){
+        roomService.checkRoomPassword(userToRoomDTO);
+        return new CustomResponseBody<>(ResultStatus.SUCCESS_STATUS, null, null);
     }
 }

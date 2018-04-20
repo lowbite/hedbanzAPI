@@ -2,6 +2,7 @@ package com.hedbanz.hedbanzAPI.service;
 
 import com.hedbanz.hedbanzAPI.entity.DTO.*;
 import com.hedbanz.hedbanzAPI.entity.Message;
+import com.hedbanz.hedbanzAPI.entity.Player;
 
 import java.util.List;
 
@@ -17,15 +18,17 @@ public interface RoomService {
 
     List<RoomDTO> getRoomsByFilter(RoomFilterDTO roomFilterDTO, int pageNumber);
 
-    List<Message> getAllMessages(long roomId, int pageNumber);
+    List<MessageDTO> getAllMessages(long roomId, int pageNumber);
 
     UserDTO leaveRoom(UserToRoomDTO userToRoomDTO);
 
     RoomDTO addUserToRoom(UserToRoomDTO userToRoomDTO);
 
-    UserToRoomDTO checkRoomPassword(UserToRoomDTO userToRoomDTO);
+    List<Player> getPlayers(long roomId);
+
+    void checkRoomPassword(UserToRoomDTO userToRoomDTO);
 
     MessageDTO addMessage(MessageDTO messageDTO);
 
-    SetWordDTO setPlayerWord(SetWordDTO setWordDTO);
+    WordDTO setPlayerWord(WordDTO wordDTO);
 }

@@ -6,17 +6,30 @@ import com.corundumstudio.socketio.SocketIOServer;
 import com.corundumstudio.socketio.listener.ConnectListener;
 import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;
+import com.corundumstudio.socketio.misc.IterableCollection;
 import com.hedbanz.hedbanzAPI.entity.DTO.*;
+import com.hedbanz.hedbanzAPI.entity.error.RoomError;
+import com.hedbanz.hedbanzAPI.entity.error.UserError;
 import com.hedbanz.hedbanzAPI.service.RoomService;
 import com.hedbanz.hedbanzAPI.service.UserService;
+import com.hedbanz.hedbanzAPI.utils.ErrorUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
-@Service
+@Component
 public class RoomEventListener {
+    private final Logger log = LoggerFactory.getLogger("RoomEventListener");
+
+
     private static final String JOIN_ROOM_EVENT = "join-room";
     private static final String LEAVE_ROOM_EVENT = "leave-room";
     private static final String ROOM_INFO_EVENT = "joined-room";
@@ -37,15 +50,13 @@ public class RoomEventListener {
     private static final String USER_ID_FIELD = "userId";
     private static final String ROOM_ID_FIELD = "roomId";
 
-    @Autowired
-    RoomService roomService;
-    @Autowired
-    UserService userService;
+    private final RoomService roomService;
+    private final UserService userService;
 
     private final SocketIONamespace socketIONamespace;
 
     @Autowired
-    public RoomEventListener(SocketIOServer server){
+    public RoomEventListener(SocketIOServer server, RoomService roomService, UserService userService){
         this.socketIONamespace = server.addNamespace("/game");
         this.socketIONamespace.addConnectListener(onConnected());
         this.socketIONamespace.addDisconnectListener(onDisconnected());
@@ -54,7 +65,9 @@ public class RoomEventListener {
         this.socketIONamespace.addEventListener(CLIENT_TYPING_EVENT, UserToRoomDTO.class, userStartTyping());
         this.socketIONamespace.addEventListener(CLIENT_STOP_TYPING_EVENT, UserToRoomDTO.class, userStopTyping());
         this.socketIONamespace.addEventListener(CLIENT_MESSAGE_EVENT, MessageDTO.class, sendUserMessage());
-        this.socketIONamespace.addEventListener(CLIENT_SET_PLAYER_WORD_EVENT, SetWordDTO.class, setPlayerWord());
+        this.socketIONamespace.addEventListener(CLIENT_SET_PLAYER_WORD_EVENT, WordDTO.class, setPlayerWord());
+        this.roomService = roomService;
+        this.userService = userService;
     }
 
     /**
@@ -100,6 +113,8 @@ public class RoomEventListener {
             client.sendEvent(ROOM_INFO_EVENT, roomDTO);
             socketIONamespace.getRoomOperations(String.valueOf(roomDTO.getId())).sendEvent(JOINED_USER_EVENT, userDTO);
 
+            log.info("User joined to room", data);
+
             //Start game
             if(roomDTO.getCurrentPlayersNumber() == roomDTO.getMaxPlayers()){
                 sendPlayersSetWordsRequest(roomDTO.getId());
@@ -124,6 +139,7 @@ public class RoomEventListener {
     private DataListener<UserToRoomDTO> userStopTyping(){
         return ((client, data, ackSender) -> {
             userTyping(data, SERVER_STOP_TYPING_EVENT);
+            log.info("User stopped typing");
         });
     }
 
@@ -135,18 +151,19 @@ public class RoomEventListener {
         return ((client, data, ackSender) -> {
             MessageDTO message = roomService.addMessage(data);
             socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(SERVER_MESSAGE_EVENT, message);
+            log.info("User send message: ", data);
         });
     }
 
-    private DataListener<SetWordDTO> setPlayerWord(){
+    private DataListener<WordDTO> setPlayerWord(){
         return ((client, data, ackSender) -> {
-            SetWordDTO setWordDTO = roomService.setPlayerWord(data);
-            if(setWordDTO.getError() != null){
-                client.sendEvent(SERVER_ERROR, setWordDTO.getError());
+            WordDTO wordDTO = roomService.setPlayerWord(data);
+            if(wordDTO.getError() != null){
+                client.sendEvent(SERVER_ERROR, wordDTO.getError());
                 return;
             }
-            setWordDTO.setWord(null);
-            socketIONamespace.getRoomOperations(client.get(ROOM_ID_FIELD)).sendEvent(SERVER_THOUGHT_PLAYER_WORD_EVENT, setWordDTO);
+            socketIONamespace.getRoomOperations(client.get(ROOM_ID_FIELD)).sendEvent(SERVER_THOUGHT_PLAYER_WORD_EVENT, wordDTO);
+            log.info("User set word: ", data);
         });
     }
 
@@ -163,11 +180,28 @@ public class RoomEventListener {
     }
 
     private void sendPlayersSetWordsRequest(long roomId){
-        List<SocketIOClient> clients = (List) socketIONamespace.getRoomOperations(String.valueOf(roomId)).getClients();
-        clients.get(clients.size() - 1).sendEvent(SERVER_SET_PLAYER_WORD_EVENT, clients.get(0).get(USER_ID_FIELD));
-        for (int i = 0; i < clients.size() - 1; i++) {
-            clients.get(i).sendEvent(SERVER_SET_PLAYER_WORD_EVENT, clients.get(i + 1).get(USER_ID_FIELD));
+        Collection<SocketIOClient> clients = socketIONamespace.getRoomOperations(String.valueOf(roomId)).getClients();
+        Iterator<SocketIOClient> iterator  = clients.iterator();
+        if(!iterator.hasNext()){
+            socketIONamespace.getRoomOperations(String.valueOf(roomId)).sendEvent(SERVER_ERROR, ErrorUtil.getError(RoomError.CANT_START_GAME));
+            return;
         }
+
+        long wordReceiverId = iterator.next().get(USER_ID_FIELD);
+        SocketIOClient client;
+        while(iterator.hasNext()){
+            client = iterator.next();
+            client.sendEvent(SERVER_SET_PLAYER_WORD_EVENT,  new WordDTO.WordDTOBuilder().setWordReceiverId(wordReceiverId)
+                                                                            .createWordDTO());
+            wordReceiverId = client.get(USER_ID_FIELD);
+            log.info("Word setting send to: ", client);
+        }
+        iterator = clients.iterator();
+        client = iterator.next();
+        client.sendEvent(SERVER_SET_PLAYER_WORD_EVENT,  new WordDTO.WordDTOBuilder().setWordReceiverId(wordReceiverId)
+                                                                            .createWordDTO());
+        log.info("Word setting send to: ",  client);
+        log.info("Game started in room: " + roomId);
     }
 
     private DisconnectListener onDisconnected() {
@@ -181,13 +215,13 @@ public class RoomEventListener {
                 client.sendEvent(SERVER_ERROR, userDTO.getCustomError());
                 return;
             }
-            System.out.println("Client disconnected!" + client.getHandshakeData().getAddress());
+            log.info("Client disconnected!", client.getHandshakeData().getAddress());
         };
     }
 
     private ConnectListener onConnected() {
         return client -> {
-            System.out.println("Client connected!" + client.getHandshakeData().getAddress());
+            log.info("Client connected!", client.getHandshakeData().getAddress());
         };
     }
 }

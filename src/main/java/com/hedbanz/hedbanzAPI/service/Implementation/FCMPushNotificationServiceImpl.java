@@ -22,12 +22,16 @@ import java.util.concurrent.ExecutionException;
 
 @Service
 public class FCMPushNotificationServiceImpl implements FCMPushNotificationService {
-    @Autowired
-    private CRUDUserRepository CRUDUserRepository;
+    private final CRUDUserRepository CRUDUserRepository;
 
     private static final String FIREBASE_SERVER_KEY = "AAAAPr_PYbs:APA91bEYs2o7Dtz_jkU_chkoFOo-vgPXESHnG5SWtSN8TJwgTKwEexq1vxpR7mbEPvDbg3T2siL7ZKFIw-8Tb1htwG84X_ZR2B3o5Glnt4WKpXY6eCkkEkwEq8VjT-uy-AGYKlk2iKge";
     private static final String FIREBASE_API_URL = "https://fcm.googleapis.com/fcm/send";
     private final static String DEVICE_TOKEN = "eMjAPLuU6kk:APA91bGizcnyutmfQ1YI7jI9ZPaZzENOTQQbmu1DkMvtYvoJAZf9zNm3YwbRtuQBoLCj8griGtSRGy4VbnjcVNETHqYHpd8lAjgjT0nmaR-DsVcm-50LNirnjHCZ9AqUqlArNuPD3Lhl";
+
+    @Autowired
+    public FCMPushNotificationServiceImpl(CRUDUserRepository CRUDUserRepository) {
+        this.CRUDUserRepository = CRUDUserRepository;
+    }
 
     public void sendFriendshipRequest(long userId, long friendId){
         User friend = CRUDUserRepository.findOne(friendId);

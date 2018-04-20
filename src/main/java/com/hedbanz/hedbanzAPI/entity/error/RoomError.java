@@ -7,7 +7,8 @@ public enum RoomError {
     INCORRECT_INPUT(4, ErrorMessages.INCORRECT_INPUT),
     ALREADY_IN_ROOM(5, ErrorMessages.USER_ALREADY_IN_ROOM),
     NO_SUCH_USER_IN_ROOM(6, ErrorMessages.NO_SUCH_USER_IN_ROOM),
-    DB_ERROR(7, ErrorMessages.DB_ERROR);
+    DB_ERROR(7, ErrorMessages.DB_ERROR),
+    CANT_START_GAME(8, ErrorMessages.CANT_START_GAME);
 
     private int errorCode;
     private String errorMessage;

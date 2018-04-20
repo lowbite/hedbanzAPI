@@ -5,14 +5,14 @@ import java.sql.Timestamp;
 
 @Entity(name = "Message")
 @Table(name = "message")
-public class Message {
+public class Message{
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "message_id")
     private Long id;
 
-    @Column(name = "sender_id")
-    private Long senderId;
+    @ManyToOne(cascade = CascadeType.PERSIST)
+    private User senderUser;
 
     @Column(name = "room_id")
     private Long roomId;
@@ -32,14 +32,6 @@ public class Message {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Long getSenderId() {
-        return senderId;
-    }
-
-    public void setSenderId(Long senderId) {
-        this.senderId = senderId;
     }
 
     public Long getRoomId() {
@@ -74,6 +66,14 @@ public class Message {
         this.createDate = createDate;
     }
 
+    public User getSenderUser() {
+        return senderUser;
+    }
+
+    public void setSenderUser(User senderUser) {
+        this.senderUser = senderUser;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -82,7 +82,7 @@ public class Message {
         Message message = (Message) o;
 
         if (id != null ? !id.equals(message.id) : message.id != null) return false;
-        if (senderId != null ? !senderId.equals(message.senderId) : message.senderId != null) return false;
+        if (senderUser != null ? !senderUser.equals(message.senderUser) : message.senderUser != null) return false;
         if (roomId != null ? !roomId.equals(message.roomId) : message.roomId != null) return false;
         if (text != null ? !text.equals(message.text) : message.text != null) return false;
         if (type != null ? !type.equals(message.type) : message.type != null) return false;
@@ -92,7 +92,7 @@ public class Message {
     @Override
     public int hashCode() {
         int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (senderId != null ? senderId.hashCode() : 0);
+        result = 31 * result + (senderUser != null ? senderUser.hashCode() : 0);
         result = 31 * result + (roomId != null ? roomId.hashCode() : 0);
         result = 31 * result + (text != null ? text.hashCode() : 0);
         result = 31 * result + (type != null ? type.hashCode() : 0);

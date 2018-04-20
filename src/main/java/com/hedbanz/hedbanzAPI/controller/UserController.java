@@ -21,11 +21,15 @@ import java.util.List;
 @RestController
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+
+    private final FCMPushNotificationService fcmPushNotificationService;
 
     @Autowired
-    private FCMPushNotificationService fcmPushNotificationService;
+    public UserController(UserService userService, FCMPushNotificationService fcmPushNotificationService) {
+        this.userService = userService;
+        this.fcmPushNotificationService = fcmPushNotificationService;
+    }
 
     @RequestMapping(method = RequestMethod.PUT, consumes = "application/json", value = "/user")
     @ResponseStatus(HttpStatus.OK)
@@ -88,21 +92,5 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public CustomResponseBody<List<FriendDTO>> getFriendList(@RequestParam("userId") String userId){
         return new CustomResponseBody<>(ResultStatus.SUCCESS_STATUS, null, userService.getUserFriends(Long.valueOf(userId)));
-    }
-
-
-
-    @ExceptionHandler(RoomException.class)
-    @ResponseStatus(HttpStatus.OK)
-    public CustomResponseBody<Room> roomError(RoomException e){
-        return new CustomResponseBody<>(ResultStatus.ERROR_STATUS,
-                new CustomError(e.getCode(), e.getMessage()), null);
-    }
-
-    @ExceptionHandler(UserException.class)
-    @ResponseStatus(HttpStatus.OK)
-    public CustomResponseBody<User> userError(UserException e){
-        return new CustomResponseBody<>(ResultStatus.ERROR_STATUS,
-                new CustomError(e.getCode(), e.getMessage()), null);
     }
 }

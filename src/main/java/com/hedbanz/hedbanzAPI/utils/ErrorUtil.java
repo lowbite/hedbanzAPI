@@ -9,7 +9,6 @@ public class ErrorUtil {
         return new CustomError(roomError.getErrorCode(), roomError.getErrorMessage());
     }
 
-
     public static CustomError getError(UserError userError){
         return new CustomError(userError.getErrorCode(), userError.getErrorMessage());
     }

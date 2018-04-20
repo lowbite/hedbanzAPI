@@ -21,7 +21,6 @@ public class Room implements Serializable{
     @NotNull
     private String name;
 
-    @JsonIgnore
     @Column(name = "password")
     private String password;
 
@@ -44,8 +43,7 @@ public class Room implements Serializable{
     @NotNull
     private Long roomAdmin;
 
-    @OneToMany(cascade = CascadeType.ALL,
-            orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Message> messages = new HashSet<>();
 
     public Room(){

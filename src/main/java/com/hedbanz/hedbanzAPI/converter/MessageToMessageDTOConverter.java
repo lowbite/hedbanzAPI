@@ -8,7 +8,8 @@ public class MessageToMessageDTOConverter implements Converter<Message, MessageD
     @Override
     public MessageDTO convert(Message message) {
         MessageDTO messageDTO = new MessageDTO();
-        messageDTO.setSenderId(message.getSenderId());
+        UserToUserDTOConverter converter = new UserToUserDTOConverter();
+        messageDTO.setSenderUser(converter.convert(message.getSenderUser()));
         messageDTO.setRoomId(message.getRoomId());
         messageDTO.setText(message.getText());
         messageDTO.setType(message.getType());

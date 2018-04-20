@@ -15,6 +15,7 @@ public interface ErrorMessages {
      String CANT_SEND_FRIENDSHIP_REQUEST = "Can't send friendship request to this user at this time";
      String USER_ALREADY_IN_ROOM = "This user is already in that room!";
      String NO_SUCH_USER_IN_ROOM = "There is no such user in room!";
+     String CANT_START_GAME = "Impossible to start game!";
 
 
      String INCORRECT_INPUT = "Incorrect input!";

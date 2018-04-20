@@ -1,6 +1,7 @@
 package com.hedbanz.hedbanzAPI.service.Implementation;
 
 import com.hedbanz.hedbanzAPI.constant.Constants;
+import com.hedbanz.hedbanzAPI.constant.MessageType;
 import com.hedbanz.hedbanzAPI.entity.DTO.*;
 import com.hedbanz.hedbanzAPI.entity.Message;
 import com.hedbanz.hedbanzAPI.entity.Player;
@@ -24,30 +25,35 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class RoomServiceImpl implements RoomService{
-    @Qualifier("APIConversionService")
-    @Autowired
-    private ConversionService conversionService;
+    private final ConversionService conversionService;
+
+    private final CRUDRoomRepository crudRoomRepository;
+
+    private final RoomRepositoryFunctional roomRepositoryFunctional;
+
+    private final CRUDUserRepository crudUserRepository;
 
     @Autowired
-    private CRUDRoomRepository crudRoomRepository;
-
-    @Autowired
-    private RoomRepositoryFunctional roomRepositoryFunctional;
-
-    @Autowired
-    private CRUDUserRepository crudUserRepository;
+    public RoomServiceImpl(@Qualifier("APIConversionService") ConversionService conversionService,
+                           CRUDRoomRepository crudRoomRepository, RoomRepositoryFunctional roomRepositoryFunctional,
+                           CRUDUserRepository crudUserRepository) {
+        this.conversionService = conversionService;
+        this.crudRoomRepository = crudRoomRepository;
+        this.roomRepositoryFunctional = roomRepositoryFunctional;
+        this.crudUserRepository = crudUserRepository;
+    }
 
     @CacheEvict(value = "rooms", allEntries = true)
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public RoomDTO addRoom(RoomDTO roomDTO){
         Room room = conversionService.convert(roomDTO, Room.class);
         Iterator<UserDTO> userIterator = roomDTO.getUsers().iterator();
@@ -64,6 +70,13 @@ public class RoomServiceImpl implements RoomService{
         room.addPlayer(conversionService.convert(user, Player.class));
         room.setCurrentPlayersNumber(0);
         room.setRoomAdmin(user.getId());
+
+        Message message = new Message();
+        message.setRoomId(room.getId());
+        message.setSenderUser(user);
+        message.setType(MessageType.JOINED_USER.getCode());
+        room.addMessage(message);
+
         crudRoomRepository.saveAndFlush(room);
 
         room.setCurrentPlayersNumber(1);
@@ -79,6 +92,7 @@ public class RoomServiceImpl implements RoomService{
     }
 
     @Cacheable("rooms")
+    @Transactional(readOnly = true)
     public List<RoomDTO> getAllRooms(int pageNumber) {
         Pageable pageable = new PageRequest(pageNumber, Constants.PAGE_SIZE, Sort.Direction.DESC, "id");
         Page<RoomDTO> page = crudRoomRepository.findAllRooms(pageable);
@@ -86,17 +100,22 @@ public class RoomServiceImpl implements RoomService{
         return page.getContent();
     }
 
+    @Transactional(readOnly = true)
     public List<RoomDTO> getRoomsByFilter(RoomFilterDTO roomFilterDTO, int pageNumber){
         return roomRepositoryFunctional.findRoomsByFilter(roomFilterDTO,pageNumber,Constants.PAGE_SIZE);
     }
 
-    public List<Message> getAllMessages(long roomId, int pageNumber) {
+    @Transactional(readOnly = true)
+    public List<MessageDTO> getAllMessages(long roomId, int pageNumber) {
         Pageable pageable = new PageRequest(pageNumber, Constants.PAGE_SIZE);
-        Page<Message> page = crudRoomRepository.findAllMessages(pageable, roomId);
-        return page.getContent();
+        Page<MessageDTO> page = crudRoomRepository.findAllMessages(pageable, roomId);
+        ArrayList<MessageDTO> messages = new ArrayList<>(page.getContent());
+        Collections.reverse(messages);
+        return messages;
     }
 
     @CacheEvict(value = "rooms", allEntries = true)
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public UserDTO leaveRoom(UserToRoomDTO userToRoomDTO) {
         UserDTO result = new UserDTO.UserDTOBuilder().createUserDTO();
         if(userToRoomDTO.getUserId() == null || userToRoomDTO.getRoomId() == null){
@@ -116,17 +135,20 @@ public class RoomServiceImpl implements RoomService{
             return result;
         }
 
-        crudRoomRepository.save(foundRoom);
-        foundRoom = crudRoomRepository.findOne(foundRoom.getId());
 
-        if(foundRoom == null) {
-            result.setCustomError(ErrorUtil.getError(RoomError.DB_ERROR));
-            return result;
-        }
+        Message message = new Message();
+        message.setRoomId(foundRoom.getId());
+        message.setSenderUser(user);
+        message.setType(MessageType.LEFT_USER.getCode());
+        foundRoom.addMessage(message);
+
+        crudRoomRepository.saveAndFlush(foundRoom);
+        foundRoom.setCurrentPlayersNumber(foundRoom.getCurrentPlayersNumber() - 1);
         return result;
     }
 
     @CacheEvict(value = "rooms", allEntries = true)
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public RoomDTO addUserToRoom(UserToRoomDTO userToRoomDTO) {
         RoomDTO result = new RoomDTO();
         if(userToRoomDTO.getUserId() == null || userToRoomDTO.getRoomId() == null){
@@ -156,50 +178,71 @@ public class RoomServiceImpl implements RoomService{
             result.setCustomError(ErrorUtil.getError(RoomError.ALREADY_IN_ROOM));
             return result;
         }
-        crudRoomRepository.saveAndFlush(foundRoom);
-        foundRoom = crudRoomRepository.findOne(foundRoom.getId());
 
-        if(foundRoom == null) {
-            result.setCustomError(ErrorUtil.getError(RoomError.DB_ERROR));
-            return result;
-        }
+        Message message = new Message();
+        message.setRoomId(foundRoom.getId());
+        message.setSenderUser(user);
+        message.setType(MessageType.JOINED_USER.getCode());
+        foundRoom.addMessage(message);
+
+        crudRoomRepository.saveAndFlush(foundRoom);
+        foundRoom.setCurrentPlayersNumber(foundRoom.getCurrentPlayersNumber() + 1);
 
         RoomDTO roomDTO = conversionService.convert(foundRoom, RoomDTO.class);
         roomDTO.setUsers(foundRoom.getPlayers().stream().map(userConv -> conversionService.convert(userConv, UserDTO.class)).collect(Collectors.toList()));
         return roomDTO;
     }
 
-    public UserToRoomDTO checkRoomPassword(UserToRoomDTO userToRoomDTO) {
+    @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
+    public List<Player> getPlayers(long roomId) {
+        return crudRoomRepository.findPlayers(roomId);
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
+    public void checkRoomPassword(UserToRoomDTO userToRoomDTO) {
+        if(userToRoomDTO.getRoomId() == null)
+            throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
         Room foundRoom = crudRoomRepository.findOne(userToRoomDTO.getRoomId());
-        if(!TextUtils.isEmpty(foundRoom.getPassword())&&!TextUtils.isEmpty(userToRoomDTO.getPassword()))
-            if(!foundRoom.getPassword().equals(userToRoomDTO.getPassword())) {
-                userToRoomDTO.setCustomError(ErrorUtil.getError(RoomError.WRONG_PASSWORD));
-                return userToRoomDTO;
+        if(!TextUtils.isEmpty(foundRoom.getPassword())) {
+            if (TextUtils.isEmpty(userToRoomDTO.getPassword()))
+                throw ExceptionFactory.create(RoomError.WRONG_PASSWORD);
+            else if (!foundRoom.getPassword().equals(userToRoomDTO.getPassword())) {
+                throw ExceptionFactory.create(RoomError.WRONG_PASSWORD);
             }
-        return userToRoomDTO;
+        }
     }
 
     @Transactional
     public MessageDTO addMessage(MessageDTO messageDTO) {
+        if(messageDTO.getRoomId() == null || messageDTO.getClientMessageId() == null || messageDTO.getText() == null ||
+                messageDTO.getType() == null || messageDTO.getSenderUser() == null){
+            throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
+        }
         Room room = crudRoomRepository.findOne(messageDTO.getRoomId());
+        User sender = crudUserRepository.findOne(messageDTO.getSenderUser().getId());
         Message message = conversionService.convert(messageDTO, Message.class);
+        message.setSenderUser(sender);
         message.setCreateDate(new Timestamp(new Date().getTime()));
         room.addMessage(message);
         crudRoomRepository.saveAndFlush(room);
         return conversionService.convert(message, MessageDTO.class);
     }
 
-    public SetWordDTO setPlayerWord(SetWordDTO setWordDTO){
-        if(setWordDTO.getSenderId() == null || setWordDTO.getWordReceiverId() == null || setWordDTO.getWordReceiverId() == null){
-            setWordDTO.setError(ErrorUtil.getError(RoomError.INCORRECT_INPUT));
-            return setWordDTO;
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public WordDTO setPlayerWord(WordDTO wordDTO){
+        if(wordDTO.getSenderId() == null || wordDTO.getWordReceiverId() == null || wordDTO.getWordReceiverId() == null){
+            wordDTO.setError(ErrorUtil.getError(RoomError.INCORRECT_INPUT));
+            return wordDTO;
         }
 
-        if(crudRoomRepository.setPlayerWord(setWordDTO.getWord(), setWordDTO.getWordReceiverId()) == 0){
-            setWordDTO.setError(ErrorUtil.getError(RoomError.DB_ERROR));
-            return setWordDTO;
+        Room room = crudRoomRepository.findOne(wordDTO.getRoomId());
+        for (Player player: room.getPlayers()) {
+            if(player.getId() == wordDTO.getWordReceiverId()) {
+                player.setWord(wordDTO.getWord());
+                break;
+            }
         }
-
-        return setWordDTO;
+        crudRoomRepository.saveAndFlush(room);
+        return wordDTO;
     }
 }

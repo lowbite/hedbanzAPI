@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -26,13 +27,17 @@ public class UserServiceImpl implements UserService {
     private static final String LOGIN_REGEX = "^[a-zA-Z0-9.]{3,10}$";
     private static final String PASSWORD_REGEX = "\\S{4,14}";
 
-    @Autowired
-    private CRUDUserRepository CRUDUserRepository;
+    private final CRUDUserRepository CRUDUserRepository;
+
+    private final ConversionService conversionService;
 
     @Autowired
-    @Qualifier("APIConversionService")
-    private ConversionService conversionService;
+    public UserServiceImpl(CRUDUserRepository CRUDUserRepository, @Qualifier("APIConversionService") ConversionService conversionService) {
+        this.CRUDUserRepository = CRUDUserRepository;
+        this.conversionService = conversionService;
+    }
 
+    @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
     public UserDTO authenticate(UserDTO userDTO){
         if(TextUtils.isEmpty(userDTO.getLogin()))
             throw ExceptionFactory.create(UserError.EMPTY_LOGIN);
@@ -79,6 +84,7 @@ public class UserServiceImpl implements UserService {
         return conversionService.convert(user, UserDTO.class);
     }
 
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public UserDTO register(UserDTO userDTO) {
         if(TextUtils.isEmpty(userDTO.getLogin()))
             throw ExceptionFactory.create(UserError.EMPTY_LOGIN);
@@ -116,11 +122,13 @@ public class UserServiceImpl implements UserService {
         return conversionService.convert(foundUser, UserDTO.class);
     }
 
+    @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
     public UserDTO getUser(long userId){
         User userDTO = CRUDUserRepository.findOne(userId);
         return conversionService.convert(userDTO, UserDTO.class);
     }
 
+    @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
     public List<FriendDTO> getUserFriends(long userId){
         List<FriendDTO> friends = CRUDUserRepository.getAllFriends(userId);
         List<FriendDTO> acceptedFriends = CRUDUserRepository.getAcceptedFriends(userId);
@@ -131,11 +139,13 @@ public class UserServiceImpl implements UserService {
         return friends;
     }
 
+    @Transactional
     public void setUserToken(long userId, String token) {
         if(CRUDUserRepository.updateUserToken(token, userId) == 0)
             throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
     }
 
+    @Transactional
     public void releaseUserToken(long userId) {
         if(CRUDUserRepository.deleteUserToken(userId) == 0)
             throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);

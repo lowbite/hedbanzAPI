@@ -20,7 +20,7 @@ public class Player {
     private String word;
 
     @Column(name = "attemps")
-    private int attemps;
+    private Integer attemps;
 
     public Player() {
     }
@@ -57,16 +57,40 @@ public class Player {
         this.word = word;
     }
 
-    public int getAttemps() {
+    public Integer getAttemps() {
         return attemps;
     }
 
-    public void setAttemps(int attemps) {
+    public void setAttemps(Integer attemps) {
         this.attemps = attemps;
     }
 
     public static PlayerBuilder newBuilder(){
         return new Player(). new PlayerBuilder();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Player player = (Player) o;
+
+        if (id != null ? !id.equals(player.id) : player.id != null) return false;
+        if (login != null ? !login.equals(player.login) : player.login != null) return false;
+        if (imagePath != null ? !imagePath.equals(player.imagePath) : player.imagePath != null) return false;
+        if (word != null ? !word.equals(player.word) : player.word != null) return false;
+        return attemps != null ? attemps.equals(player.attemps) : player.attemps == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (login != null ? login.hashCode() : 0);
+        result = 31 * result + (imagePath != null ? imagePath.hashCode() : 0);
+        result = 31 * result + (word != null ? word.hashCode() : 0);
+        result = 31 * result + (attemps != null ? attemps.hashCode() : 0);
+        return result;
     }
 
     public class PlayerBuilder {
