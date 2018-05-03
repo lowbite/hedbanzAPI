@@ -13,10 +13,9 @@ public class RoomDTO {
     private String name;
     private String password;
     private Integer maxPlayers;
-    private List<UserDTO> users;
+    private List<PlayerDTO> players;
     private Integer currentPlayersNumber;
     private Boolean isPrivate;
-    private CustomError customError;
 
     public RoomDTO(){
 
@@ -62,12 +61,12 @@ public class RoomDTO {
         this.maxPlayers = maxPlayers;
     }
 
-    public List<UserDTO> getUsers() {
-        return users;
+    public List<PlayerDTO> getPlayers() {
+        return players;
     }
 
-    public void setUsers(List<UserDTO> users) {
-        this.users = users;
+    public void setPlayers(List<PlayerDTO> players) {
+        this.players = players;
     }
 
     public Integer getCurrentPlayersNumber() {
@@ -84,13 +83,5 @@ public class RoomDTO {
 
     public void setIsPrivate(Boolean aPrivate) {
         isPrivate = aPrivate;
-    }
-
-    public CustomError getCustomError() {
-        return customError;
-    }
-
-    public void setCustomError(CustomError customError) {
-        this.customError = customError;
     }
 }

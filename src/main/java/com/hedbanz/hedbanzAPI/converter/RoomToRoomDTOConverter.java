@@ -16,7 +16,7 @@ public class RoomToRoomDTOConverter implements Converter<Room, RoomDTO> {
         RoomDTO roomDTO = new RoomDTO();
         roomDTO.setId(room.getId());
         roomDTO.setName(room.getName());
-        roomDTO.setCurrentPlayersNumber(room.getCurrentPlayersNumber());
+        roomDTO.setCurrentPlayersNumber(room.getUserCount());
         roomDTO.setMaxPlayers(room.getMaxPlayers());
         roomDTO.setIsPrivate(room.getIsPrivate());
         return roomDTO;

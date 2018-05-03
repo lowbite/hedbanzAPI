@@ -6,7 +6,7 @@ import org.springframework.core.convert.converter.Converter;
 
 public class UserToPlayerConverter implements Converter<User, Player> {
     public Player convert(User user) {
-        return Player.newBuilder()
+        return Player.PlayerBuilder()
                 .setId(user.getId())
                 .setLogin(user.getLogin())
                 .setImagePath(user.getImagePath())

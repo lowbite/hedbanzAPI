@@ -24,4 +24,8 @@ public class UserException extends RuntimeException {
     public String getMessage(){
         return error.getErrorMessage();
     }
+
+    public UserError getError(){
+        return error;
+    }
 }

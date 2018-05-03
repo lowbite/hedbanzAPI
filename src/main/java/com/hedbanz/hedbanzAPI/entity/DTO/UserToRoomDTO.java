@@ -13,7 +13,6 @@ public class UserToRoomDTO {
     @NotNull
     private Long roomId;
     private String password;
-    private CustomError customError;
 
     public UserToRoomDTO(){
 
@@ -54,14 +53,6 @@ public class UserToRoomDTO {
         this.password = password;
     }
 
-    public CustomError getCustomError() {
-        return customError;
-    }
-
-    public void setCustomError(CustomError customError) {
-        this.customError = customError;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -80,5 +71,30 @@ public class UserToRoomDTO {
         result = 31 * result + (roomId != null ? roomId.hashCode() : 0);
         result = 31 * result + (password != null ? password.hashCode() : 0);
         return result;
+    }
+
+    public static class UserToRoomDTOBuilder {
+        private Long userId;
+        private Long roomId;
+        private String password;
+
+        public UserToRoomDTOBuilder setUserId(Long userId) {
+            this.userId = userId;
+            return this;
+        }
+
+        public UserToRoomDTOBuilder setRoomId(Long roomId) {
+            this.roomId = roomId;
+            return this;
+        }
+
+        public UserToRoomDTOBuilder setPassword(String password) {
+            this.password = password;
+            return this;
+        }
+
+        public UserToRoomDTO createUserToRoomDTO() {
+            return new UserToRoomDTO(userId, roomId, password);
+        }
     }
 }

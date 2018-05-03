@@ -39,7 +39,7 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.OK)
     public CustomResponseBody<User> error(Exception e){
-        log.error("Unidentified error");
+        log.error("Unidentified error:" + e.getMessage() );
         return new CustomResponseBody<>(ResultStatus.ERROR_STATUS,
                 new CustomError(500, "Internal server error"), null);
     }

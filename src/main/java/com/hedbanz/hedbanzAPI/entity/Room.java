@@ -6,6 +6,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 @Entity
@@ -36,15 +37,15 @@ public class Room implements Serializable{
     @NotNull
     private Boolean isPrivate;
 
+    @Column(name = "is_game_started", columnDefinition = "default 'false'")
+    private Boolean isGameStarted;
+
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Player> players = new HashSet<>();
 
     @Column(name = "admin")
     @NotNull
     private Long roomAdmin;
-
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Message> messages = new HashSet<>();
 
     public Room(){
 
@@ -115,20 +116,28 @@ public class Room implements Serializable{
         isPrivate = aPrivate;
     }
 
-    public void setMessages(Set<Message> messages){
-        this.messages = messages;
-    }
-
-    public Set<Message> getMessages() {
-        return messages;
-    }
-
     public Long getRoomAdmin() {
         return roomAdmin;
     }
 
     public void setRoomAdmin(Long roomAdmin) {
         this.roomAdmin = roomAdmin;
+    }
+
+    public boolean updatePlayer(Player player){
+        if(this.players.contains(player)){
+            for (Player roomPlayer : players) {
+                if (roomPlayer.getId().equals(player.getId())) {
+                    roomPlayer = player;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean isContainPlayer(Player player){
+        return players.contains(player);
     }
 
     public boolean addPlayer(Player player){
@@ -151,8 +160,11 @@ public class Room implements Serializable{
         return this.players.size();
     }
 
-    public void addMessage(Message message){
-        messages.size();
-        messages.add(message);
+    public Boolean getIsGameStarted() {
+        return isGameStarted;
+    }
+
+    public void setIsGameStarted(Boolean gameStarted) {
+        isGameStarted = gameStarted;
     }
 }

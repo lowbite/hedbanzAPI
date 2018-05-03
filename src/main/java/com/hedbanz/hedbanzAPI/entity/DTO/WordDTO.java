@@ -1,21 +1,22 @@
 package com.hedbanz.hedbanzAPI.entity.DTO;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.hedbanz.hedbanzAPI.deserializer.WordDTODeserializer;
 import com.hedbanz.hedbanzAPI.entity.error.CustomError;
 
-import javax.validation.constraints.NotNull;
 
+@JsonDeserialize(using = WordDTODeserializer.class)
 public class WordDTO {
     private Long roomId;
     private Long senderId;
-    private Long wordReceiverId;
     private String word;
-    private CustomError error;
+    private Long wordReceiverId;
 
-    private WordDTO(Long roomId, Long senderId, Long wordReceiverId, String word) {
+    private WordDTO(Long roomId, Long senderId, String word, Long wordReceiverId) {
         this.roomId = roomId;
         this.senderId = senderId;
-        this.wordReceiverId = wordReceiverId;
         this.word = word;
+        this.wordReceiverId = wordReceiverId;
     }
 
     public Long getRoomId() {
@@ -50,14 +51,6 @@ public class WordDTO {
         this.word = word;
     }
 
-    public CustomError getError() {
-        return error;
-    }
-
-    public void setError(CustomError error) {
-        this.error = error;
-    }
-
     public static class WordDTOBuilder {
         private Long roomId;
         private Long senderId;
@@ -85,7 +78,7 @@ public class WordDTO {
         }
 
         public WordDTO createWordDTO() {
-            return new WordDTO(roomId, senderId, wordReceiverId, word);
+            return new WordDTO(roomId, senderId, word, wordReceiverId);
         }
     }
 }

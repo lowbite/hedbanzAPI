@@ -8,6 +8,7 @@ import com.hedbanz.hedbanzAPI.entity.User;
 import com.hedbanz.hedbanzAPI.entity.error.CustomError;
 import com.hedbanz.hedbanzAPI.exception.RoomException;
 import com.hedbanz.hedbanzAPI.exception.UserException;
+import com.hedbanz.hedbanzAPI.service.MessageService;
 import com.hedbanz.hedbanzAPI.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,10 +19,12 @@ import java.util.List;
 @RestController
 public class RoomController {
     private final RoomService roomService;
+    private final MessageService messageService;
 
     @Autowired
-    public RoomController(RoomService roomService) {
+    public RoomController(RoomService roomService, MessageService messageService) {
         this.roomService = roomService;
+        this.messageService = messageService;
     }
 
     @RequestMapping(method = RequestMethod.PUT, value = "/rooms", consumes = "application/json")
@@ -55,7 +58,7 @@ public class RoomController {
     @RequestMapping(method = RequestMethod.GET, value = "/rooms/messages")
     @ResponseStatus(HttpStatus.OK)
     public CustomResponseBody<List<MessageDTO>> findAllMessages(@RequestParam("roomId") long roomId, @RequestParam("page") int pageNumber){
-        List<MessageDTO> messages = roomService.getAllMessages(roomId, pageNumber);
+        List<MessageDTO> messages = messageService.getAllMessages(roomId, pageNumber);
         return new CustomResponseBody<>(ResultStatus.SUCCESS_STATUS, null, messages);
     }
 

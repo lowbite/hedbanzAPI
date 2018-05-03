@@ -4,6 +4,7 @@ import com.corundumstudio.socketio.Configuration;
 import com.corundumstudio.socketio.SocketConfig;
 import com.corundumstudio.socketio.SocketIOServer;
 import com.hedbanz.hedbanzAPI.converter.*;
+import com.hedbanz.hedbanzAPI.exception.SocketExceptionListener;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -33,7 +34,9 @@ public class HedbanzApiApplication {
 
 		SocketConfig socketConfig = new SocketConfig();
 		socketConfig.setReuseAddress(true);
-		configuration.setPingTimeout(1000);
+		configuration.setPingInterval(1000);
+		configuration.setPingTimeout(2000);
+		configuration.setExceptionListener(new SocketExceptionListener());
 		configuration.setSocketConfig(socketConfig);
 
 		configuration.setPort(socketIOPort);
@@ -80,6 +83,16 @@ public class HedbanzApiApplication {
 		return new PlayerToUserDTOConverter();
 	}
 
+	@Bean
+	public PlayerToPlayerDTOConverter playerToPlayerDTOConverter(){
+		return new PlayerToPlayerDTOConverter();
+	}
+
+	@Bean
+	public QuestionToQuestionDTOConversion questionToQuestionDTOConversion(){
+		return new QuestionToQuestionDTOConversion();
+	}
+
 	@Bean(name = "APIConversionService")
 	public ConversionService getConversionService(){
 		ConversionServiceFactoryBean bean = new ConversionServiceFactoryBean();
@@ -94,6 +107,8 @@ public class HedbanzApiApplication {
 		converters.add(messageDTOToMessageConverter());
 		converters.add(userToPlayerConverter());
 		converters.add(playerToUserDTOConverter());
+		converters.add(playerToPlayerDTOConverter());
+		converters.add(questionToQuestionDTOConversion());
 
 		bean.setConverters(converters);
 		bean.afterPropertiesSet();

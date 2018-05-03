@@ -13,9 +13,12 @@ public interface ErrorMessages {
      String INVALID_EMAIL = "Invalid email!";
      String ALREADY_FRIENDS = "You are already friends!";
      String CANT_SEND_FRIENDSHIP_REQUEST = "Can't send friendship request to this user at this time";
+     String NO_SUCH_ROOM = "There is no such room!";
      String USER_ALREADY_IN_ROOM = "This user is already in that room!";
      String NO_SUCH_USER_IN_ROOM = "There is no such user in room!";
      String CANT_START_GAME = "Impossible to start game!";
+     String GUESSING_IS_ALREADY_STARTED = "Players is already guessing words!";
+     String NO_SUCH_QUESTION = "There is no such question!";
 
 
      String INCORRECT_INPUT = "Incorrect input!";

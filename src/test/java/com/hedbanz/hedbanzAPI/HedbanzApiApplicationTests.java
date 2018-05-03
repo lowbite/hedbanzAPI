@@ -8,14 +8,18 @@ public class HedbanzApiApplicationTests {
 
 	@Test
 	public void contextLoads() {
-		outer:
-		for (int i = 0; i < 2; i++) {
-			for (int j = 0; j < 2; j++) {
-				System.out.println("Hello");
-				break outer;
-			}
-			System.out.println("outer");
+		String arr[] = {"A","B","C","D"};
+		for (int i=0;i<arr.length;i++) {
+			countAllCombinations(arr[i], i, arr);
 		}
-		System.out.println("Good-Bye");
 	}
+
+	private void countAllCombinations (String input,int idx, String[] options) {
+		for(int i = idx ; i < options.length; i++) {
+			String output = input + "_" + options[i];
+			System.out.println(output);
+			countAllCombinations(output,++idx, options);
+		}
+	}
+
 }

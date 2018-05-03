@@ -47,7 +47,6 @@ public class User implements Serializable {
     @JoinTable(name = "friendship",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "friend_id"))
-    @JsonIgnore
     private Set<User> friends;
 
 

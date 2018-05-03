@@ -19,8 +19,11 @@ public class Player {
     @Column(name = "word")
     private String word;
 
-    @Column(name = "attemps")
-    private Integer attemps;
+    @Column(name = "attempts")
+    private Integer attempts;
+
+    @Column(name = "is_afk")
+    private Boolean isAFK;
 
     public Player() {
     }
@@ -57,16 +60,20 @@ public class Player {
         this.word = word;
     }
 
-    public Integer getAttemps() {
-        return attemps;
+    public Integer getAttempts() {
+        return attempts;
     }
 
-    public void setAttemps(Integer attemps) {
-        this.attemps = attemps;
+    public void setAttempts(Integer attempts) {
+        this.attempts = attempts;
     }
 
-    public static PlayerBuilder newBuilder(){
-        return new Player(). new PlayerBuilder();
+    public Boolean getIsAFK() {
+        return isAFK;
+    }
+
+    public void setIsAFK(Boolean AFK) {
+        isAFK = AFK;
     }
 
     @Override
@@ -78,9 +85,7 @@ public class Player {
 
         if (id != null ? !id.equals(player.id) : player.id != null) return false;
         if (login != null ? !login.equals(player.login) : player.login != null) return false;
-        if (imagePath != null ? !imagePath.equals(player.imagePath) : player.imagePath != null) return false;
-        if (word != null ? !word.equals(player.word) : player.word != null) return false;
-        return attemps != null ? attemps.equals(player.attemps) : player.attemps == null;
+        return imagePath != null ? imagePath.equals(player.imagePath) : player.imagePath == null;
     }
 
     @Override
@@ -88,9 +93,11 @@ public class Player {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (login != null ? login.hashCode() : 0);
         result = 31 * result + (imagePath != null ? imagePath.hashCode() : 0);
-        result = 31 * result + (word != null ? word.hashCode() : 0);
-        result = 31 * result + (attemps != null ? attemps.hashCode() : 0);
         return result;
+    }
+
+    public static PlayerBuilder PlayerBuilder(){
+        return new Player(). new PlayerBuilder();
     }
 
     public class PlayerBuilder {
@@ -118,8 +125,13 @@ public class Player {
             return this;
         }
 
-        public PlayerBuilder setAttemps(int attemps){
-            Player.this.setAttemps(attemps);
+        public PlayerBuilder setAttempts(int attempts){
+            Player.this.setAttempts(attempts);
+            return this;
+        }
+
+        public PlayerBuilder setIsAFK(Boolean isAFK){
+            Player.this.setIsAFK(isAFK);
             return this;
         }
 

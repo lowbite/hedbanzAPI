@@ -3,7 +3,10 @@ package com.hedbanz.hedbanzAPI.constant;
 public enum MessageType {
     JOINED_USER(1),
     LEFT_USER(2),
-    SIMPLE_MESSAGE(7);
+    SIMPLE_MESSAGE(7),
+    USER_AFK(13),
+    USER_RETURNED(14);
+
 
     private int code;
 

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface CRUDUserRepository extends JpaRepository<User, Long> {
+public interface CrudUserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u FROM User u WHERE u.login LIKE :login")
     User findUserByLogin(@Param("login") String login);

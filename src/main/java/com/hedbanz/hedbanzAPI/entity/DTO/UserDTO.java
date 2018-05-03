@@ -14,13 +14,12 @@ public class UserDTO {
     private String imagePath;
     private String email;
     private String token;
-    private CustomError customError;
 
     public UserDTO(){
 
     }
 
-    UserDTO(Long id, String login, Integer money, Timestamp registrationDate, String imagePath, String email) {
+    private UserDTO(Long id, String login, Integer money, Timestamp registrationDate, String imagePath, String email) {
         this.id = id;
         this.login = login;
         this.money = money;
@@ -91,14 +90,6 @@ public class UserDTO {
 
     public void setToken(String token) {
         this.token = token;
-    }
-
-    public CustomError getCustomError() {
-        return customError;
-    }
-
-    public void setCustomError(CustomError customError) {
-        this.customError = customError;
     }
 
     public static class UserDTOBuilder {

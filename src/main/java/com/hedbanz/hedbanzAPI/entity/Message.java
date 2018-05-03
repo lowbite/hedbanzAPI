@@ -26,6 +26,12 @@ public class Message{
     @Column(name = "create_date")
     private Timestamp createDate;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    private Question question;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Room room;
+
     public Long getId() {
         return id;
     }
@@ -74,6 +80,22 @@ public class Message{
         this.senderUser = senderUser;
     }
 
+    public Question getQuestion() {
+        return question;
+    }
+
+    public void setQuestion(Question question) {
+        this.question = question;
+    }
+
+    public Room getRoomMessage() {
+        return room;
+    }
+
+    public void setRoom(Room room) {
+        this.room = room;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -91,8 +113,7 @@ public class Message{
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (senderUser != null ? senderUser.hashCode() : 0);
+        int result = senderUser != null ? senderUser.hashCode() : 0;
         result = 31 * result + (roomId != null ? roomId.hashCode() : 0);
         result = 31 * result + (text != null ? text.hashCode() : 0);
         result = 31 * result + (type != null ? type.hashCode() : 0);

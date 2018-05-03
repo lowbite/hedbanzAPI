@@ -4,8 +4,10 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.hedbanz.hedbanzAPI.entity.DTO.PlayerDTO;
 import com.hedbanz.hedbanzAPI.entity.DTO.RoomDTO;
 import com.hedbanz.hedbanzAPI.entity.DTO.UserDTO;
+import com.hedbanz.hedbanzAPI.entity.Player;
 import org.apache.http.util.TextUtils;
 
 import java.io.IOException;
@@ -25,17 +27,17 @@ public class RoomDeserializer extends JsonDeserializer<RoomDTO> {
             isPrivate = false;
         else
             isPrivate = true;
-        List<UserDTO> userDTOS = new ArrayList<>();
-        UserDTO userDTO = new UserDTO.UserDTOBuilder().createUserDTO();
-        userDTO.setId(userId);
-        userDTOS.add(userDTO);
+        List<PlayerDTO> playerDTOS = new ArrayList<>();
+        PlayerDTO playerDTO = new PlayerDTO();
+        playerDTO.setId(userId);
+        playerDTOS.add(playerDTO);
 
         RoomDTO roomDTO = new RoomDTO();
         roomDTO.setName(name);
         roomDTO.setPassword(password);
         roomDTO.setMaxPlayers(maxPlayers);
         roomDTO.setIsPrivate(isPrivate);
-        roomDTO.setUsers(userDTOS);
+        roomDTO.setPlayers(playerDTOS);
         return roomDTO;
     }
 }
