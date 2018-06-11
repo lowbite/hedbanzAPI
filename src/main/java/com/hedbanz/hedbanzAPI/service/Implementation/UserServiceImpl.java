@@ -1,22 +1,22 @@
 package com.hedbanz.hedbanzAPI.service.Implementation;
 
-import com.hedbanz.hedbanzAPI.entity.DTO.FriendDTO;
-import com.hedbanz.hedbanzAPI.entity.DTO.UserDTO;
-import com.hedbanz.hedbanzAPI.entity.DTO.UserUpdateDTO;
+import com.hedbanz.hedbanzAPI.security.SecurityUserDetails;
+import com.hedbanz.hedbanzAPI.transfer.FriendDto;
 import com.hedbanz.hedbanzAPI.entity.User;
-import com.hedbanz.hedbanzAPI.entity.error.UserError;
+import com.hedbanz.hedbanzAPI.error.UserError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
 import com.hedbanz.hedbanzAPI.repository.CrudUserRepository;
 import com.hedbanz.hedbanzAPI.service.UserService;
 import org.apache.http.util.TextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.convert.ConversionService;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,111 +27,124 @@ public class UserServiceImpl implements UserService {
     private static final String LOGIN_REGEX = "^[a-zA-Z0-9.]{3,10}$";
     private static final String PASSWORD_REGEX = "\\S{4,14}";
 
-    private final CrudUserRepository CrudUserRepository;
-
-    private final ConversionService conversionService;
+    private final CrudUserRepository crudUserRepository;
 
     @Autowired
-    public UserServiceImpl(CrudUserRepository CrudUserRepository, @Qualifier("APIConversionService") ConversionService conversionService) {
-        this.CrudUserRepository = CrudUserRepository;
-        this.conversionService = conversionService;
-    }
-
-    @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
-    public UserDTO authenticate(UserDTO userDTO){
-        if(TextUtils.isEmpty(userDTO.getLogin()))
-            throw ExceptionFactory.create(UserError.EMPTY_LOGIN);
-        if(TextUtils.isEmpty(userDTO.getPassword()))
-            throw ExceptionFactory.create(UserError.EMPTY_PASSWORD);
-
-        Pattern pattern = Pattern.compile(EMAIL_REGEX);
-        Matcher matcher = pattern.matcher(userDTO.getLogin());
-
-        User foundUser;
-        if(matcher.find()) {
-            foundUser = CrudUserRepository.findUserByEmail(userDTO.getLogin());
-        }else {
-            foundUser = CrudUserRepository.findUserByLogin(userDTO.getLogin());
-        }
-
-        if(foundUser == null)
-            throw ExceptionFactory.create(UserError.INCORRECT_PASSWORD);
-        if(!foundUser.getPassword().equals(userDTO.getPassword()))
-            throw ExceptionFactory.create(UserError.INCORRECT_PASSWORD);
-
-        return conversionService.convert(foundUser, UserDTO.class);
+    public UserServiceImpl(CrudUserRepository CrudUserRepository) {
+        this.crudUserRepository = CrudUserRepository;
     }
 
     @Transactional
-    public UserDTO updateUserData(UserUpdateDTO userData) {
-        if(userData.getId() == null)
-            throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
-        if(TextUtils.isEmpty(userData.getLogin()))
+    public User authenticate(User user){
+        if(TextUtils.isEmpty(user.getLogin()))
             throw ExceptionFactory.create(UserError.EMPTY_LOGIN);
-        if(TextUtils.isEmpty(userData.getOldPassword()))
-            throw ExceptionFactory.create(UserError.EMPTY_EMAIL);
+        if(TextUtils.isEmpty(user.getPassword()))
+            throw ExceptionFactory.create(UserError.EMPTY_PASSWORD);
 
-        long id = userData.getId();
-        String login = userData.getLogin();
-        String newPassword = TextUtils.isEmpty(userData.getNewPassword()) ? userData.getNewPassword() : userData.getOldPassword();
+        Pattern pattern = Pattern.compile(EMAIL_REGEX);
+        Matcher matcher = pattern.matcher(user.getLogin());
 
-        int rowsUpdated = CrudUserRepository.updateUserData(id, login, newPassword);
+        User foundUser;
+        if(matcher.find()) {
+            foundUser = crudUserRepository.findUserByEmail(user.getLogin());
+        }else {
+            foundUser = crudUserRepository.findUserByLogin(user.getLogin());
+        }
 
-        if(rowsUpdated != 1)
+        if(foundUser == null)
+            throw ExceptionFactory.create(UserError.INVALID_LOGIN);
+        if(!foundUser.getPassword().equals(user.getPassword()))
+            throw ExceptionFactory.create(UserError.INCORRECT_PASSWORD);
+
+        final String token = UUID.randomUUID().toString();
+        foundUser.setSecurityToken(token);
+        crudUserRepository. updateUserToken(token, foundUser.getId());
+        return foundUser;
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<UserDetails> findUserByToken(String token) {
+        //TODO add no token exception
+        User foundUser = crudUserRepository.findUserBySecurityToken(token);
+        return Optional.ofNullable(SecurityUserDetails.from(foundUser));
+    }
+
+    @Transactional
+    public void logout(User user) {
+        if(TextUtils.isEmpty(user.getLogin()))
+            throw ExceptionFactory.create(UserError.EMPTY_LOGIN);
+        if(TextUtils.isEmpty(user.getPassword()))
+            throw ExceptionFactory.create(UserError.EMPTY_PASSWORD);
+        Optional<User> userCandidate = Optional.ofNullable(crudUserRepository.findUserByLogin(user.getLogin()));
+        userCandidate.orElseThrow(()-> ExceptionFactory.create(UserError.INVALID_LOGIN));
+        User foundUser = userCandidate.get();
+        if(!foundUser.getPassword().equals(user.getPassword()))
+            throw ExceptionFactory.create(UserError.INCORRECT_PASSWORD);
+        foundUser.setSecurityToken(null);
+        crudUserRepository.deleteUserToken(foundUser.getId());
+    }
+
+    @Transactional
+    public User updateUserData(User user) {
+        if(user.getId() == null)
+            throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
+        if(TextUtils.isEmpty(user.getLogin()))
+            throw ExceptionFactory.create(UserError.EMPTY_LOGIN);
+        if(TextUtils.isEmpty(user.getPassword()))
+            throw ExceptionFactory.create(UserError.EMPTY_PASSWORD);
+
+        if(crudUserRepository.updateUserData(user.getId(), user.getLogin(), user.getPassword()) != 1)
             throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
 
-        User user = CrudUserRepository.findUserByLogin(login);
-        return conversionService.convert(user, UserDTO.class);
+        return crudUserRepository.findOne(user.getId());
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public UserDTO register(UserDTO userDTO) {
-        if(TextUtils.isEmpty(userDTO.getLogin()))
+    public User register(User user) {
+        if(TextUtils.isEmpty(user.getLogin()))
             throw ExceptionFactory.create(UserError.EMPTY_LOGIN);
-        if(TextUtils.isEmpty(userDTO.getPassword()))
+        if(TextUtils.isEmpty(user.getPassword()))
             throw ExceptionFactory.create(UserError.EMPTY_PASSWORD);
-        if(TextUtils.isEmpty(userDTO.getEmail()))
+        if(TextUtils.isEmpty(user.getEmail()))
             throw ExceptionFactory.create(UserError.EMPTY_EMAIL);
 
         Pattern pattern = Pattern.compile(LOGIN_REGEX);
-        Matcher matcher = pattern.matcher(userDTO.getLogin());
+        Matcher matcher = pattern.matcher(user.getLogin());
         if(!matcher.find())
             throw ExceptionFactory.create(UserError.INVALID_LOGIN);
         pattern = Pattern.compile(EMAIL_REGEX);
-        matcher = pattern.matcher(userDTO.getEmail());
+        matcher = pattern.matcher(user.getEmail());
         if(!matcher.find())
             throw ExceptionFactory.create(UserError.INVALID_EMAIL);
         pattern = Pattern.compile(PASSWORD_REGEX);
-        matcher = pattern.matcher(userDTO.getPassword());
+        matcher = pattern.matcher(user.getPassword());
         if(!matcher.find())
             throw ExceptionFactory.create(UserError.INCORRECT_PASSWORD);
 
-        User foundUser = CrudUserRepository.findUserByEmail(userDTO.getEmail());
+        User foundUser = crudUserRepository.findUserByEmail(user.getEmail());
 
         if (foundUser != null)
             throw ExceptionFactory.create(UserError.SUCH_EMAIL_ALREADY_USING);
 
-        foundUser = CrudUserRepository.findUserByLogin(userDTO.getLogin());
+        foundUser = crudUserRepository.findUserByLogin(user.getLogin());
 
         if(foundUser != null)
             throw ExceptionFactory.create(UserError.SUCH_LOGIN_ALREADY_EXIST);
 
-        userDTO.setImagePath("source/image.jpg");
-        userDTO.setMoney(0);
-        foundUser = CrudUserRepository.saveAndFlush(conversionService.convert(userDTO, User.class));
-        return conversionService.convert(foundUser, UserDTO.class);
+        user.setImagePath("source/image.jpg");
+        user.setMoney(0);
+        return crudUserRepository.saveAndFlush(user);
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
-    public UserDTO getUser(long userId){
-        User userDTO = CrudUserRepository.findOne(userId);
-        return conversionService.convert(userDTO, UserDTO.class);
+    public User getUser(long userId){
+        return crudUserRepository.findOne(userId);
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
-    public List<FriendDTO> getUserFriends(long userId){
-        List<FriendDTO> friends = CrudUserRepository.getAllFriends(userId);
-        List<FriendDTO> acceptedFriends = CrudUserRepository.getAcceptedFriends(userId);
+    public List<FriendDto> getUserFriends(long userId){
+        List<FriendDto> friends = crudUserRepository.getAllFriends(userId);
+        List<FriendDto> acceptedFriends = crudUserRepository.getAcceptedFriends(userId);
         //Removing accepted friendDTOS object from all friendDTOS, because they have wrong flag
         friends.removeAll(acceptedFriends);
         //Adding accepted friendDTOS
@@ -139,13 +152,15 @@ public class UserServiceImpl implements UserService {
         return friends;
     }
 
-    public void setUserToken(long userId, String token) {
-        if(CrudUserRepository.updateUserToken(token, userId) == 0)
+    @Transactional
+    public void setUserFcmToken(User userDto) {
+        if(crudUserRepository.updateUserFcmToken(userDto.getFcmToken(), userDto.getId()) == 0)
             throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
     }
 
-    public void releaseUserToken(long userId) {
-        if(CrudUserRepository.deleteUserToken(userId) == 0)
+    @Transactional
+    public void releaseUserFcmToken(long userId) {
+        if(crudUserRepository.deleteUserFcmToken(userId) == 0)
             throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
     }
 }

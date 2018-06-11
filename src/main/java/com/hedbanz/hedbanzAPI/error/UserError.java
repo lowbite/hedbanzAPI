@@ -1,4 +1,4 @@
-package com.hedbanz.hedbanzAPI.entity.error;
+package com.hedbanz.hedbanzAPI.error;
 
 public enum UserError {
     NO_SUCH_USER(1, ErrorMessages.NO_SUCH_USER_MESSAGE),

@@ -1,4 +1,4 @@
-package com.hedbanz.hedbanzAPI.entity.error;
+package com.hedbanz.hedbanzAPI.error;
 
 public interface ErrorMessages {
      String NO_SUCH_USER_MESSAGE = "Such user did not found!";
@@ -19,6 +19,8 @@ public interface ErrorMessages {
      String CANT_START_GAME = "Impossible to start game!";
      String GUESSING_IS_ALREADY_STARTED = "Players is already guessing words!";
      String NO_SUCH_QUESTION = "There is no such question!";
+     String NO_SUCH_PLAYER = "There is no such player!";
+     String SUCH_PLAYER_ALREADY_VOTED = "This player has already voted!";
 
 
      String INCORRECT_INPUT = "Incorrect input!";

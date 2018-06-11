@@ -1,16 +1,15 @@
 package com.hedbanz.hedbanzAPI.controller;
 
 import com.hedbanz.hedbanzAPI.constant.ResultStatus;
-import com.hedbanz.hedbanzAPI.entity.DTO.CustomResponseBody;
+import com.hedbanz.hedbanzAPI.transfer.CustomResponseBody;
 import com.hedbanz.hedbanzAPI.entity.Room;
 import com.hedbanz.hedbanzAPI.entity.User;
-import com.hedbanz.hedbanzAPI.entity.error.CustomError;
+import com.hedbanz.hedbanzAPI.error.CustomError;
 import com.hedbanz.hedbanzAPI.exception.RoomException;
 import com.hedbanz.hedbanzAPI.exception.UserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

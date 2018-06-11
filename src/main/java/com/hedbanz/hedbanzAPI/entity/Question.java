@@ -1,6 +1,9 @@
 package com.hedbanz.hedbanzAPI.entity;
 
+import org.hibernate.annotations.Cascade;
+
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "question")
@@ -10,17 +13,17 @@ public class Question {
     @Column(name = "question_id")
     private Long id;
 
-    @Column(name = "yes_number")
-    private Integer yesNumber;
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH})
+    private List<Player> yesVoters;
 
-    @Column(name = "no_number")
-    private Integer noNumber;
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH})
+    private List<Player> noVoters;
 
     public Question(){}
 
-    private Question(Integer yesNumber, Integer noNumber) {
-        this.yesNumber = yesNumber;
-        this.noNumber = noNumber;
+    private Question(List<Player> yesVoters, List<Player> noVoters) {
+        this.yesVoters = yesVoters;
+        this.noVoters = noVoters;
     }
 
     public Long getId() {
@@ -31,20 +34,61 @@ public class Question {
         this.id = id;
     }
 
-    public Integer getYesNumber() {
-        return yesNumber;
+    public List<Player> getYesVoters() {
+        return yesVoters;
     }
 
-    public void setYesNumber(Integer yesNumber) {
-        this.yesNumber = yesNumber;
+    public void setYesVoters(List<Player> yesVoters) {
+        this.yesVoters = yesVoters;
     }
 
-    public Integer getNoNumber() {
-        return noNumber;
+    public List<Player> getNoVoters() {
+        return noVoters;
     }
 
-    public void setNoNumber(Integer noNumber) {
-        this.noNumber = noNumber;
+    public void setNoVoters(List<Player> noVoters) {
+        this.noVoters = noVoters;
+    }
+
+    public boolean addYesVoter(Player player){
+        if(!yesVoters.contains(player)){
+            yesVoters.add(player);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean removeYesVoter(Player player){
+        if(yesVoters.contains(player)){
+            yesVoters.remove(player);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean addNoVoter(Player player){
+        if(!noVoters.contains(player)){
+            noVoters.add(player);
+            return true;
+        }
+        return false;
+    }
+
+
+    public boolean removeNoVoter(Player player){
+        if(noVoters.contains(player)){
+            noVoters.remove(player);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean noVotersContainPlayer(Player player){
+        return noVoters.contains(player);
+    }
+
+    public boolean yesVotersContainPlayer(Player player){
+        return yesVoters.contains(player);
     }
 
     @Override
@@ -54,35 +98,30 @@ public class Question {
 
         Question question = (Question) o;
 
-        if (id != null ? !id.equals(question.id) : question.id != null) return false;
-        if (yesNumber != null ? !yesNumber.equals(question.yesNumber) : question.yesNumber != null) return false;
-        return noNumber != null ? noNumber.equals(question.noNumber) : question.noNumber == null;
+        return id != null ? id.equals(question.id) : question.id == null;
     }
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (yesNumber != null ? yesNumber.hashCode() : 0);
-        result = 31 * result + (noNumber != null ? noNumber.hashCode() : 0);
-        return result;
+        return id != null ? id.hashCode() : 0;
     }
 
     public static class QuestionBuilder {
-        private Integer yesNumber;
-        private Integer noNumber;
+        private List<Player> yesVoters;
+        private List<Player> noVoters;
 
-        public QuestionBuilder setYesNumber(Integer yesNumber) {
-            this.yesNumber = yesNumber;
+        public QuestionBuilder setYesVoters(List<Player> yesVoters) {
+            this.yesVoters = yesVoters;
             return this;
         }
 
-        public QuestionBuilder setNoNumber(Integer noNumber) {
-            this.noNumber = noNumber;
+        public QuestionBuilder setNoVoters(List<Player> noVoters) {
+            this.noVoters = noVoters;
             return this;
         }
 
         public Question createQuestion() {
-            return new Question(yesNumber, noNumber);
+            return new Question(yesVoters, noVoters);
         }
     }
 }

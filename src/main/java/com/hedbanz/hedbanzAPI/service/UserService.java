@@ -1,24 +1,31 @@
 package com.hedbanz.hedbanzAPI.service;
 
-import com.hedbanz.hedbanzAPI.entity.DTO.FriendDTO;
-import com.hedbanz.hedbanzAPI.entity.DTO.UserDTO;
-import com.hedbanz.hedbanzAPI.entity.DTO.UserUpdateDTO;
+import com.hedbanz.hedbanzAPI.entity.User;
+import com.hedbanz.hedbanzAPI.transfer.FriendDto;
+import com.hedbanz.hedbanzAPI.transfer.UserDto;
+import com.hedbanz.hedbanzAPI.transfer.UserUpdateDto;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserService {
 
-    UserDTO authenticate(UserDTO userDDTO);
+    User authenticate(User user);
 
-    UserDTO register(UserDTO userDDTO);
+    Optional<UserDetails> findUserByToken(String token);
 
-    UserDTO updateUserData(UserUpdateDTO userData);
+    void logout(User user);
 
-    UserDTO getUser(long userId);
+    User register(User user);
 
-    List<FriendDTO> getUserFriends(long userId);
+    User updateUserData(User user);
 
-    void setUserToken(long userId, String token);
+    User getUser(long userId);
 
-    void releaseUserToken(long userId);
+    List<FriendDto> getUserFriends(long userId);
+
+    void setUserFcmToken(User user);
+
+    void releaseUserFcmToken(long userId);
 }

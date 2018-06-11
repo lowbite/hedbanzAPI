@@ -7,16 +7,20 @@ import com.corundumstudio.socketio.listener.ConnectListener;
 import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;
 import com.hedbanz.hedbanzAPI.constant.MessageType;
-import com.hedbanz.hedbanzAPI.entity.DTO.*;
-import com.hedbanz.hedbanzAPI.entity.error.RoomError;
+import com.hedbanz.hedbanzAPI.constant.PlayerStatus;
+import com.hedbanz.hedbanzAPI.entity.User;
+import com.hedbanz.hedbanzAPI.error.RoomError;
 import com.hedbanz.hedbanzAPI.service.MessageService;
 import com.hedbanz.hedbanzAPI.service.RoomService;
 import com.hedbanz.hedbanzAPI.service.UserService;
+import com.hedbanz.hedbanzAPI.transfer.*;
 import com.hedbanz.hedbanzAPI.utils.ErrorUtil;
 import org.apache.http.util.TextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -25,7 +29,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Component
 public class RoomEventListener {
     private final Logger log = LoggerFactory.getLogger("RoomEventListener");
-    public static CopyOnWriteArrayList<WordDTO> sendWordEventClientsList = new CopyOnWriteArrayList<>();
+    public static CopyOnWriteArrayList<WordDto> sendWordEventClientsList = new CopyOnWriteArrayList<>();
 
     private static final String JOIN_ROOM_EVENT = "join-room";
     private static final String LEAVE_ROOM_EVENT = "leave-room";
@@ -63,32 +67,35 @@ public class RoomEventListener {
     private final RoomService roomService;
     private final UserService userService;
     private final MessageService messageService;
+    private final ConversionService conversionService;
 
     private final SocketIONamespace socketIONamespace;
 
     @Autowired
-    public RoomEventListener(SocketIOServer server, RoomService roomService, UserService userService, MessageService messageService){
+    public RoomEventListener(SocketIOServer server, RoomService roomService, UserService userService,
+                             MessageService messageService, @Qualifier("APIConversionService") ConversionService conversionService){
         this.socketIONamespace = server.addNamespace("/game");
         this.socketIONamespace.addConnectListener(onConnected());
         this.socketIONamespace.addDisconnectListener(onDisconnected());
-        this.socketIONamespace.addEventListener(JOIN_ROOM_EVENT, UserToRoomDTO.class, joinUserToRoom());
-        this.socketIONamespace.addEventListener(LEAVE_ROOM_EVENT, UserToRoomDTO.class, leaveUserFromRoom());
-        this.socketIONamespace.addEventListener(CLIENT_TYPING_EVENT, UserToRoomDTO.class, userStartTyping());
-        this.socketIONamespace.addEventListener(CLIENT_STOP_TYPING_EVENT, UserToRoomDTO.class, userStopTyping());
-        this.socketIONamespace.addEventListener(CLIENT_MESSAGE_EVENT, MessageDTO.class, sendUserMessage());
-        this.socketIONamespace.addEventListener(CLIENT_SET_PLAYER_WORD_EVENT, WordDTO.class, setPlayerWord());
-        this.socketIONamespace.addEventListener(CLIENT_CONNECT_INFO_EVENT, ClientInfoDTO.class, setClientInfo());
-        this.socketIONamespace.addEventListener(CLIENT_RESTORE_ROOM_EVENT, ClientInfoDTO.class, restoreRoom());
-        this.socketIONamespace.addEventListener(CLIENT_USER_GUESSING_EVENT, MessageDTO.class, userGuessing());
-        this.socketIONamespace.addEventListener(CLIENT_USER_ANSWERING_EVENT, QuestionDTO.class, userAnswering());
+        this.socketIONamespace.addEventListener(JOIN_ROOM_EVENT, UserToRoomDto.class, joinUserToRoom());
+        this.socketIONamespace.addEventListener(LEAVE_ROOM_EVENT, UserToRoomDto.class, leaveUserFromRoom());
+        this.socketIONamespace.addEventListener(CLIENT_TYPING_EVENT, UserToRoomDto.class, userStartTyping());
+        this.socketIONamespace.addEventListener(CLIENT_STOP_TYPING_EVENT, UserToRoomDto.class, userStopTyping());
+        this.socketIONamespace.addEventListener(CLIENT_MESSAGE_EVENT, MessageDto.class, sendUserMessage());
+        this.socketIONamespace.addEventListener(CLIENT_SET_PLAYER_WORD_EVENT, WordDto.class, setPlayerWord());
+        this.socketIONamespace.addEventListener(CLIENT_CONNECT_INFO_EVENT, ClientInfoDto.class, setClientInfo());
+        this.socketIONamespace.addEventListener(CLIENT_RESTORE_ROOM_EVENT, ClientInfoDto.class, restoreRoom());
+        this.socketIONamespace.addEventListener(CLIENT_USER_GUESSING_EVENT, MessageDto.class, userGuessing());
+        this.socketIONamespace.addEventListener(CLIENT_USER_ANSWERING_EVENT, QuestionDto.class, userAnswering());
         this.roomService = roomService;
         this.userService = userService;
         this.messageService = messageService;
+        this.conversionService = conversionService;
     }
 
-    private void checkUser(ClientInfoDTO clientInfo, SocketIOClient client){
-        WordDTO word;
-        Iterator<WordDTO> iterator = sendWordEventClientsList.iterator();
+    private void checkUser(ClientInfoDto clientInfo, SocketIOClient client){
+        WordDto word;
+        Iterator<WordDto> iterator = sendWordEventClientsList.iterator();
         while (iterator.hasNext()){
             word = iterator.next();
             if(word.getSenderId().equals(clientInfo.getUserId())){
@@ -100,21 +107,21 @@ public class RoomEventListener {
         }
     }
 
-    private DataListener<ClientInfoDTO> restoreRoom() {
+    private DataListener<ClientInfoDto> restoreRoom() {
         return (client, data, ackSender) -> {
             checkUser(data, client);
             client.set(USER_ID_FIELD, data.getUserId());
             if(data.getRoomId() != null) {
-                UserToRoomDTO userToRoom = new UserToRoomDTO.UserToRoomDTOBuilder()
+                UserToRoomDto userToRoom = new UserToRoomDto.UserToRoomDTOBuilder()
                         .setUserId(data.getUserId())
                         .setRoomId(data.getRoomId())
                         .createUserToRoomDTO();
-                roomService.checkPlayerInRoom(userToRoom);
-                RoomDTO room = roomService.getRoom(data.getRoomId());
+                roomService.checkPlayerInRoom(userToRoom.getUserId(), userToRoom.getRoomId());
+                RoomDto room = roomService.getRoom(data.getRoomId());
                 client.sendEvent(SERVER_RESTORE_ROOM_EVENT, room);
                 client.set(ROOM_ID_FIELD, data.getRoomId());
                 client.joinRoom(String.valueOf(data.getRoomId()));
-                PlayerDTO player = roomService.setPlayerAFK(userToRoom, false);
+                PlayerDto player = roomService.setPlayerStatus(userToRoom.getUserId(), userToRoom.getRoomId(), PlayerStatus.ACTIVE);
                 socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(SERVER_USER_RETURNED_EVENT, player);
 
                 log.info("Client restore room set userId: " + data.getUserId() + ", roomId: " + data.getRoomId());
@@ -122,7 +129,7 @@ public class RoomEventListener {
         };
     }
 
-    private DataListener<ClientInfoDTO> setClientInfo() {
+    private DataListener<ClientInfoDto> setClientInfo() {
         return (client, data, ackSender) -> {
             log.info("setClientInfo: " + client.getHandshakeData().getAddress());
             checkUser(data, client);
@@ -131,23 +138,23 @@ public class RoomEventListener {
             if(data.getRoomId() != null) {
                 client.set(ROOM_ID_FIELD, data.getRoomId());
                 client.joinRoom(String.valueOf(data.getRoomId()));
-                UserToRoomDTO userToRoom = new UserToRoomDTO.UserToRoomDTOBuilder()
+                UserToRoomDto userToRoom = new UserToRoomDto.UserToRoomDTOBuilder()
                         .setUserId(data.getUserId())
                         .setRoomId(data.getRoomId())
                         .createUserToRoomDTO();
-                PlayerDTO player = roomService.setPlayerAFK(userToRoom, false);
+                PlayerDto player = roomService.setPlayerStatus(userToRoom.getUserId(), userToRoom.getRoomId(), PlayerStatus.ACTIVE);
                 socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(SERVER_USER_RETURNED_EVENT, player);
                 log.info("setClientInfo: " + client.getHandshakeData().getAddress() + " sent afk event");
-                UserDTO user = new UserDTO.UserDTOBuilder()
+                /*UserDto user = new UserDto.UserDTOBuilder()
                         .setId(data.getUserId())
-                        .createUserDTO();
+                        .build();
 
-                MessageDTO messageDTO = new MessageDTO.MessageDTOBuilder()
+                MessageDto messageDto = new MessageDto.MessageDTOBuilder()
                         .setSenderUser(user)
                         .setRoomId(client.get(ROOM_ID_FIELD))
                         .setType(MessageType.USER_RETURNED.getCode())
                         .createMessageDTO();
-                messageService.addEventMessage(messageDTO);
+                messageService.addEventMessage(messageDto);*/
 
                 log.info("Client reconnect set userId: " + data.getUserId() + ", roomId: " + data.getRoomId());
             }
@@ -158,9 +165,9 @@ public class RoomEventListener {
      * This method removing user from room
      * @return
      */
-    private DataListener<UserToRoomDTO> leaveUserFromRoom() {
+    private DataListener<UserToRoomDto> leaveUserFromRoom() {
         return (client, data, ackSender) -> {
-            roomService.leaveRoom(data);
+            roomService.leaveFromRoom(data.getUserId(), data.getRoomId());
             client.leaveRoom(String.valueOf(data.getRoomId()));
             log.info("User: " + data.getUserId() +  " - left from room: " + data.getRoomId() );
             socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId()))
@@ -172,30 +179,30 @@ public class RoomEventListener {
      * This method joining user to room and checking is room full if true then start game
      * @return
      */
-    private DataListener<UserToRoomDTO> joinUserToRoom() {
+    private DataListener<UserToRoomDto> joinUserToRoom() {
         return (client, data, ackSender) -> {
             client.set(USER_ID_FIELD, data.getUserId());
             client.set(ROOM_ID_FIELD, data.getRoomId());
 
-            RoomDTO roomDTO = roomService.addUserToRoom(data);
-            UserDTO userDTO = userService.getUser(data.getUserId());
-            client.joinRoom(String.valueOf(roomDTO.getId()));
-            client.sendEvent(ROOM_INFO_EVENT, roomDTO);
-            socketIONamespace.getRoomOperations(String.valueOf(roomDTO.getId())).sendEvent(JOINED_USER_EVENT, userDTO);
+            RoomDto roomDto = roomService.addUserToRoom(data.getUserId(), data.getRoomId(), data.getPassword());
+            User user = userService.getUser(data.getUserId());
+            client.joinRoom(String.valueOf(roomDto.getId()));
+            client.sendEvent(ROOM_INFO_EVENT, roomDto);
+            socketIONamespace.getRoomOperations(String.valueOf(roomDto.getId())).sendEvent(JOINED_USER_EVENT, conversionService.convert(user, UserDto.class));
 
-            int clientsNumber = socketIONamespace.getRoomOperations(String.valueOf(roomDTO.getId())).getClients().size();
+            int clientsNumber = socketIONamespace.getRoomOperations(String.valueOf(roomDto.getId())).getClients().size();
             log.info("User " + data.getUserId() + " - joined to room: " + data.getRoomId() );
-            log.info("Players in the room " + roomDTO.getId() + " - " + roomDTO.getCurrentPlayersNumber());
-            log.info("Clients in the room " + roomDTO.getId() + " - " + clientsNumber);
+            log.info("Players in the room " + roomDto.getId() + " - " + roomDto.getCurrentPlayersNumber());
+            log.info("Clients in the room " + roomDto.getId() + " - " + clientsNumber);
 
             //Start game
             new Thread(()-> {
                 try {
                     Thread.sleep(1000);
-                    if (roomDTO.getMaxPlayers().equals(roomDTO.getPlayers().size()) &&
-                           roomDTO.getCurrentPlayersNumber().equals(clientsNumber)) {
-                        if (roomService.startGame(roomDTO.getId()))
-                            sendPlayersSetWordsRequest(roomDTO.getId());
+                    if (roomDto.getMaxPlayers().equals(roomDto.getPlayers().size()) &&
+                           roomDto.getCurrentPlayersNumber().equals(clientsNumber)) {
+                        if (roomService.startGame(roomDto.getId()))
+                            sendPlayersSetWordsRequest(roomDto.getId());
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -209,7 +216,7 @@ public class RoomEventListener {
      * Method send to all users in the room that some user started type
      * @return
      */
-    private DataListener<UserToRoomDTO> userStartTyping(){
+    private DataListener<UserToRoomDto> userStartTyping(){
         return (client, data, ackSender) -> {
             userTyping(data, SERVER_TYPING_EVENT);
         };
@@ -219,7 +226,7 @@ public class RoomEventListener {
      * Method send to all users in the room that some user stopped type
      * @return
      */
-    private DataListener<UserToRoomDTO> userStopTyping(){
+    private DataListener<UserToRoomDto> userStopTyping(){
         return (client, data, ackSender) -> {
             userTyping(data, SERVER_STOP_TYPING_EVENT);
             log.info("User stopped typing");
@@ -230,29 +237,29 @@ public class RoomEventListener {
      * Method send out to all users in room message that user sent
      * @return
      */
-    private DataListener<MessageDTO> sendUserMessage(){
+    private DataListener<MessageDto> sendUserMessage(){
         return (client, data, ackSender) -> {
             data.setType(MessageType.SIMPLE_MESSAGE.getCode());
-            MessageDTO message = messageService.addMessage(data);
+            MessageDto message = messageService.addMessage(data);
             socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(SERVER_MESSAGE_EVENT, message);
             log.info("User send message: ", data);
         };
     }
 
-    private DataListener<WordDTO> setPlayerWord(){
+    private DataListener<WordDto> setPlayerWord(){
         return (client, data, ackSender) -> {
             roomService.setPlayerWord(data);
             socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(SERVER_THOUGHT_PLAYER_WORD_EVENT, data);
             log.info("User set word: " + data.getWord());
 
-            List<PlayerDTO> players = roomService.getPlayers(data.getRoomId());
+            List<PlayerDto> players = roomService.getPlayers(data.getRoomId());
             boolean gameIsReady = true;
-            for(PlayerDTO player : players){
+            for(PlayerDto player : players){
                 if(TextUtils.isEmpty(player.getWord()))
                     gameIsReady = false;
             }
             if(gameIsReady){
-                PlayerDTO player = roomService.startGuessing(data.getRoomId());
+                PlayerDto player = roomService.startGuessing(data.getRoomId());
                 socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(SERVER_USER_GUESSING_EVENT, player);
                 log.info("Players start guessing: " + player.getId());
             }
@@ -264,10 +271,10 @@ public class RoomEventListener {
      * @param data
      * @param event
      */
-    private void userTyping(UserToRoomDTO data, String event){
-        UserDTO userDTO = userService.getUser(data.getUserId());
+    private void userTyping(UserToRoomDto data, String event){
+        User user = userService.getUser(data.getUserId());
         HashMap<String, Long> userId = new HashMap<>();
-        userId.put("userId", userDTO.getId());
+        userId.put("userId", user.getId());
         socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(event,userId);
     }
 
@@ -299,29 +306,33 @@ public class RoomEventListener {
             SetWordAckCallback ackCallback = new SetWordAckCallback(Object.class, ACK_TIMEOUT);
             ackCallback.setClient(client);
             ackCallback.setWordReceiverId(wordReceiverId);
-            client.sendEvent(SERVER_SET_PLAYER_WORD_EVENT, ackCallback, new WordDTO.WordDTOBuilder().setWordReceiverId(wordReceiverId)
+            client.sendEvent(SERVER_SET_PLAYER_WORD_EVENT, ackCallback, new WordDto.WordDTOBuilder().setWordReceiverId(wordReceiverId)
                     .createWordDTO());
         }else{
-            sendWordEventClientsList.add(new WordDTO.WordDTOBuilder()
+            sendWordEventClientsList.add(new WordDto.WordDTOBuilder()
                                                     .setSenderId(client.get(USER_ID_FIELD))
                                                     .setWordReceiverId(wordReceiverId)
                                                     .createWordDTO());
         }
     }
 
-    private DataListener<MessageDTO> userGuessing(){
+    private DataListener<MessageDto> userGuessing(){
         return (client, data, ackSender) -> {
-            MessageDTO  message = messageService.addQuestionMessage(data);
-            socketIONamespace.getRoomOperations(client.get(ROOM_ID_FIELD)).sendEvent(SERVER_USER_ASKING_EVENT, message);
-            PlayerDTO player = roomService.nextGuessing(data.getRoomId());
-            socketIONamespace.getRoomOperations(client.get(ROOM_ID_FIELD)).sendEvent(SERVER_USER_GUESSING_EVENT, player);
+            MessageDto message = messageService.addQuestionMessage(data);
+            socketIONamespace.getRoomOperations(String.valueOf((Long) client.get(ROOM_ID_FIELD))).sendEvent(SERVER_USER_ASKING_EVENT, message);
         };
     }
 
-    private DataListener<QuestionDTO> userAnswering(){
+    private DataListener<QuestionDto> userAnswering(){
         return (client, data, ackSender) -> {
-            QuestionDTO question = messageService.addVote(data);
-            socketIONamespace.getRoomOperations(client.get(ROOM_ID_FIELD)).sendEvent(SERVER_USER_ANSWERING_EVENT, question);
+            QuestionDto question = messageService.addVote(data);
+            socketIONamespace.getRoomOperations(String.valueOf((Long) client.get(ROOM_ID_FIELD))).sendEvent(SERVER_USER_ANSWERING_EVENT, question);
+            RoomDto room = roomService.getRoom((Long) client.get(ROOM_ID_FIELD));
+            double votersPercentage = (question.getNoVoters().size() + question.getYesVoters().size()) / room.getCurrentPlayersNumber();
+            if(votersPercentage >= 0.8) {
+                PlayerDto player = roomService.nextGuessing(data.getRoomId());
+                socketIONamespace.getRoomOperations(String.valueOf((Long) client.get(ROOM_ID_FIELD))).sendEvent(SERVER_USER_GUESSING_EVENT, player);
+            }
         };
     }
 
@@ -329,25 +340,26 @@ public class RoomEventListener {
         return client -> {
             log.info("Client disconnected! " + client.getHandshakeData().getAddress());
 
-            UserToRoomDTO userToRoom = new UserToRoomDTO.UserToRoomDTOBuilder()
+            UserToRoomDto userToRoom = new UserToRoomDto.UserToRoomDTOBuilder()
                     .setUserId(client.get(USER_ID_FIELD))
                     .setRoomId(client.get(ROOM_ID_FIELD))
                     .createUserToRoomDTO();
-            PlayerDTO player = roomService.setPlayerAFK(userToRoom, true);
+            PlayerDto player = roomService.setPlayerStatus(userToRoom.getUserId(), userToRoom.getRoomId(), PlayerStatus.AFK);
             if(player != null) {
-                UserDTO user = new UserDTO.UserDTOBuilder()
+                /*UserDto user = new UserDto.UserDTOBuilder()
                         .setId(client.get(USER_ID_FIELD))
-                        .createUserDTO();
+                        .build();*/
                 socketIONamespace.getRoomOperations(String.valueOf(userToRoom.getRoomId()))
                         .sendEvent(SERVER_USER_AFK_EVENT, player);
                 log.info("Client disconnect: " + client.getHandshakeData().getAddress() + " sent afk event");
 
-                MessageDTO messageDTO = new MessageDTO.MessageDTOBuilder()
+                // Save user afk message
+                /*MessageDto messageDto = new MessageDto.MessageDTOBuilder()
                         .setSenderUser(user)
                         .setRoomId(client.get(ROOM_ID_FIELD))
                         .setType(MessageType.USER_AFK.getCode())
                         .createMessageDTO();
-                messageService.addEventMessage(messageDTO);
+                messageService.addEventMessage(messageDto);*/
             }
         };
     }

@@ -1,7 +1,5 @@
 package com.hedbanz.hedbanzAPI.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
@@ -40,8 +38,11 @@ public class User implements Serializable {
     @NotNull
     private String email;
 
-    @Column(name = "token")
-    private String token;
+    @Column(name = "securityToken")
+    private String securityToken;
+
+    @Column(name = "fcm_token")
+    private String fcmToken;
 
     @ManyToMany(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     @JoinTable(name = "friendship",
@@ -63,6 +64,18 @@ public class User implements Serializable {
         this.email = email;
     }
 
+    public User(Long id, String login, String password, Integer money, Timestamp registrationDate, String imagePath, String email, String securityToken, String fcmToken, Set<User> friends) {
+        this.id = id;
+        this.login = login;
+        this.password = password;
+        this.money = money;
+        this.registrationDate = registrationDate;
+        this.imagePath = imagePath;
+        this.email = email;
+        this.securityToken = securityToken;
+        this.fcmToken = fcmToken;
+        this.friends = friends;
+    }
 
     public Long getId() {
         return id;
@@ -120,16 +133,24 @@ public class User implements Serializable {
         this.email = email;
     }
 
-    public String getToken() {
-        return token;
+    public String getSecurityToken() {
+        return securityToken;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public void setSecurityToken(String securityToken) {
+        this.securityToken = securityToken;
     }
 
     public void setFriends(Set<User> friends) {
         this.friends = friends;
+    }
+
+    public String getFcmToken() {
+        return fcmToken;
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
     }
 
     public boolean addFriend(User user){
@@ -163,7 +184,7 @@ public class User implements Serializable {
             return false;
         if (imagePath != null ? !imagePath.equals(user.imagePath) : user.imagePath != null) return false;
         if (email != null ? !email.equals(user.email) : user.email != null) return false;
-        return token != null ? token.equals(user.token) : user.token == null;
+        return securityToken != null ? securityToken.equals(user.securityToken) : user.securityToken == null;
     }
 
     @Override
@@ -175,7 +196,66 @@ public class User implements Serializable {
         result = 31 * result + (registrationDate != null ? registrationDate.hashCode() : 0);
         result = 31 * result + (imagePath != null ? imagePath.hashCode() : 0);
         result = 31 * result + (email != null ? email.hashCode() : 0);
-        result = 31 * result + (token != null ? token.hashCode() : 0);
+        result = 31 * result + (securityToken != null ? securityToken.hashCode() : 0);
         return result;
+    }
+
+    public static UserBuilder UserBuilder(){
+        return new User(). new UserBuilder();
+    }
+
+    public class UserBuilder {
+        private UserBuilder(){
+
+        }
+
+        public UserBuilder setId(long id){
+            User.this.setId(id);
+            return this;
+        }
+
+        public UserBuilder setLogin(String login){
+            User.this.setLogin(login);
+            return this;
+        }
+
+        public UserBuilder setPassword(String password) {
+            User.this.setPassword(password);
+            return this;
+        }
+
+        public UserBuilder setMoney(int money){
+            User.this.setMoney(money);
+            return this;
+        }
+
+        public UserBuilder setRegistrationDate(Timestamp registrationDate) {
+            User.this.setRegistrationDate(registrationDate);
+            return this;
+        }
+
+        public UserBuilder setImagePath(String imagePath){
+            User.this.setImagePath(imagePath);
+            return this;
+        }
+
+        public UserBuilder setEmail(String email){
+            User.this.setEmail(email);
+            return this;
+        }
+
+        public UserBuilder setSecurityToken(String securityToken){
+            User.this.setSecurityToken(securityToken);
+            return this;
+        }
+
+        public UserBuilder setFcmToken(String fcmToken){
+            User.this.setFcmToken(fcmToken);
+            return this;
+        }
+
+        public User build() {
+            return User.this;
+        }
     }
 }

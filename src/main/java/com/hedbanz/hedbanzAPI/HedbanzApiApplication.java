@@ -44,33 +44,33 @@ public class HedbanzApiApplication {
 	}
 
 	@Bean
-	public RoomToRoomDTOConverter roomDTOToRoomConverter(){
-		return new RoomToRoomDTOConverter();
+	public RoomToRoomDtoConverter roomDTOToRoomConverter(){
+		return new RoomToRoomDtoConverter();
 	}
 
 	@Bean
-	public RoomDTOToRoomConverter roomToRoomDTOConverter(){
-		return new RoomDTOToRoomConverter();
+	public RoomDtoToRoomConverter roomToRoomDTOConverter(){
+		return new RoomDtoToRoomConverter();
 	}
 
 	@Bean
-    public UserDTOToUserConverter userToUserDTOConverter(){
-	    return new UserDTOToUserConverter();
+    public UserDtoToUserConverter userToUserDTOConverter(){
+	    return new UserDtoToUserConverter();
     }
 
     @Bean
-    public UserToUserDTOConverter userDTOToUserConverter(){
-	    return new UserToUserDTOConverter();
+    public UserToUserDtoConverter userDTOToUserConverter(){
+	    return new UserToUserDtoConverter();
     }
 
     @Bean
-	public MessageDTOToMessageConverter messageDTOToMessageConverter(){
-		return new MessageDTOToMessageConverter();
+	public MessageDtoToMessageConverter messageDTOToMessageConverter(){
+		return new MessageDtoToMessageConverter();
 	}
 
 	@Bean
-	public MessageToMessageDTOConverter messageToMessageDTOConverter(){
-		return new MessageToMessageDTOConverter();
+	public MessageToMessageDtoConverter messageToMessageDTOConverter(){
+		return new MessageToMessageDtoConverter();
 	}
 
 	@Bean
@@ -79,18 +79,28 @@ public class HedbanzApiApplication {
 	}
 
 	@Bean
-	public PlayerToUserDTOConverter playerToUserDTOConverter(){
-		return new PlayerToUserDTOConverter();
+	public PlayerToUserDtoConverter playerToUserDTOConverter(){
+		return new PlayerToUserDtoConverter();
 	}
 
 	@Bean
-	public PlayerToPlayerDTOConverter playerToPlayerDTOConverter(){
-		return new PlayerToPlayerDTOConverter();
+	public PlayerToPlayerDtoConverter playerToPlayerDTOConverter(){
+		return new PlayerToPlayerDtoConverter();
 	}
 
 	@Bean
-	public QuestionToQuestionDTOConversion questionToQuestionDTOConversion(){
-		return new QuestionToQuestionDTOConversion();
+	public PlayerDtoToPlayerConverter playerDtoToPlayerConverter(){
+		return new PlayerDtoToPlayerConverter();
+	}
+
+	@Bean
+	public QuestionToQuestionDtoConverter questionToQuestionDTOConversion(){
+		return new QuestionToQuestionDtoConverter();
+	}
+
+	@Bean
+	public UserUpdateDtoToUserConverter userUpdateDtoToUserConverter(){
+		return new UserUpdateDtoToUserConverter();
 	}
 
 	@Bean(name = "APIConversionService")
@@ -109,6 +119,8 @@ public class HedbanzApiApplication {
 		converters.add(playerToUserDTOConverter());
 		converters.add(playerToPlayerDTOConverter());
 		converters.add(questionToQuestionDTOConversion());
+		converters.add(playerDtoToPlayerConverter());
+		converters.add(userUpdateDtoToUserConverter());
 
 		bean.setConverters(converters);
 		bean.afterPropertiesSet();

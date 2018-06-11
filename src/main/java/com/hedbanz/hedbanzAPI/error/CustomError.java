@@ -1,4 +1,4 @@
-package com.hedbanz.hedbanzAPI.entity.error;
+package com.hedbanz.hedbanzAPI.error;
 
 public class CustomError {
     private int errorCode;

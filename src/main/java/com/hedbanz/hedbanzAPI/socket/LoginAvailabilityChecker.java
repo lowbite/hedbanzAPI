@@ -16,16 +16,16 @@ public class LoginAvailabilityChecker {
     private final SocketIONamespace socketIONamespace;
     private final SocketIOServer server;
 
-    @Autowired
-    private CrudUserRepository CrudUserRepository;
+    private final CrudUserRepository CrudUserRepository;
 
     @Autowired
-    public LoginAvailabilityChecker(SocketIOServer server){
+    public LoginAvailabilityChecker(SocketIOServer server, CrudUserRepository CrudUserRepository){
         this.server = server;
         this.socketIONamespace = server.addNamespace("/login");
         this.socketIONamespace.addConnectListener(onConnected());
         this.socketIONamespace.addDisconnectListener(onDisconnected());
         this.socketIONamespace.addEventListener("checkLogin", LoginAvailabilityReceiveMessage.class, onRecieved());
+        this.CrudUserRepository = CrudUserRepository;
     }
 
     private DataListener<LoginAvailabilityReceiveMessage> onRecieved() {
@@ -41,8 +41,6 @@ public class LoginAvailabilityChecker {
     }
 
     private ConnectListener onConnected() {
-        return client -> {
-            HandshakeData handshakeData = client.getHandshakeData();
-        };
+        return client -> {};
     }
 }

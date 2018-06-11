@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hedbanz.hedbanzAPI.entity.HeaderRequestInterceptor;
 import com.hedbanz.hedbanzAPI.entity.User;
-import com.hedbanz.hedbanzAPI.entity.error.UserError;
+import com.hedbanz.hedbanzAPI.error.UserError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
 import com.hedbanz.hedbanzAPI.repository.CrudUserRepository;
 import com.hedbanz.hedbanzAPI.service.FCMPushNotificationService;
@@ -38,7 +38,7 @@ public class FCMPushNotificationServiceImpl implements FCMPushNotificationServic
         User userDTO = CrudUserRepository.findOne(userId);
 
         JSONObject body = new JSONObject();
-        body.put("to", friend.getToken());
+        body.put("to", friend.getSecurityToken());
 
         JSONObject notification = new JSONObject();
         notification.put("title", "New friendship request");

@@ -1,6 +1,7 @@
 package com.hedbanz.hedbanzAPI.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hedbanz.hedbanzAPI.constant.GameStatus;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -33,14 +34,14 @@ public class Room implements Serializable{
     @NotNull
     private Integer currentPlayersNumber;
 
-    @Column(name = "is_private")
-    @NotNull
+    @Column(name = "is_private", columnDefinition = "tinyint(1) default 0", nullable = false)
     private Boolean isPrivate;
 
-    @Column(name = "is_game_started", columnDefinition = "default 'false'")
-    private Boolean isGameStarted;
+    @Column(name = "game_status", nullable = false)
+    private GameStatus gameStatus;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "room")
+    @OrderBy("id")
     private Set<Player> players = new HashSet<>();
 
     @Column(name = "admin")
@@ -124,6 +125,14 @@ public class Room implements Serializable{
         this.roomAdmin = roomAdmin;
     }
 
+    public GameStatus getGameStatus() {
+        return gameStatus;
+    }
+
+    public void setGameStatus(GameStatus gameStatus) {
+        this.gameStatus = gameStatus;
+    }
+
     public boolean updatePlayer(Player player){
         if(this.players.contains(player)){
             for (Player roomPlayer : players) {
@@ -136,12 +145,13 @@ public class Room implements Serializable{
         return false;
     }
 
-    public boolean isContainPlayer(Player player){
+    public boolean containsPlayer(Player player){
         return players.contains(player);
     }
 
     public boolean addPlayer(Player player){
         if(!this.players.contains(player)) {
+            player.setRoom(this);
             this.players.add(player);
             return true;
         }
@@ -150,21 +160,23 @@ public class Room implements Serializable{
 
     public boolean removePlayer(Player player){
         if(this.players.contains(player)){
+            player.setRoom(null);
             this.players.remove(player);
             return true;
         }
         return false;
     }
 
+    public Player getPlayerByLogin(String login){
+            for(Player player : players){
+                if(player.getLogin().equals(login)){
+                    return player;
+                }
+            }
+            return null;
+    }
+
     public int getUserCount(){
         return this.players.size();
-    }
-
-    public Boolean getIsGameStarted() {
-        return isGameStarted;
-    }
-
-    public void setIsGameStarted(Boolean gameStarted) {
-        isGameStarted = gameStarted;
     }
 }

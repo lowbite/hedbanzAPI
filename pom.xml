@@ -21,7 +21,7 @@
 	<profiles>
 		<!-- Google Cloud-->
 		<profile>
-			<questionId>gcp</questionId>
+			<id>gcp</id>
 			<dependencies>
 				<dependency>
 					<groupId>org.springframework.cloud</groupId>
@@ -31,7 +31,7 @@
 
 			<repositories>
 				<repository>
-					<questionId>spring-milestones</questionId>
+					<id>spring-milestones</id>
 					<name>Spring Milestones</name>
 					<url>https://repo.spring.io/milestone</url>
 				</repository>
@@ -70,6 +70,10 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
 		<dependency>
@@ -155,6 +159,12 @@
 			<version>3.2.0</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.6</version>
+		</dependency>
+
 		<!-- Logging -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -170,14 +180,6 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>1.5.7.RELEASE</version>
 			</plugin>
-			<!--<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
-				<configuration>
-					<fork>true</fork>
-					<executable>C:\Program Files\Java\jdk1.8.0_111\bin\javac.exe</executable>
-				</configuration>
-			</plugin>-->
 		</plugins>
 	</build>
 </project>

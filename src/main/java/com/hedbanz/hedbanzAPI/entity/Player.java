@@ -1,16 +1,21 @@
 package com.hedbanz.hedbanzAPI.entity;
 
+import com.hedbanz.hedbanzAPI.constant.PlayerStatus;
+
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "players")
 public class Player {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "player_id")
     private Long id;
 
     @Column(name = "login")
+    @NotNull
     private String login;
 
     @Column(name = "image_path")
@@ -22,8 +27,18 @@ public class Player {
     @Column(name = "attempts")
     private Integer attempts;
 
-    @Column(name = "is_afk")
-    private Boolean isAFK;
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    private PlayerStatus status;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_id")
+    private Room room;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     public Player() {
     }
@@ -68,13 +83,30 @@ public class Player {
         this.attempts = attempts;
     }
 
-    public Boolean getIsAFK() {
-        return isAFK;
+    public PlayerStatus getStatus() {
+        return status;
     }
 
-    public void setIsAFK(Boolean AFK) {
-        isAFK = AFK;
+    public void setStatus(PlayerStatus AFK) {
+        status = AFK;
     }
+
+    public Room getRoom() {
+        return room;
+    }
+
+    public void setRoom(Room room) {
+        this.room = room;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
 
     @Override
     public boolean equals(Object o) {
@@ -83,17 +115,12 @@ public class Player {
 
         Player player = (Player) o;
 
-        if (id != null ? !id.equals(player.id) : player.id != null) return false;
-        if (login != null ? !login.equals(player.login) : player.login != null) return false;
-        return imagePath != null ? imagePath.equals(player.imagePath) : player.imagePath == null;
+        return login != null ? login.equals(player.login) : player.login == null;
     }
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (login != null ? login.hashCode() : 0);
-        result = 31 * result + (imagePath != null ? imagePath.hashCode() : 0);
-        return result;
+        return login != null ? login.hashCode() : 0;
     }
 
     public static PlayerBuilder PlayerBuilder(){
@@ -130,8 +157,13 @@ public class Player {
             return this;
         }
 
-        public PlayerBuilder setIsAFK(Boolean isAFK){
-            Player.this.setIsAFK(isAFK);
+        public PlayerBuilder setStatus(PlayerStatus status){
+            Player.this.setStatus(status);
+            return this;
+        }
+
+        public PlayerBuilder setUser(User user){
+            Player.this.setUser(user);
             return this;
         }
 

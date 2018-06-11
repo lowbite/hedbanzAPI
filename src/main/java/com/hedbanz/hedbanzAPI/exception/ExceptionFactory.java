@@ -1,7 +1,7 @@
 package com.hedbanz.hedbanzAPI.exception;
 
-import com.hedbanz.hedbanzAPI.entity.error.RoomError;
-import com.hedbanz.hedbanzAPI.entity.error.UserError;
+import com.hedbanz.hedbanzAPI.error.RoomError;
+import com.hedbanz.hedbanzAPI.error.UserError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

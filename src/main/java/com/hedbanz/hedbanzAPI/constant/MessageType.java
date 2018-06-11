@@ -5,7 +5,8 @@ public enum MessageType {
     LEFT_USER(2),
     SIMPLE_MESSAGE(7),
     USER_AFK(13),
-    USER_RETURNED(14);
+    USER_RETURNED(14),
+    USER_QUESTION(15);
 
 
     private int code;

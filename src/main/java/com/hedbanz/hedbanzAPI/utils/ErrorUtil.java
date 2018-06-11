@@ -1,8 +1,8 @@
 package com.hedbanz.hedbanzAPI.utils;
 
-import com.hedbanz.hedbanzAPI.entity.error.CustomError;
-import com.hedbanz.hedbanzAPI.entity.error.RoomError;
-import com.hedbanz.hedbanzAPI.entity.error.UserError;
+import com.hedbanz.hedbanzAPI.error.CustomError;
+import com.hedbanz.hedbanzAPI.error.RoomError;
+import com.hedbanz.hedbanzAPI.error.UserError;
 
 public class ErrorUtil {
     public static CustomError getError(RoomError roomError){

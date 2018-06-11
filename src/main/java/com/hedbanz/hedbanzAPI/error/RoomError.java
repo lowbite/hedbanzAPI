@@ -1,6 +1,4 @@
-package com.hedbanz.hedbanzAPI.entity.error;
-
-import com.hedbanz.hedbanzAPI.utils.ErrorUtil;
+package com.hedbanz.hedbanzAPI.error;
 
 public enum RoomError {
     WRONG_USER(1, ErrorMessages.NO_SUCH_USER_MESSAGE),
@@ -13,7 +11,9 @@ public enum RoomError {
     CANT_START_GAME(8, ErrorMessages.CANT_START_GAME),
     PLAYERS_ALREADY_GUESS(9, ErrorMessages.GUESSING_IS_ALREADY_STARTED),
     NO_SUCH_ROOM(10, ErrorMessages.NO_SUCH_ROOM),
-    NO_SUCH_QUESTION(11, ErrorMessages.NO_SUCH_QUESTION);
+    NO_SUCH_QUESTION(11, ErrorMessages.NO_SUCH_QUESTION),
+    NO_SUCH_PLAYER(12, ErrorMessages.NO_SUCH_PLAYER),
+    SUCH_PLAYER_ALREADY_VOTED(12, ErrorMessages.SUCH_PLAYER_ALREADY_VOTED);
 
     private int errorCode;
     private String errorMessage;

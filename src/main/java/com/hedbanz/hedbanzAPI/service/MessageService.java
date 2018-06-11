@@ -1,18 +1,18 @@
 package com.hedbanz.hedbanzAPI.service;
 
-import com.hedbanz.hedbanzAPI.entity.DTO.MessageDTO;
-import com.hedbanz.hedbanzAPI.entity.DTO.QuestionDTO;
+import com.hedbanz.hedbanzAPI.transfer.MessageDto;
+import com.hedbanz.hedbanzAPI.transfer.QuestionDto;
 
 import java.util.List;
 
 public interface MessageService {
-    List<MessageDTO> getAllMessages(long roomId, int pageNumber);
+    List<MessageDto> getAllMessages(long roomId, int pageNumber);
 
-    MessageDTO addMessage(MessageDTO messageDTO);
+    MessageDto addMessage(MessageDto messageDto);
 
-    void addEventMessage(MessageDTO messageDTO);
+    void addEventMessage(MessageDto messageDto);
 
-    MessageDTO addQuestionMessage(MessageDTO messageDTO);
+    MessageDto addQuestionMessage(MessageDto messageDto);
 
-    QuestionDTO addVote(QuestionDTO questionDTO);
+    QuestionDto addVote(QuestionDto questionDto);
 }

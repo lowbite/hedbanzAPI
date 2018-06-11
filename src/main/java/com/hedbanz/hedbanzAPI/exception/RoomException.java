@@ -1,7 +1,6 @@
 package com.hedbanz.hedbanzAPI.exception;
 
-import com.hedbanz.hedbanzAPI.entity.error.CustomError;
-import com.hedbanz.hedbanzAPI.entity.error.RoomError;
+import com.hedbanz.hedbanzAPI.error.RoomError;
 
 import java.text.MessageFormat;
 

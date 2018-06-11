@@ -1,40 +1,44 @@
 package com.hedbanz.hedbanzAPI.service;
 
-import com.hedbanz.hedbanzAPI.entity.DTO.*;
+import com.hedbanz.hedbanzAPI.constant.PlayerStatus;
+import com.hedbanz.hedbanzAPI.entity.Room;
+import com.hedbanz.hedbanzAPI.transfer.*;
 
 import java.util.List;
 
 public interface RoomService {
 
-    RoomDTO addRoom(RoomDTO roomDTO);
+    RoomDto addRoom(Room room, Long userId);
 
-    void deleteRoom(long roomId);
+    void deleteRoom(Long roomId);
 
-    RoomDTO getRoom(long roomId);
+    RoomDto getRoom(Long roomId);
 
-    List<RoomDTO> getAllRooms(int page);
+    List<RoomDto> getAllRooms(Integer page);
 
-    List<RoomDTO> getRoomsByFilter(RoomFilterDTO roomFilterDTO, int pageNumber);
+    List<Room> getActiveRooms(Long userId);
 
-    void checkRoomPassword(UserToRoomDTO userToRoomDTO);
+    List<RoomDto> getRoomsByFilter(RoomFilterDto roomFilterDto, Integer pageNumber);
 
-    void leaveRoom(UserToRoomDTO userToRoomDTO);
+    void checkRoomPassword(Long roomId, String password);
 
-    RoomDTO addUserToRoom(UserToRoomDTO userToRoomDTO);
+    void leaveFromRoom(Long userId, Long roomId);
 
-    PlayerDTO setPlayerAFK(UserToRoomDTO userToRoom, Boolean isAFK);
+    RoomDto addUserToRoom(Long userId, Long roomId, String password);
 
-    List<PlayerDTO> getPlayers(long roomId);
+    PlayerDto setPlayerStatus(Long userId, Long roomId, PlayerStatus status);
 
-    Boolean startGame(long roomId);
+    List<PlayerDto> getPlayers(Long roomId);
 
-    void setPlayerWord(WordDTO wordDTO);
+    Boolean startGame(Long roomId);
 
-    PlayerDTO startGuessing(long roomId);
+    void setPlayerWord(WordDto wordDto);
 
-    PlayerDTO nextGuessing(long roomId);
+    PlayerDto startGuessing(Long roomId);
 
-    void checkPlayerInRoom(UserToRoomDTO userToRoomDTO);
+    PlayerDto nextGuessing(Long roomId);
+
+    void checkPlayerInRoom(Long userId, Long roomId);
 
 
 }

@@ -4,20 +4,20 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.hedbanz.hedbanzAPI.entity.DTO.UserUpdateDTO;
+import com.hedbanz.hedbanzAPI.transfer.UserUpdateDto;
 
 import java.io.IOException;
 
-public class UpdateUserDataDeserializer extends JsonDeserializer<UserUpdateDTO> {
+public class UpdateUserDataDeserializer extends JsonDeserializer<UserUpdateDto> {
     @Override
-    public UserUpdateDTO deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+    public UserUpdateDto deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         JsonNode node = p.getCodec().readTree(p);
         long id = node.get("id").longValue();
         String newLogin = node.get("newLogin").asText();
         String newPassword = node.get("newPassword").asText();
         String oldPassword = node.get("oldPassword").asText();
 
-        UserUpdateDTO userData = new UserUpdateDTO();
+        UserUpdateDto userData = new UserUpdateDto();
         userData.setId(id);
         userData.setLogin(newLogin);
         userData.setNewPassword(newPassword);

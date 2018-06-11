@@ -1,6 +1,6 @@
 package com.hedbanz.hedbanzAPI.exception;
 
-import com.hedbanz.hedbanzAPI.entity.error.UserError;
+import com.hedbanz.hedbanzAPI.error.UserError;
 
 import java.text.MessageFormat;
 
