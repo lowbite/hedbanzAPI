@@ -1,6 +1,6 @@
 package com.hedbanz.hedbanzAPI.exception;
 
-import com.hedbanz.hedbanzAPI.entity.error.UserError;
+import com.hedbanz.hedbanzAPI.error.UserError;
 
 import java.text.MessageFormat;
 
@@ -23,5 +23,9 @@ public class UserException extends RuntimeException {
 
     public String getMessage(){
         return error.getErrorMessage();
+    }
+
+    public UserError getError(){
+        return error;
     }
 }

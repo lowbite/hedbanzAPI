@@ -1,11 +1,13 @@
 package com.hedbanz.hedbanzAPI.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hedbanz.hedbanzAPI.constant.GameStatus;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 @Entity
@@ -21,7 +23,6 @@ public class Room implements Serializable{
     @NotNull
     private String name;
 
-    @JsonIgnore
     @Column(name = "password")
     private String password;
 
@@ -33,23 +34,19 @@ public class Room implements Serializable{
     @NotNull
     private Integer currentPlayersNumber;
 
-    @Column(name = "is_private")
-    @NotNull
+    @Column(name = "is_private", columnDefinition = "tinyint(1) default 0", nullable = false)
     private Boolean isPrivate;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.DETACH})
-    @JoinTable(name = "user_room",
-            joinColumns = @JoinColumn(name = "room_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id"))
-    private Set<User> users = new HashSet<>();
+    @Column(name = "game_status", nullable = false)
+    private GameStatus gameStatus;
+
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "room")
+    @OrderBy("id")
+    private Set<Player> players = new HashSet<>();
 
     @Column(name = "admin")
     @NotNull
     private Long roomAdmin;
-
-    @OneToMany(cascade = CascadeType.ALL,
-            orphanRemoval = true)
-    private Set<Message> messages = new HashSet<>();
 
     public Room(){
 
@@ -64,12 +61,12 @@ public class Room implements Serializable{
     }
 
 
-    public Set<User> getUsers(){
-        return this.users;
+    public Set<Player> getPlayers(){
+        return this.players;
     }
 
-    public void setUsers(Set<User> users) {
-        this.users= users;
+    public void setPlayers(Set<Player> users) {
+        this.players = users;
     }
 
     public Long getId() {
@@ -120,14 +117,6 @@ public class Room implements Serializable{
         isPrivate = aPrivate;
     }
 
-    public void setMessages(Set<Message> messages){
-        this.messages = messages;
-    }
-
-    public Set<Message> getMessages() {
-        return messages;
-    }
-
     public Long getRoomAdmin() {
         return roomAdmin;
     }
@@ -136,28 +125,58 @@ public class Room implements Serializable{
         this.roomAdmin = roomAdmin;
     }
 
-    public boolean addUser(User user){
-        if(!this.users.contains(user)) {
-            this.users.add(user);
+    public GameStatus getGameStatus() {
+        return gameStatus;
+    }
+
+    public void setGameStatus(GameStatus gameStatus) {
+        this.gameStatus = gameStatus;
+    }
+
+    public boolean updatePlayer(Player player){
+        if(this.players.contains(player)){
+            for (Player roomPlayer : players) {
+                if (roomPlayer.getId().equals(player.getId())) {
+                    roomPlayer = player;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean containsPlayer(Player player){
+        return players.contains(player);
+    }
+
+    public boolean addPlayer(Player player){
+        if(!this.players.contains(player)) {
+            player.setRoom(this);
+            this.players.add(player);
             return true;
         }
         return false;
     }
 
-    public boolean removeUser(User user){
-        if(this.users.contains(user)){
-            this.users.remove(user);
+    public boolean removePlayer(Player player){
+        if(this.players.contains(player)){
+            player.setRoom(null);
+            this.players.remove(player);
             return true;
         }
         return false;
+    }
+
+    public Player getPlayerByLogin(String login){
+            for(Player player : players){
+                if(player.getLogin().equals(login)){
+                    return player;
+                }
+            }
+            return null;
     }
 
     public int getUserCount(){
-        return this.users.size();
-    }
-
-    public void addMessage(Message message){
-        messages.size();
-        messages.add(message);
+        return this.players.size();
     }
 }

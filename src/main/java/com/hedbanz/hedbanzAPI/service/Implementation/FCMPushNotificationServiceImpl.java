@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hedbanz.hedbanzAPI.entity.HeaderRequestInterceptor;
 import com.hedbanz.hedbanzAPI.entity.User;
-import com.hedbanz.hedbanzAPI.entity.error.UserError;
+import com.hedbanz.hedbanzAPI.error.UserError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
-import com.hedbanz.hedbanzAPI.repository.CRUDUserRepository;
+import com.hedbanz.hedbanzAPI.repository.CrudUserRepository;
 import com.hedbanz.hedbanzAPI.service.FCMPushNotificationService;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,19 +22,23 @@ import java.util.concurrent.ExecutionException;
 
 @Service
 public class FCMPushNotificationServiceImpl implements FCMPushNotificationService {
-    @Autowired
-    private CRUDUserRepository CRUDUserRepository;
+    private final CrudUserRepository CrudUserRepository;
 
     private static final String FIREBASE_SERVER_KEY = "AAAAPr_PYbs:APA91bEYs2o7Dtz_jkU_chkoFOo-vgPXESHnG5SWtSN8TJwgTKwEexq1vxpR7mbEPvDbg3T2siL7ZKFIw-8Tb1htwG84X_ZR2B3o5Glnt4WKpXY6eCkkEkwEq8VjT-uy-AGYKlk2iKge";
     private static final String FIREBASE_API_URL = "https://fcm.googleapis.com/fcm/send";
     private final static String DEVICE_TOKEN = "eMjAPLuU6kk:APA91bGizcnyutmfQ1YI7jI9ZPaZzENOTQQbmu1DkMvtYvoJAZf9zNm3YwbRtuQBoLCj8griGtSRGy4VbnjcVNETHqYHpd8lAjgjT0nmaR-DsVcm-50LNirnjHCZ9AqUqlArNuPD3Lhl";
 
+    @Autowired
+    public FCMPushNotificationServiceImpl(CrudUserRepository CrudUserRepository) {
+        this.CrudUserRepository = CrudUserRepository;
+    }
+
     public void sendFriendshipRequest(long userId, long friendId){
-        User friend = CRUDUserRepository.findOne(friendId);
-        User userDTO = CRUDUserRepository.findOne(userId);
+        User friend = CrudUserRepository.findOne(friendId);
+        User userDTO = CrudUserRepository.findOne(userId);
 
         JSONObject body = new JSONObject();
-        body.put("to", friend.getToken());
+        body.put("to", friend.getSecurityToken());
 
         JSONObject notification = new JSONObject();
         notification.put("title", "New friendship request");
@@ -59,7 +63,7 @@ public class FCMPushNotificationServiceImpl implements FCMPushNotificationServic
             if(!userDTO.addFriend(friend)){
                 throw ExceptionFactory.create(UserError.ALREADY_FRIENDS);
             }
-            CRUDUserRepository.save(userDTO);
+            CrudUserRepository.save(userDTO);
 
         } catch (InterruptedException | ExecutionException | IOException e) {
             throw ExceptionFactory.create(UserError.CANT_SEND_FRIENDSHIP_REQUEST);
@@ -68,13 +72,13 @@ public class FCMPushNotificationServiceImpl implements FCMPushNotificationServic
 
 
     public void acceptFriendRequest(long userId, long friendId){
-        User friend = CRUDUserRepository.findOne(friendId);
-        User userDTO = CRUDUserRepository.findOne(userId);
+        User friend = CrudUserRepository.findOne(friendId);
+        User userDTO = CrudUserRepository.findOne(userId);
 
         if(!userDTO.addFriend(friend)){
             throw ExceptionFactory.create(UserError.ALREADY_FRIENDS);
         }
-        CRUDUserRepository.save(userDTO);
+        CrudUserRepository.save(userDTO);
     }
 
 

@@ -1,30 +1,36 @@
 package com.hedbanz.hedbanzAPI.entity;
 
+import com.hedbanz.hedbanzAPI.constant.MessageType;
+
 import javax.persistence.*;
 import java.sql.Timestamp;
 
 @Entity(name = "Message")
 @Table(name = "message")
-public class Message {
+public class Message{
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "message_id")
     private Long id;
 
-    @Column(name = "sender_id")
-    private Long senderId;
-
-    @Column(name = "room_id")
-    private Long roomId;
+    @ManyToOne(cascade = CascadeType.PERSIST)
+    private User senderUser;
 
     @Column(name = "text")
     private String text;
 
     @Column(name = "type")
-    private Integer type;
+    @Enumerated(EnumType.STRING)
+    private MessageType type;
 
     @Column(name = "create_date")
     private Timestamp createDate;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    private Question question;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Room room;
 
     public Long getId() {
         return id;
@@ -32,22 +38,6 @@ public class Message {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Long getSenderId() {
-        return senderId;
-    }
-
-    public void setSenderId(Long senderId) {
-        this.senderId = senderId;
-    }
-
-    public Long getRoomId() {
-        return roomId;
-    }
-
-    public void setRoomId(Long roomId) {
-        this.roomId = roomId;
     }
 
     public String getText() {
@@ -58,11 +48,11 @@ public class Message {
         this.text = text;
     }
 
-    public Integer getType() {
+    public MessageType getType() {
         return type;
     }
 
-    public void setType(Integer type) {
+    public void setType(MessageType type) {
         this.type = type;
     }
 
@@ -74,6 +64,34 @@ public class Message {
         this.createDate = createDate;
     }
 
+    public User getSenderUser() {
+        return senderUser;
+    }
+
+    public void setSenderUser(User senderUser) {
+        this.senderUser = senderUser;
+    }
+
+    public Question getQuestion() {
+        return question;
+    }
+
+    public void setQuestion(Question question) {
+        this.question = question;
+    }
+
+    public Room getRoomMessage() {
+        return room;
+    }
+
+    public void setRoom(Room room) {
+        this.room = room;
+    }
+
+    public Room getRoom() {
+        return room;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -82,8 +100,7 @@ public class Message {
         Message message = (Message) o;
 
         if (id != null ? !id.equals(message.id) : message.id != null) return false;
-        if (senderId != null ? !senderId.equals(message.senderId) : message.senderId != null) return false;
-        if (roomId != null ? !roomId.equals(message.roomId) : message.roomId != null) return false;
+        if (senderUser != null ? !senderUser.equals(message.senderUser) : message.senderUser != null) return false;
         if (text != null ? !text.equals(message.text) : message.text != null) return false;
         if (type != null ? !type.equals(message.type) : message.type != null) return false;
         return createDate != null ? createDate.equals(message.createDate) : message.createDate == null;
@@ -91,12 +108,59 @@ public class Message {
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (senderId != null ? senderId.hashCode() : 0);
-        result = 31 * result + (roomId != null ? roomId.hashCode() : 0);
+        int result = senderUser != null ? senderUser.hashCode() : 0;
         result = 31 * result + (text != null ? text.hashCode() : 0);
         result = 31 * result + (type != null ? type.hashCode() : 0);
         result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
         return result;
+    }
+
+    public static MessageBuilder MessageBuilder(){
+        return new Message(). new MessageBuilder();
+    }
+
+    public class MessageBuilder {
+        private MessageBuilder(){
+
+        }
+
+        public MessageBuilder setId(long id){
+            Message.this.setId(id);
+            return this;
+        }
+
+        public MessageBuilder setSenderUser(User senderUser){
+            Message.this.setSenderUser(senderUser);
+            return this;
+        }
+
+        public MessageBuilder setText(String text) {
+            Message.this.setText(text);
+            return this;
+        }
+
+        public MessageBuilder setType(MessageType type){
+            Message.this.setType(type);
+            return this;
+        }
+
+        public MessageBuilder setCreateDate(Timestamp createDate) {
+            Message.this.setCreateDate(createDate);
+            return this;
+        }
+
+        public MessageBuilder setQuestion(Question question){
+            Message.this.setQuestion(question);
+            return this;
+        }
+
+        public MessageBuilder setRoom(Room room){
+            Message.this.setRoom(room);
+            return this;
+        }
+
+        public Message build() {
+            return Message.this;
+        }
     }
 }

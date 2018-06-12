@@ -5,17 +5,17 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.Gson;
-import com.hedbanz.hedbanzAPI.entity.DTO.MessageDTO;
+import com.hedbanz.hedbanzAPI.transfer.MessageDto;
 
 import java.io.IOException;
 
-public class MessageDeserializer extends JsonDeserializer<MessageDTO> {
+public class MessageDeserializer extends JsonDeserializer<MessageDto> {
 
     @Override
-    public MessageDTO deserialize(JsonParser p, DeserializationContext deserializationContext) throws IOException{
+    public MessageDto deserialize(JsonParser p, DeserializationContext deserializationContext) throws IOException{
         JsonNode node = p.getCodec().readTree(p);
         Gson gson = new Gson();
-        MessageDTO messageDTO = gson.fromJson(node.asText(), MessageDTO.class);
-        return messageDTO;
+        MessageDto messageDto = gson.fromJson(node.asText(), MessageDto.class);
+        return messageDto;
     }
 }

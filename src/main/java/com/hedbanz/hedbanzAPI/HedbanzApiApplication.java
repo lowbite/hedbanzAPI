@@ -4,6 +4,7 @@ import com.corundumstudio.socketio.Configuration;
 import com.corundumstudio.socketio.SocketConfig;
 import com.corundumstudio.socketio.SocketIOServer;
 import com.hedbanz.hedbanzAPI.converter.*;
+import com.hedbanz.hedbanzAPI.exception.SocketExceptionListener;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -33,7 +34,9 @@ public class HedbanzApiApplication {
 
 		SocketConfig socketConfig = new SocketConfig();
 		socketConfig.setReuseAddress(true);
-		configuration.setPingTimeout(1000);
+		configuration.setPingInterval(1000);
+		configuration.setPingTimeout(2000);
+		configuration.setExceptionListener(new SocketExceptionListener());
 		configuration.setSocketConfig(socketConfig);
 
 		configuration.setPort(socketIOPort);
@@ -41,33 +44,63 @@ public class HedbanzApiApplication {
 	}
 
 	@Bean
-	public RoomToRoomDTOConverter roomDTOToRoomConverter(){
-		return new RoomToRoomDTOConverter();
+	public RoomToRoomDtoConverter roomDTOToRoomConverter(){
+		return new RoomToRoomDtoConverter();
 	}
 
 	@Bean
-	public RoomDTOToRoomConverter roomToRoomDTOConverter(){
-		return new RoomDTOToRoomConverter();
+	public RoomDtoToRoomConverter roomToRoomDTOConverter(){
+		return new RoomDtoToRoomConverter();
 	}
 
 	@Bean
-    public UserDTOToUserConverter userToUserDTOConverter(){
-	    return new UserDTOToUserConverter();
+    public UserDtoToUserConverter userToUserDTOConverter(){
+	    return new UserDtoToUserConverter();
     }
 
     @Bean
-    public UserToUserDTOConverter userDTOToUserConverter(){
-	    return new UserToUserDTOConverter();
+    public UserToUserDtoConverter userDTOToUserConverter(){
+	    return new UserToUserDtoConverter();
     }
 
     @Bean
-	public MessageDTOToMessageConverter messageDTOToMessageConverter(){
-		return new MessageDTOToMessageConverter();
+	public MessageDtoToMessageConverter messageDTOToMessageConverter(){
+		return new MessageDtoToMessageConverter();
 	}
 
 	@Bean
-	public MessageToMessageDTOConverter messageToMessageDTOConverter(){
-		return new MessageToMessageDTOConverter();
+	public MessageToMessageDtoConverter messageToMessageDTOConverter(){
+		return new MessageToMessageDtoConverter();
+	}
+
+	@Bean
+	public UserToPlayerConverter userToPlayerConverter(){
+		return new UserToPlayerConverter();
+	}
+
+	@Bean
+	public PlayerToUserDtoConverter playerToUserDTOConverter(){
+		return new PlayerToUserDtoConverter();
+	}
+
+	@Bean
+	public PlayerToPlayerDtoConverter playerToPlayerDTOConverter(){
+		return new PlayerToPlayerDtoConverter();
+	}
+
+	@Bean
+	public PlayerDtoToPlayerConverter playerDtoToPlayerConverter(){
+		return new PlayerDtoToPlayerConverter();
+	}
+
+	@Bean
+	public QuestionToQuestionDtoConverter questionToQuestionDTOConversion(){
+		return new QuestionToQuestionDtoConverter();
+	}
+
+	@Bean
+	public UserUpdateDtoToUserConverter userUpdateDtoToUserConverter(){
+		return new UserUpdateDtoToUserConverter();
 	}
 
 	@Bean(name = "APIConversionService")
@@ -82,6 +115,12 @@ public class HedbanzApiApplication {
 		converters.add(userToUserDTOConverter());
 		converters.add(messageToMessageDTOConverter());
 		converters.add(messageDTOToMessageConverter());
+		converters.add(userToPlayerConverter());
+		converters.add(playerToUserDTOConverter());
+		converters.add(playerToPlayerDTOConverter());
+		converters.add(questionToQuestionDTOConversion());
+		converters.add(playerDtoToPlayerConverter());
+		converters.add(userUpdateDtoToUserConverter());
 
 		bean.setConverters(converters);
 		bean.afterPropertiesSet();

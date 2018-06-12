@@ -1,6 +1,6 @@
 package com.hedbanz.hedbanzAPI.exception;
 
-import com.hedbanz.hedbanzAPI.entity.error.RoomError;
+import com.hedbanz.hedbanzAPI.error.RoomError;
 
 import java.text.MessageFormat;
 
@@ -23,5 +23,9 @@ public class RoomException extends RuntimeException {
 
     public String getMessage(){
         return error.getErrorMessage();
+    }
+
+    public RoomError getError(){
+        return error;
     }
 }
