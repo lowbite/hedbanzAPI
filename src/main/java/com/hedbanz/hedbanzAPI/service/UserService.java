@@ -21,11 +21,13 @@ public interface UserService {
 
     User updateUserData(User user);
 
-    User getUser(long userId);
+    User getUser(Long userId);
 
-    List<FriendDto> getUserFriends(long userId);
+    List<FriendDto> getUserFriends(Long userId);
+
+    List<FriendDto> getUserAcceptedFriends(Long userId);
 
     void setUserFcmToken(User user);
 
-    void releaseUserFcmToken(long userId);
+    void releaseUserFcmToken(Long userId);
 }

@@ -15,12 +15,11 @@ public class MessageDto {
     private String text;
     private Integer type;
     private Long createDate;
-    private QuestionDto question;
 
     public MessageDto() {
     }
 
-    private MessageDto(Long clientMessageId, UserDto senderUser, Long roomId, String text, Integer type, Date createDate, QuestionDto question) {
+    private MessageDto(Long clientMessageId, UserDto senderUser, Long roomId, String text, Integer type, Date createDate) {
         this.clientMessageId = clientMessageId;
         this.senderUser = senderUser;
         this.roomId = roomId;
@@ -28,7 +27,6 @@ public class MessageDto {
         this.type = type;
         if(createDate != null)
             this.createDate = createDate.getTime();
-        this.question = question;
     }
 
     public MessageDto(Long senderId, String senderLogin, String senderImagePath, Long roomId, String text, MessageType type, Date createDate) {
@@ -91,14 +89,6 @@ public class MessageDto {
         this.createDate = createDate;
     }
 
-    public QuestionDto getQuestion() {
-        return question;
-    }
-
-    public void setQuestion(QuestionDto question) {
-        this.question = question;
-    }
-
     public static class MessageDTOBuilder {
         private Long clientMessageId;
         private UserDto senderUser;
@@ -106,7 +96,6 @@ public class MessageDto {
         private String text;
         private Integer type;
         private Date createDate;
-        private QuestionDto question;
 
         public MessageDTOBuilder setClientMessageId(Long clientMessageId) {
             this.clientMessageId = clientMessageId;
@@ -138,13 +127,9 @@ public class MessageDto {
             return this;
         }
 
-        public MessageDTOBuilder setQuestion(QuestionDto question) {
-            this.question = question;
-            return this;
-        }
 
         public MessageDto createMessageDTO() {
-            return new MessageDto(clientMessageId, senderUser, roomId, text, type, createDate, question);
+            return new MessageDto(clientMessageId, senderUser, roomId, text, type, createDate);
         }
     }
 }

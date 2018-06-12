@@ -94,13 +94,18 @@ public class HedbanzApiApplication {
 	}
 
 	@Bean
-	public QuestionToQuestionDtoConverter questionToQuestionDTOConversion(){
-		return new QuestionToQuestionDtoConverter();
+	public MessageToQuestionDtoConverter questionToQuestionDTOConversion(){
+		return new MessageToQuestionDtoConverter();
 	}
 
 	@Bean
 	public UserUpdateDtoToUserConverter userUpdateDtoToUserConverter(){
 		return new UserUpdateDtoToUserConverter();
+	}
+
+	@Bean
+	public QuestionToQuestionDtoConverter questionToQuestionDtoConverter(){
+		return new QuestionToQuestionDtoConverter();
 	}
 
 	@Bean(name = "APIConversionService")
@@ -121,6 +126,7 @@ public class HedbanzApiApplication {
 		converters.add(questionToQuestionDTOConversion());
 		converters.add(playerDtoToPlayerConverter());
 		converters.add(userUpdateDtoToUserConverter());
+		converters.add(questionToQuestionDtoConverter());
 
 		bean.setConverters(converters);
 		bean.afterPropertiesSet();

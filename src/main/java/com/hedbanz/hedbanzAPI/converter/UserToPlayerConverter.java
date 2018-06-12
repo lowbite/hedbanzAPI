@@ -8,8 +8,6 @@ public class UserToPlayerConverter implements Converter<User, Player> {
     public Player convert(User user) {
         return Player.PlayerBuilder()
                 .setUser(user)
-                .setLogin(user.getLogin())
-                .setImagePath(user.getImagePath())
                 .build();
     }
 }

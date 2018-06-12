@@ -10,10 +10,8 @@ public class PlayerDtoToPlayerConverter implements Converter<PlayerDto, Player> 
     public Player convert(PlayerDto playerDto) {
         Player player = new Player();
         player.setId(playerDto.getId());
-        player.setLogin(playerDto.getLogin());
         player.setWord(playerDto.getWord());
         player.setAttempts(playerDto.getAttempts());
-        player.setImagePath(playerDto.getImagePath());
         return player;
     }
 }

@@ -10,7 +10,7 @@ public class PlayerDto {
     private Integer attempts;
     private Integer status;
     private Boolean isFriend;
-    private Integer userId;
+    private Long userId;
 
     public PlayerDto(){}
 
@@ -23,7 +23,7 @@ public class PlayerDto {
         this.status = status.getCode();
     }
 
-    private PlayerDto(Long id, String login, String imagePath, String word, Integer attempts, Integer status, Boolean isFriend, Integer userId){
+    private PlayerDto(Long id, String login, String imagePath, String word, Integer attempts, Integer status, Boolean isFriend, Long userId){
         this.id = id;
         this.login = login;
         this.imagePath = imagePath;
@@ -91,11 +91,11 @@ public class PlayerDto {
         isFriend = friend;
     }
 
-    public Integer getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
-    public void setUserId(Integer userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 
@@ -107,7 +107,7 @@ public class PlayerDto {
         private Integer attempts;
         private Integer status;
         private Boolean isFriend;
-        private Integer userId;
+        private Long userId;
 
         public PlayerDTOBuilder setId(Long id) {
             this.id = id;
@@ -144,7 +144,7 @@ public class PlayerDto {
             return this;
         }
 
-        public PlayerDTOBuilder setUserId(Integer userId){
+        public PlayerDTOBuilder setUserId(Long userId){
             this.userId = userId;
             return this;
         }

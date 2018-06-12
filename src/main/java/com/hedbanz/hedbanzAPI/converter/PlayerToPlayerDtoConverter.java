@@ -9,11 +9,12 @@ public class PlayerToPlayerDtoConverter implements Converter<Player, PlayerDto> 
     public PlayerDto convert(Player player) {
         return new PlayerDto.PlayerDTOBuilder()
                             .setId(player.getId())
-                            .setLogin(player.getLogin())
+                            .setLogin(player.getUser().getLogin())
                             .setWord(player.getWord())
                             .setAttempts(player.getAttempts())
-                            .setImagePath(player.getImagePath())
+                            .setImagePath(player.getUser().getImagePath())
                             .setStatus(player.getStatus().getCode())
+                            .setUserId(player.getUser().getId())
                             .createPlayerDTO();
     }
 }

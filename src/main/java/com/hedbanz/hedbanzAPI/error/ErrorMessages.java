@@ -21,6 +21,7 @@ public interface ErrorMessages {
      String NO_SUCH_QUESTION = "There is no such question!";
      String NO_SUCH_PLAYER = "There is no such player!";
      String SUCH_PLAYER_ALREADY_VOTED = "This player has already voted!";
+     String NO_USER_ID = "User id is empty!";
 
 
      String INCORRECT_INPUT = "Incorrect input!";

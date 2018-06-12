@@ -7,7 +7,7 @@ import com.hedbanz.hedbanzAPI.entity.User;
 import com.hedbanz.hedbanzAPI.error.UserError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
 import com.hedbanz.hedbanzAPI.repository.CrudUserRepository;
-import com.hedbanz.hedbanzAPI.service.FCMPushNotificationService;
+import com.hedbanz.hedbanzAPI.service.FcmPushNotificationService;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -21,7 +21,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 @Service
-public class FCMPushNotificationServiceImpl implements FCMPushNotificationService {
+public class FcmPushNotificationServiceImpl implements FcmPushNotificationService {
     private final CrudUserRepository CrudUserRepository;
 
     private static final String FIREBASE_SERVER_KEY = "AAAAPr_PYbs:APA91bEYs2o7Dtz_jkU_chkoFOo-vgPXESHnG5SWtSN8TJwgTKwEexq1vxpR7mbEPvDbg3T2siL7ZKFIw-8Tb1htwG84X_ZR2B3o5Glnt4WKpXY6eCkkEkwEq8VjT-uy-AGYKlk2iKge";
@@ -29,7 +29,7 @@ public class FCMPushNotificationServiceImpl implements FCMPushNotificationServic
     private final static String DEVICE_TOKEN = "eMjAPLuU6kk:APA91bGizcnyutmfQ1YI7jI9ZPaZzENOTQQbmu1DkMvtYvoJAZf9zNm3YwbRtuQBoLCj8griGtSRGy4VbnjcVNETHqYHpd8lAjgjT0nmaR-DsVcm-50LNirnjHCZ9AqUqlArNuPD3Lhl";
 
     @Autowired
-    public FCMPushNotificationServiceImpl(CrudUserRepository CrudUserRepository) {
+    public FcmPushNotificationServiceImpl(CrudUserRepository CrudUserRepository) {
         this.CrudUserRepository = CrudUserRepository;
     }
 

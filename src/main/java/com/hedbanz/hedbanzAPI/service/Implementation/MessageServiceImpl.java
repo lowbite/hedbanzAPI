@@ -2,6 +2,7 @@ package com.hedbanz.hedbanzAPI.service.Implementation;
 
 import com.hedbanz.hedbanzAPI.constant.Constants;
 import com.hedbanz.hedbanzAPI.constant.MessageType;
+import com.hedbanz.hedbanzAPI.constant.VoteType;
 import com.hedbanz.hedbanzAPI.entity.*;
 import com.hedbanz.hedbanzAPI.transfer.MessageDto;
 import com.hedbanz.hedbanzAPI.transfer.QuestionDto;
@@ -59,9 +60,9 @@ public class MessageServiceImpl implements MessageService {
                 messageDto.getType() == null || messageDto.getSenderUser() == null){
             throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
         }
-        Room room = crudRoomRepository.findOne(messageDto.getRoomId());
         User sender = crudUserRepository.findOne(messageDto.getSenderUser().getId());
-        if(!room.containsPlayer(conversionService.convert(sender, Player.class)))
+        Player player = crudPlayerRepository.findPlayerByUserIdAndRoomId(messageDto.getSenderUser().getId(), messageDto.getRoomId());
+        if(!player.getRoom().getId().equals(messageDto.getRoomId()))
             throw ExceptionFactory.create(RoomError.NO_SUCH_USER_IN_ROOM);
 
         Message message = Message.MessageBuilder().setSenderUser(sender)
@@ -69,7 +70,7 @@ public class MessageServiceImpl implements MessageService {
                                                 .setType(MessageType.SIMPLE_MESSAGE)
                                                 .setCreateDate(new Timestamp(new Date().getTime()))
                                                 .setQuestion(null)
-                                                .setRoom(room)
+                                                .setRoom(player.getRoom())
                                                 .build();
         crudMessageRepository.saveAndFlush(message);
 
@@ -83,30 +84,29 @@ public class MessageServiceImpl implements MessageService {
         if(messageDto.getRoomId() == null || messageDto.getType() == null || messageDto.getSenderUser() == null){
             throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
         }
-        Room room = crudRoomRepository.findOne(messageDto.getRoomId());
+        Player player = crudPlayerRepository.findPlayerByUserIdAndRoomId(messageDto.getSenderUser().getId(), messageDto.getRoomId());
         User sender = crudUserRepository.findOne(messageDto.getSenderUser().getId());
-        if(!room.containsPlayer(conversionService.convert(sender, Player.class)))
+        if(!player.getRoom().getId().equals(messageDto.getRoomId()))
             throw ExceptionFactory.create(RoomError.NO_SUCH_USER_IN_ROOM);
 
         Message message = Message.MessageBuilder().setSenderUser(sender)
                                                 .setType(MessageTypeUtil.convertCodeIntoEnum(messageDto.getType()))
-                                                .setRoom(room)
                                                 .setQuestion(null)
-                                                .setRoom(room)
+                                                .setRoom(player.getRoom())
                                                 .build();
         crudMessageRepository.saveAndFlush(message);
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public MessageDto addQuestionMessage(MessageDto messageDto){
+    public Message addQuestionMessage(MessageDto messageDto){
         if(messageDto.getRoomId() == null || messageDto.getClientMessageId() == null || messageDto.getText() == null ||
                 messageDto.getType() == null || messageDto.getSenderUser() == null){
             throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
         }
 
-        Room room = crudRoomRepository.findOne(messageDto.getRoomId());
+        Player player = crudPlayerRepository.findPlayerByUserIdAndRoomId(messageDto.getSenderUser().getId(), messageDto.getRoomId());
         User sender = crudUserRepository.findOne(messageDto.getSenderUser().getId());
-        if(!room.containsPlayer(conversionService.convert(sender, Player.class)))
+        if(!player.getRoom().getId().equals(messageDto.getRoomId()))
             throw ExceptionFactory.create(RoomError.NO_SUCH_USER_IN_ROOM);
 
         Question question = new Question.QuestionBuilder()
@@ -115,48 +115,43 @@ public class MessageServiceImpl implements MessageService {
                                                 .setType(MessageType.USER_QUESTION)
                                                 .setCreateDate(new Timestamp(new Date().getTime()))
                                                 .setQuestion(question)
-                                                .setRoom(room)
+                                                .setRoom(player.getRoom())
+                                                .setText(messageDto.getText())
                                                 .build();
-        message = crudMessageRepository.saveAndFlush(message);
-        MessageDto resultMessage = conversionService.convert(message, MessageDto.class);
-        resultMessage.setClientMessageId(messageDto.getClientMessageId());
-        return resultMessage;
+        return crudMessageRepository.saveAndFlush(message);
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public QuestionDto addVote(QuestionDto questionDto) {
-        if(questionDto.getQuestionId() == null || questionDto.getSenderId() == null || questionDto.getRoomId() == null){
+    public Question addVote(Vote vote) {
+        if(vote.getQuestionId() == null || vote.getSenderId() == null || vote.getRoomId() == null){
             throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
         }
-        Room room = crudRoomRepository.findOne(questionDto.getRoomId());
-        Player player = crudPlayerRepository.findOne(questionDto.getSenderId());
+
+        Player player = crudPlayerRepository.findOne(vote.getSenderId());
         if(player == null){
             throw ExceptionFactory.create(RoomError.NO_SUCH_PLAYER);
         }
-        if(!room.containsPlayer(player)){
+        if(!player.getRoom().getId().equals(vote.getRoomId())){
             throw ExceptionFactory.create(RoomError.NO_SUCH_USER_IN_ROOM);
         }
 
-        Question question = crudQuestionRepository.findOne(questionDto.getQuestionId());
+        Question question = crudQuestionRepository.findOne(vote.getQuestionId());
         if(question == null)
             throw ExceptionFactory.create(RoomError.NO_SUCH_QUESTION);
 
-        if(questionDto.getVote() == NO.getCode()){
+        if(vote.getVoteType() == NO.getCode()){
             if(question.addNoVoter(player))
                 throw ExceptionFactory.create(RoomError.SUCH_PLAYER_ALREADY_VOTED);
             if(question.yesVotersContainPlayer(player))
                 question.removeYesVoter(player);
-
-            question = crudQuestionRepository.saveAndFlush(question);
-        }else if(questionDto.getVote() == YES.getCode()){
+        }else if(vote.getVoteType() == YES.getCode()){
             if(!question.addYesVoter(player))
                 throw ExceptionFactory.create(RoomError.SUCH_PLAYER_ALREADY_VOTED);
             if(question.noVotersContainPlayer(player))
                 question.removeNoVoter(player);
 
-            question = crudQuestionRepository.saveAndFlush(question);
         }
-        return conversionService.convert(question, QuestionDto.class);
+        return crudQuestionRepository.saveAndFlush(question);
     }
 
     @Transactional(readOnly = true)

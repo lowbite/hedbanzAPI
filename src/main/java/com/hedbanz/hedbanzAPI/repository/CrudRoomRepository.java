@@ -1,5 +1,6 @@
 package com.hedbanz.hedbanzAPI.repository;
 
+import com.hedbanz.hedbanzAPI.entity.Player;
 import com.hedbanz.hedbanzAPI.transfer.PlayerDto;
 import com.hedbanz.hedbanzAPI.entity.Room;
 import com.hedbanz.hedbanzAPI.transfer.RoomDto;
@@ -17,10 +18,10 @@ import java.util.List;
 @Repository
 public interface CrudRoomRepository extends JpaRepository<Room, Long>, PagingAndSortingRepository<Room, Long>{
 
-    @Query("SELECT new com.hedbanz.hedbanzAPI.transfer.RoomDto(r.id, r.name, r.maxPlayers, r.currentPlayersNumber, r.isPrivate) FROM Room r WHERE r.currentPlayersNumber < r.maxPlayers AND r.gameStatus = com.hedbanz.hedbanzAPI.constant.GameStatus.WAITING_FOR_PLAYERS")
-    Page<RoomDto> findAllRooms(Pageable pageable);
+    @Query("SELECT r FROM Room r WHERE r.currentPlayersNumber < r.maxPlayers AND r.gameStatus = com.hedbanz.hedbanzAPI.constant.GameStatus.WAITING_FOR_PLAYERS")
+    Page<Room> findAllRooms(Pageable pageable);
 
 
-    @Query("SELECT new com.hedbanz.hedbanzAPI.transfer.PlayerDto(p.id, p.login, p.imagePath, p.word, p.attempts, p.status) FROM Room r JOIN r.players p WHERE r.id = :id ORDER BY p.id ASC")
-    List<PlayerDto> findPlayers(@Param("id") Long id);
+    @Query("SELECT p FROM Room r JOIN r.players p JOIN p.user WHERE r.id = :id ORDER BY p.id ASC")
+    List<Player> findPlayers(@Param("id") Long id);
 }

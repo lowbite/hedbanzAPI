@@ -1,22 +1,34 @@
 package com.hedbanz.hedbanzAPI.transfer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;;
+import com.hedbanz.hedbanzAPI.constant.MessageType;
 import com.hedbanz.hedbanzAPI.deserializer.QuestionDtoDeserializer;
 
+import java.util.Date;
 import java.util.List;
 
 @JsonDeserialize(using = QuestionDtoDeserializer.class)
 public class QuestionDto {
+    private Long id;
     private Long questionId;
+    private Long clientMessageId;
     private Long senderId;
     private Long roomId;
+    private String text;
+    private Integer type;
+    private Long createDate;
     private List<PlayerDto> yesVoters;
     private List<PlayerDto> noVoters;
     private Integer vote;
 
-    private QuestionDto(Long questionId, Long senderId, Long roomId, List<PlayerDto> yesVoters, List<PlayerDto> noVoters, Integer vote) {
+    private QuestionDto(Long id, Long questionId, Long clientMessageId, Long senderId, Long roomId, String text, Integer type, Long createDate, List<PlayerDto> yesVoters, List<PlayerDto> noVoters, Integer vote) {
+        this.id = id;
         this.questionId = questionId;
+        this.clientMessageId = clientMessageId;
         this.senderId = senderId;
         this.roomId = roomId;
+        this.text = text;
+        this.type = type;
+        this.createDate = createDate;
         this.yesVoters = yesVoters;
         this.noVoters = noVoters;
         this.vote = vote;
@@ -70,6 +82,46 @@ public class QuestionDto {
         this.vote = vote;
     }
 
+    public Long getClientMessageId() {
+        return clientMessageId;
+    }
+
+    public void setClientMessageId(Long clientMessageId) {
+        this.clientMessageId = clientMessageId;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public Integer getType() {
+        return type;
+    }
+
+    public void setType(Integer type) {
+        this.type = type;
+    }
+
+    public Long getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Long createDate) {
+        this.createDate = createDate;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public static class QuestionDTOBuilder {
         private Long id;
         private Long senderId;
@@ -77,6 +129,11 @@ public class QuestionDto {
         private List<PlayerDto> yesVoters;
         private List<PlayerDto> noVoters;
         private Integer vote;
+        private String text;
+        private Integer type;
+        private Long createDate;
+        private Long clientMessageId;
+        private Long questionId;
 
         public QuestionDTOBuilder setId(Long id) {
             this.id = id;
@@ -108,8 +165,33 @@ public class QuestionDto {
             return this;
         }
 
+        public QuestionDTOBuilder setText(String text) {
+            this.text = text;
+            return this;
+        }
+
+        public QuestionDTOBuilder setType(MessageType type) {
+            this.type = type.getCode();
+            return this;
+        }
+
+        public QuestionDTOBuilder setCreateDate(Date createDate) {
+            this.createDate = createDate.getTime();
+            return this;
+        }
+
+        public QuestionDTOBuilder setClientId(Long clientId) {
+            this.clientMessageId = clientId;
+            return this;
+        }
+
+        public QuestionDTOBuilder setQuestionId(Long questionId) {
+            this.questionId = questionId;
+            return this;
+        }
+
         public QuestionDto build() {
-            return new QuestionDto(id, senderId, roomId, yesVoters, noVoters, vote);
+            return new QuestionDto(id, questionId, clientMessageId, senderId, roomId, text, type, createDate, yesVoters, noVoters, vote);
         }
     }
 

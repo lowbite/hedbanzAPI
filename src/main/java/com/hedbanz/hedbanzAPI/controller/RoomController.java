@@ -35,8 +35,8 @@ public class RoomController {
     @RequestMapping(method = RequestMethod.PUT, consumes = "application/json")
     @ResponseStatus(HttpStatus.OK)
     public CustomResponseBody<RoomDto> createRoom(@RequestBody RoomDto roomDto){
-        RoomDto createdRoomDto =  roomService.addRoom(conversionService.convert(roomDto, Room.class), roomDto.getUserId());
-        return new CustomResponseBody<>(ResultStatus.SUCCESS_STATUS,null, createdRoomDto);
+        Room createdRoom =  roomService.addRoom(conversionService.convert(roomDto, Room.class), roomDto.getUserId());
+        return new CustomResponseBody<>(ResultStatus.SUCCESS_STATUS,null, conversionService.convert(createdRoom, RoomDto.class));
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/{roomId}")
@@ -49,19 +49,22 @@ public class RoomController {
     @RequestMapping(method = RequestMethod.GET, value = "/{pageNumber}/user/{userId}")
     @ResponseStatus(HttpStatus.OK)
     public CustomResponseBody<Map<String, List<RoomDto>>> findAllRooms(@PathVariable("pageNumber") int page, @PathVariable("userId") Long userId){
-        List<RoomDto> allRooms = roomService.getAllRooms(page);
-        List<RoomDto> activeRooms = roomService.getActiveRooms(userId).stream().map(room -> conversionService.convert(room, RoomDto.class)).collect(Collectors.toList());
         Map<String, List<RoomDto>> rooms = new HashMap<>();
-        rooms.put("allRooms", allRooms);
-        rooms.put("activeRooms", activeRooms);
+        List<Room> allRooms = roomService.getAllRooms(page);
+        rooms.put("allRooms", allRooms.stream().map(room -> conversionService.convert(room, RoomDto.class)).collect(Collectors.toList()));
+        if(page == 0) {
+            List<RoomDto> activeRooms = roomService.getActiveRooms(userId).stream().map(room -> conversionService.convert(room, RoomDto.class)).collect(Collectors.toList());
+            rooms.put("activeRooms", activeRooms);
+        }
         return new CustomResponseBody<>(ResultStatus.SUCCESS_STATUS,null, rooms);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/{pageNumber}", consumes = "application/json")
     @ResponseStatus(HttpStatus.OK)
     public CustomResponseBody<List<RoomDto>> findRoomsByFilter(@RequestBody RoomFilterDto roomFilterDto, @PathVariable("pageNumber") int page){
-        List<RoomDto> roomDtos = roomService.getRoomsByFilter(roomFilterDto, page);
-        return new CustomResponseBody<>(ResultStatus.SUCCESS_STATUS, null, roomDtos);
+        List<Room> rooms = roomService.getRoomsByFilter(roomFilterDto, page);
+        return new CustomResponseBody<>(ResultStatus.SUCCESS_STATUS, null, rooms.stream().map(room -> conversionService.convert(room, RoomDto.class))
+                                                                                    .collect(Collectors.toList()));
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{roomId}/messages/{pageNumber}")

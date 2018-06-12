@@ -6,7 +6,7 @@ import com.hedbanz.hedbanzAPI.transfer.FriendDto;
 import com.hedbanz.hedbanzAPI.transfer.UserDto;
 import com.hedbanz.hedbanzAPI.transfer.UserUpdateDto;
 import com.hedbanz.hedbanzAPI.entity.User;
-import com.hedbanz.hedbanzAPI.service.FCMPushNotificationService;
+import com.hedbanz.hedbanzAPI.service.FcmPushNotificationService;
 import com.hedbanz.hedbanzAPI.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -19,15 +19,13 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/user")
 public class UserController {
-
     private final UserService userService;
-
-    private final FCMPushNotificationService fcmPushNotificationService;
-
+    private final FcmPushNotificationService fcmPushNotificationService;
     private final ConversionService conversionService;
 
     @Autowired
-    public UserController(UserService userService, FCMPushNotificationService fcmPushNotificationService,@Qualifier("APIConversionService") ConversionService conversionService) {
+    public UserController(UserService userService, FcmPushNotificationService fcmPushNotificationService,
+                          @Qualifier("APIConversionService") ConversionService conversionService) {
         this.userService = userService;
         this.fcmPushNotificationService = fcmPushNotificationService;
         this.conversionService = conversionService;
@@ -82,14 +80,16 @@ public class UserController {
 
     @RequestMapping(method = RequestMethod.PUT, value = "/{userId}/friends/{friendId}")
     @ResponseStatus(HttpStatus.OK)
-    public CustomResponseBody<String > friendshipRequest(@PathVariable("userId") long userId, @PathVariable("friendId") long friendId){
+    public CustomResponseBody<String > friendshipRequest(@PathVariable("userId") long userId,
+                                                         @PathVariable("friendId") long friendId){
         fcmPushNotificationService.sendFriendshipRequest(userId, friendId);
         return new CustomResponseBody<>(ResultStatus.SUCCESS_STATUS, null, null);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/{userId}/friends/{friendId}")
     @ResponseStatus(HttpStatus.OK)
-    public CustomResponseBody<String > friendshipAccept(@PathVariable("userId") long userId, @PathVariable("friendId") long friendId){
+    public CustomResponseBody<String > friendshipAccept(@PathVariable("userId") long userId,
+                                                        @PathVariable("friendId") long friendId){
         fcmPushNotificationService.sendFriendshipRequest(userId, friendId);
         return new CustomResponseBody<>(ResultStatus.SUCCESS_STATUS, null, null);
     }

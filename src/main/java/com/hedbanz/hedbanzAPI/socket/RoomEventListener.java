@@ -8,9 +8,12 @@ import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;
 import com.hedbanz.hedbanzAPI.constant.MessageType;
 import com.hedbanz.hedbanzAPI.constant.PlayerStatus;
-import com.hedbanz.hedbanzAPI.entity.User;
+import com.hedbanz.hedbanzAPI.entity.*;
 import com.hedbanz.hedbanzAPI.error.RoomError;
+import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
+import com.hedbanz.hedbanzAPI.exception.RoomException;
 import com.hedbanz.hedbanzAPI.service.MessageService;
+import com.hedbanz.hedbanzAPI.service.PlayerService;
 import com.hedbanz.hedbanzAPI.service.RoomService;
 import com.hedbanz.hedbanzAPI.service.UserService;
 import com.hedbanz.hedbanzAPI.transfer.*;
@@ -25,6 +28,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 @Component
 public class RoomEventListener {
@@ -67,13 +71,14 @@ public class RoomEventListener {
     private final RoomService roomService;
     private final UserService userService;
     private final MessageService messageService;
+    private final PlayerService playerService;
     private final ConversionService conversionService;
 
     private final SocketIONamespace socketIONamespace;
 
     @Autowired
     public RoomEventListener(SocketIOServer server, RoomService roomService, UserService userService,
-                             MessageService messageService, @Qualifier("APIConversionService") ConversionService conversionService){
+                             MessageService messageService, PlayerService playerService, @Qualifier("APIConversionService") ConversionService conversionService){
         this.socketIONamespace = server.addNamespace("/game");
         this.socketIONamespace.addConnectListener(onConnected());
         this.socketIONamespace.addDisconnectListener(onDisconnected());
@@ -91,6 +96,7 @@ public class RoomEventListener {
         this.userService = userService;
         this.messageService = messageService;
         this.conversionService = conversionService;
+        this.playerService = playerService;
     }
 
     private void checkUser(ClientInfoDto clientInfo, SocketIOClient client){
@@ -117,12 +123,17 @@ public class RoomEventListener {
                         .setRoomId(data.getRoomId())
                         .createUserToRoomDTO();
                 roomService.checkPlayerInRoom(userToRoom.getUserId(), userToRoom.getRoomId());
-                RoomDto room = roomService.getRoom(data.getRoomId());
-                client.sendEvent(SERVER_RESTORE_ROOM_EVENT, room);
+                Room room = roomService.getRoom(data.getRoomId());
+                if(room == null){
+                    throw ExceptionFactory.create(RoomError.NO_SUCH_ROOM);
+                }
+                RoomDto roomDto = conversionService.convert(room, RoomDto.class);
+                roomDto.setPlayers(room.getPlayers().stream().map(player -> conversionService.convert(player, PlayerDto.class)).collect(Collectors.toList()));
+                client.sendEvent(SERVER_RESTORE_ROOM_EVENT, roomDto);
                 client.set(ROOM_ID_FIELD, data.getRoomId());
                 client.joinRoom(String.valueOf(data.getRoomId()));
-                PlayerDto player = roomService.setPlayerStatus(userToRoom.getUserId(), userToRoom.getRoomId(), PlayerStatus.ACTIVE);
-                socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(SERVER_USER_RETURNED_EVENT, player);
+                Player player = roomService.setPlayerStatus(userToRoom.getUserId(), userToRoom.getRoomId(), PlayerStatus.ACTIVE);
+                socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(SERVER_USER_RETURNED_EVENT, conversionService.convert(player, PlayerDto.class));
 
                 log.info("Client restore room set userId: " + data.getUserId() + ", roomId: " + data.getRoomId());
             }
@@ -142,8 +153,8 @@ public class RoomEventListener {
                         .setUserId(data.getUserId())
                         .setRoomId(data.getRoomId())
                         .createUserToRoomDTO();
-                PlayerDto player = roomService.setPlayerStatus(userToRoom.getUserId(), userToRoom.getRoomId(), PlayerStatus.ACTIVE);
-                socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(SERVER_USER_RETURNED_EVENT, player);
+                Player player = roomService.setPlayerStatus(userToRoom.getUserId(), userToRoom.getRoomId(), PlayerStatus.ACTIVE);
+                socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(SERVER_USER_RETURNED_EVENT, conversionService.convert(player, PlayerDto.class));
                 log.info("setClientInfo: " + client.getHandshakeData().getAddress() + " sent afk event");
                 /*UserDto user = new UserDto.UserDTOBuilder()
                         .setId(data.getUserId())
@@ -184,25 +195,35 @@ public class RoomEventListener {
             client.set(USER_ID_FIELD, data.getUserId());
             client.set(ROOM_ID_FIELD, data.getRoomId());
 
-            RoomDto roomDto = roomService.addUserToRoom(data.getUserId(), data.getRoomId(), data.getPassword());
-            User user = userService.getUser(data.getUserId());
-            client.joinRoom(String.valueOf(roomDto.getId()));
-            client.sendEvent(ROOM_INFO_EVENT, roomDto);
-            socketIONamespace.getRoomOperations(String.valueOf(roomDto.getId())).sendEvent(JOINED_USER_EVENT, conversionService.convert(user, UserDto.class));
+            Room room = roomService.addUserToRoom(data.getUserId(), data.getRoomId(), data.getPassword());
+            List<FriendDto> friends = userService.getUserAcceptedFriends(data.getUserId());
+            RoomDto resultRoom = conversionService.convert(room, RoomDto.class);
+            resultRoom.setPlayers(room.getPlayers().stream().map(player -> conversionService.convert(player, PlayerDto.class)).collect(Collectors.toList()));
+            for (FriendDto friend : friends){
+                for(PlayerDto player : resultRoom.getPlayers()) {
+                    if (friend.getId().equals(player.getId())) {
+                        player.setIsFriend(true);
+                    }
+                }
+            }
+            Player player = playerService.getPlayerByUserIdAndRoomId(data.getUserId(), data.getRoomId());
+            client.joinRoom(String.valueOf(room.getId()));
+            client.sendEvent(ROOM_INFO_EVENT, resultRoom);
+            socketIONamespace.getRoomOperations(String.valueOf(room.getId())).sendEvent(JOINED_USER_EVENT, conversionService.convert(player, PlayerDto.class));
 
-            int clientsNumber = socketIONamespace.getRoomOperations(String.valueOf(roomDto.getId())).getClients().size();
+            int clientsNumber = socketIONamespace.getRoomOperations(String.valueOf(room.getId())).getClients().size();
             log.info("User " + data.getUserId() + " - joined to room: " + data.getRoomId() );
-            log.info("Players in the room " + roomDto.getId() + " - " + roomDto.getCurrentPlayersNumber());
-            log.info("Clients in the room " + roomDto.getId() + " - " + clientsNumber);
+            log.info("Players in the room " + room.getId() + " - " + room.getCurrentPlayersNumber());
+            log.info("Clients in the room " + room.getId() + " - " + clientsNumber);
 
             //Start game
             new Thread(()-> {
                 try {
                     Thread.sleep(1000);
-                    if (roomDto.getMaxPlayers().equals(roomDto.getPlayers().size()) &&
-                           roomDto.getCurrentPlayersNumber().equals(clientsNumber)) {
-                        if (roomService.startGame(roomDto.getId()))
-                            sendPlayersSetWordsRequest(roomDto.getId());
+                    if (room.getMaxPlayers().equals(room.getPlayers().size()) &&
+                           room.getCurrentPlayersNumber().equals(clientsNumber)) {
+                        if (roomService.startGame(room.getId()))
+                            sendPlayersSetWordsRequest(room.getId());
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -252,15 +273,15 @@ public class RoomEventListener {
             socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(SERVER_THOUGHT_PLAYER_WORD_EVENT, data);
             log.info("User set word: " + data.getWord());
 
-            List<PlayerDto> players = roomService.getPlayers(data.getRoomId());
+            List<Player> players = roomService.getPlayers(data.getRoomId());
             boolean gameIsReady = true;
-            for(PlayerDto player : players){
+            for(Player player : players){
                 if(TextUtils.isEmpty(player.getWord()))
                     gameIsReady = false;
             }
             if(gameIsReady){
-                PlayerDto player = roomService.startGuessing(data.getRoomId());
-                socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(SERVER_USER_GUESSING_EVENT, player);
+                Player player = roomService.startGuessing(data.getRoomId());
+                socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(SERVER_USER_GUESSING_EVENT, conversionService.convert(player, PlayerDto.class));
                 log.info("Players start guessing: " + player.getId());
             }
         };
@@ -272,9 +293,12 @@ public class RoomEventListener {
      * @param event
      */
     private void userTyping(UserToRoomDto data, String event){
-        User user = userService.getUser(data.getUserId());
+        Player player = playerService.getPlayerByUserIdAndRoomId(data.getUserId(), data.getRoomId());
+        if(player == null){
+            throw ExceptionFactory.create(RoomError.NO_SUCH_USER_IN_ROOM);
+        }
         HashMap<String, Long> userId = new HashMap<>();
-        userId.put("userId", user.getId());
+        userId.put("userId", player.getUser().getId());
         socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(event,userId);
     }
 
@@ -318,20 +342,31 @@ public class RoomEventListener {
 
     private DataListener<MessageDto> userGuessing(){
         return (client, data, ackSender) -> {
-            MessageDto message = messageService.addQuestionMessage(data);
-            socketIONamespace.getRoomOperations(String.valueOf((Long) client.get(ROOM_ID_FIELD))).sendEvent(SERVER_USER_ASKING_EVENT, message);
+            Message message = messageService.addQuestionMessage(data);
+            QuestionDto resultMessage = conversionService.convert(message, QuestionDto.class);
+            resultMessage.setClientMessageId(data.getClientMessageId());
+            socketIONamespace.getRoomOperations(String.valueOf((Long) client.get(ROOM_ID_FIELD)))
+                                                    .sendEvent(SERVER_USER_ASKING_EVENT, resultMessage);
         };
     }
 
     private DataListener<QuestionDto> userAnswering(){
         return (client, data, ackSender) -> {
-            QuestionDto question = messageService.addVote(data);
-            socketIONamespace.getRoomOperations(String.valueOf((Long) client.get(ROOM_ID_FIELD))).sendEvent(SERVER_USER_ANSWERING_EVENT, question);
-            RoomDto room = roomService.getRoom((Long) client.get(ROOM_ID_FIELD));
+            Question question = messageService.addVote(Vote.VoteBuilder().setSenderId(data.getSenderId())
+                                                                        .setRoomId(data.getRoomId())
+                                                                        .setQuestionId(data.getQuestionId())
+                                                                        .setVoteType(data.getVote())
+                                                                        .build());
+
+            socketIONamespace.getRoomOperations(String.valueOf((Long) client.get(ROOM_ID_FIELD)))
+                    .sendEvent(SERVER_USER_ANSWERING_EVENT, conversionService.convert(question, QuestionDto.class));
+
+            Room room = roomService.getRoom(client.get(ROOM_ID_FIELD));
             double votersPercentage = (question.getNoVoters().size() + question.getYesVoters().size()) / room.getCurrentPlayersNumber();
             if(votersPercentage >= 0.8) {
-                PlayerDto player = roomService.nextGuessing(data.getRoomId());
-                socketIONamespace.getRoomOperations(String.valueOf((Long) client.get(ROOM_ID_FIELD))).sendEvent(SERVER_USER_GUESSING_EVENT, player);
+                Player player = roomService.nextGuessing(data.getRoomId());
+                socketIONamespace.getRoomOperations(String.valueOf((Long) client.get(ROOM_ID_FIELD)))
+                        .sendEvent(SERVER_USER_GUESSING_EVENT, conversionService.convert(player, PlayerDto.class));
             }
         };
     }
@@ -344,13 +379,13 @@ public class RoomEventListener {
                     .setUserId(client.get(USER_ID_FIELD))
                     .setRoomId(client.get(ROOM_ID_FIELD))
                     .createUserToRoomDTO();
-            PlayerDto player = roomService.setPlayerStatus(userToRoom.getUserId(), userToRoom.getRoomId(), PlayerStatus.AFK);
+            Player player = roomService.setPlayerStatus(userToRoom.getUserId(), userToRoom.getRoomId(), PlayerStatus.AFK);
             if(player != null) {
                 /*UserDto user = new UserDto.UserDTOBuilder()
                         .setId(client.get(USER_ID_FIELD))
                         .build();*/
                 socketIONamespace.getRoomOperations(String.valueOf(userToRoom.getRoomId()))
-                        .sendEvent(SERVER_USER_AFK_EVENT, player);
+                        .sendEvent(SERVER_USER_AFK_EVENT, conversionService.convert(player, PlayerDto.class));
                 log.info("Client disconnect: " + client.getHandshakeData().getAddress() + " sent afk event");
 
                 // Save user afk message

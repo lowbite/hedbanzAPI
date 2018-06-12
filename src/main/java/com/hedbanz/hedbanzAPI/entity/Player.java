@@ -14,13 +14,6 @@ public class Player {
     @Column(name = "player_id")
     private Long id;
 
-    @Column(name = "login")
-    @NotNull
-    private String login;
-
-    @Column(name = "image_path")
-    private String imagePath;
-
     @Column(name = "word")
     private String word;
 
@@ -36,7 +29,7 @@ public class Player {
     @JoinColumn(name = "room_id")
     private Room room;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User user;
 
@@ -49,22 +42,6 @@ public class Player {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getLogin() {
-        return login;
-    }
-
-    public void setLogin(String login) {
-        this.login = login;
-    }
-
-    public String getImagePath() {
-        return imagePath;
-    }
-
-    public void setImagePath(String imagePath) {
-        this.imagePath = imagePath;
     }
 
     public String getWord() {
@@ -107,7 +84,6 @@ public class Player {
         this.user = user;
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -115,12 +91,15 @@ public class Player {
 
         Player player = (Player) o;
 
-        return login != null ? login.equals(player.login) : player.login == null;
+        if (id != null ? !id.equals(player.id) : player.id != null) return false;
+        return user != null ? user.getId().equals(player.user.getId()) : player.user == null;
     }
 
     @Override
     public int hashCode() {
-        return login != null ? login.hashCode() : 0;
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (user != null ? user.hashCode() : 0);
+        return result;
     }
 
     public static PlayerBuilder PlayerBuilder(){
@@ -134,16 +113,6 @@ public class Player {
 
         public PlayerBuilder setId(long id){
             Player.this.setId(id);
-            return this;
-        }
-
-        public PlayerBuilder setLogin(String login){
-            Player.this.setLogin(login);
-            return this;
-        }
-
-        public PlayerBuilder setImagePath(String imagePath){
-            Player.this.setImagePath(imagePath);
             return this;
         }
 

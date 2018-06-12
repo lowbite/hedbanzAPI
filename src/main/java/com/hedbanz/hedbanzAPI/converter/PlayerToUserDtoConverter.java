@@ -9,8 +9,8 @@ public class PlayerToUserDtoConverter implements Converter<Player, UserDto> {
     public UserDto convert(Player player) {
         return new UserDto.UserDTOBuilder()
                 .setId(player.getId())
-                .setLogin(player.getLogin())
-                .setImagePath(player.getImagePath())
+                .setLogin(player.getUser().getLogin())
+                .setImagePath(player.getUser().getImagePath())
                 .build();
     }
 }

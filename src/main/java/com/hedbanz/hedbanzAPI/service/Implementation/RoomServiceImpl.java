@@ -55,7 +55,7 @@ public class RoomServiceImpl implements RoomService{
 
     @CacheEvict(value = "rooms", allEntries = true)
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
-    public RoomDto addRoom(Room room, Long creatorId){
+    public Room addRoom(Room room, Long creatorId){
         if(creatorId == null)
             throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
 
@@ -70,7 +70,6 @@ public class RoomServiceImpl implements RoomService{
 
         Player player = conversionService.convert(user, Player.class);
         player.setStatus(PlayerStatus.ACTIVE);
-        player.setUser(user);
 
         room.addPlayer(player);
         room.setCurrentPlayersNumber(1);
@@ -84,7 +83,7 @@ public class RoomServiceImpl implements RoomService{
                                                 .setQuestion(null)
                                                 .build();
         crudMessageRepository.saveAndFlush(message);
-        return conversionService.convert(room, RoomDto.class);
+        return room;
     }
 
     public void deleteRoom(Long roomId){
@@ -92,11 +91,8 @@ public class RoomServiceImpl implements RoomService{
     }
 
     @Transactional(readOnly = true, isolation = Isolation.READ_COMMITTED)
-    public RoomDto getRoom(Long roomId){
-        Room foundRoom = crudRoomRepository.findOne(roomId);
-        RoomDto roomDto = conversionService.convert(foundRoom, RoomDto.class);
-        roomDto.setPlayers(foundRoom.getPlayers().stream().map(player -> conversionService.convert(player, PlayerDto.class)).collect(Collectors.toList()));
-        return roomDto;
+    public Room getRoom(Long roomId){
+        return crudRoomRepository.findOne(roomId);
     }
 
     @Transactional(readOnly = true, isolation = Isolation.READ_UNCOMMITTED)
@@ -121,10 +117,9 @@ public class RoomServiceImpl implements RoomService{
 
     @Cacheable("rooms")
     @Transactional(readOnly = true)
-    public List<RoomDto> getAllRooms(Integer pageNumber) {
+    public List<Room> getAllRooms(Integer pageNumber) {
         Pageable pageable = new PageRequest(pageNumber, Constants.PAGE_SIZE, Sort.Direction.DESC, "id");
-        Page<RoomDto> page = crudRoomRepository.findAllRooms(pageable);
-
+        Page<Room> page = crudRoomRepository.findAllRooms(pageable);
         return page.getContent();
     }
 
@@ -135,7 +130,7 @@ public class RoomServiceImpl implements RoomService{
     }
 
     @Transactional(readOnly = true)
-    public List<RoomDto> getRoomsByFilter(RoomFilterDto roomFilterDto, Integer pageNumber){
+    public List<Room> getRoomsByFilter(RoomFilterDto roomFilterDto, Integer pageNumber){
         //TODO change roomFilterDto
         return roomRepositoryFunctional.findRoomsByFilter(roomFilterDto,pageNumber,Constants.PAGE_SIZE);
     }
@@ -157,7 +152,7 @@ public class RoomServiceImpl implements RoomService{
         if(player == null)
             throw ExceptionFactory.create(RoomError.NO_SUCH_USER_IN_ROOM);
 
-        List<PlayerDto> players = crudRoomRepository.findPlayers(roomId);
+        List<Player> players = crudRoomRepository.findPlayers(roomId);
         for (int i = 0; i < players.size(); i++) {
             if(players.get(i).getId().equals(user.getId())){
                 if(i + 1 < players.size()) {
@@ -191,7 +186,7 @@ public class RoomServiceImpl implements RoomService{
 
     @CacheEvict(value = "rooms", allEntries = true)
     @Transactional(isolation = Isolation.READ_COMMITTED, timeout = 5)
-    public RoomDto addUserToRoom(Long userId, Long roomId, String password) {
+    public Room addUserToRoom(Long userId, Long roomId, String password) {
         //TODO add checking for game start
         if(userId == null || roomId == null){
             throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
@@ -212,7 +207,6 @@ public class RoomServiceImpl implements RoomService{
                 }
             Player player = conversionService.convert(user, Player.class);
             player.setStatus(PlayerStatus.ACTIVE);
-            player.setUser(user);
             foundRoom.addPlayer(player);
             foundRoom.setCurrentPlayersNumber(foundRoom.getPlayers().size());
             foundRoom = crudRoomRepository.saveAndFlush(foundRoom);
@@ -231,33 +225,21 @@ public class RoomServiceImpl implements RoomService{
                                                 .setQuestion(null)
                                                 .build();
         crudMessageRepository.saveAndFlush(message);
-        RoomDto resultRoom = conversionService.convert(foundRoom, RoomDto.class);
-        resultRoom.setPlayers(foundRoom.getPlayers().stream().map(player -> conversionService.convert(player, PlayerDto.class)).collect(Collectors.toList()));
-        List<FriendDto> friends = crudUserRepository.getAcceptedFriends(user.getId());
-        for (FriendDto friend : friends){
-            for(PlayerDto player : resultRoom.getPlayers()) {
-                if (friend.getId().equals(player.getId())) {
-                    player.setIsFriend(true);
-                }
-            }
-        }
-        return resultRoom;
+        return foundRoom;
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public PlayerDto setPlayerStatus(Long userId, Long roomId, PlayerStatus status) {
+    public Player setPlayerStatus(Long userId, Long roomId, PlayerStatus status) {
         if(userId == null || roomId == null || status == null){
             throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
         }
 
-        Room room = crudRoomRepository.findOne(roomId);
-        Player player = crudPlayerRepository.findOne(userId);
-        if(player == null || !room.containsPlayer(player)){
+        Player player = crudPlayerRepository.findPlayerByUserIdAndRoomId(userId, roomId);
+        if(player == null || !player.getRoom().getId().equals(roomId)){
             return null;
         }
         player.setStatus(status);
-        player = crudPlayerRepository.saveAndFlush(player);
-        return conversionService.convert(player, PlayerDto.class);
+        return crudPlayerRepository.saveAndFlush(player);
     }
 
     @Transactional(isolation = Isolation.READ_UNCOMMITTED, readOnly = true)
@@ -272,7 +254,7 @@ public class RoomServiceImpl implements RoomService{
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
-    public List<PlayerDto> getPlayers(Long roomId) {
+    public List<Player> getPlayers(Long roomId) {
         return crudRoomRepository.findPlayers(roomId);
     }
 
@@ -293,26 +275,26 @@ public class RoomServiceImpl implements RoomService{
             throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
         }
 
-        Player playerWordReceiver = null;
+        Player wordReceiverPlayer = null;
         Room room = crudRoomRepository.findOne(wordDto.getRoomId());
         Set<Player> players = room.getPlayers();
         for(Player player: players) {
-            if(player.getId().equals(wordDto.getWordReceiverId())) {
+            if(player.getUser().getId().equals(wordDto.getWordReceiverId())) {
                 player.setWord(wordDto.getWord());
-                playerWordReceiver = player;
+                wordReceiverPlayer = player;
                 break;
             }
         }
 
-        if(playerWordReceiver == null) {
+        if(wordReceiverPlayer == null) {
             Iterator<Player> iterator = players.iterator();
             while (iterator.hasNext()){
-                if(iterator.next().getId().equals(wordDto.getSenderId())){
+                if(iterator.next().getUser().getId().equals(wordDto.getSenderId())){
                     if(!iterator.hasNext())
                         iterator = players.iterator();
 
-                    playerWordReceiver = iterator.next();
-                    playerWordReceiver.setWord(wordDto.getWord());
+                    wordReceiverPlayer = iterator.next();
+                    wordReceiverPlayer.setWord(wordDto.getWord());
                 }
             }
 
@@ -334,14 +316,14 @@ public class RoomServiceImpl implements RoomService{
             }*/
         }
 
-        if(playerWordReceiver != null)
-            crudPlayerRepository.saveAndFlush(playerWordReceiver);
+        if(wordReceiverPlayer != null)
+            crudPlayerRepository.saveAndFlush(wordReceiverPlayer);
         crudRoomRepository.saveAndFlush(room);
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public PlayerDto startGuessing(Long roomId){
-        List<PlayerDto> players = crudRoomRepository.findPlayers(roomId);
+    public Player startGuessing(Long roomId){
+        List<Player> players = crudRoomRepository.findPlayers(roomId);
         if(players == null){
             throw ExceptionFactory.create(RoomError.NO_SUCH_ROOM);
         }
@@ -355,12 +337,12 @@ public class RoomServiceImpl implements RoomService{
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public PlayerDto nextGuessing(Long roomId){
-        List<PlayerDto> players = crudRoomRepository.findPlayers(roomId);
+    public Player nextGuessing(Long roomId){
+        List<Player> players = crudRoomRepository.findPlayers(roomId);
         if(players == null) {
             throw ExceptionFactory.create(RoomError.NO_SUCH_ROOM);
         }
-        PlayerDto resultPlayer = null;
+        Player resultPlayer = null;
         Integer attempts;
         for (int i = 0; i < players.size(); i++) {
             attempts = players.get(i).getAttempts();

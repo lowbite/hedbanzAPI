@@ -137,12 +137,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
-    public User getUser(long userId){
-        return crudUserRepository.findOne(userId);
+    public User getUser(Long userId){
+        if(userId == null){
+            throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
+        }return crudUserRepository.findOne(userId);
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
-    public List<FriendDto> getUserFriends(long userId){
+    public List<FriendDto> getUserFriends(Long userId){
+        if(userId == null){
+            throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
+        }
         List<FriendDto> friends = crudUserRepository.getAllFriends(userId);
         List<FriendDto> acceptedFriends = crudUserRepository.getAcceptedFriends(userId);
         //Removing accepted friendDTOS object from all friendDTOS, because they have wrong flag
@@ -152,14 +157,25 @@ public class UserServiceImpl implements UserService {
         return friends;
     }
 
+    @Override
+    public List<FriendDto> getUserAcceptedFriends(Long userId) {
+        if(userId == null){
+            throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
+        }
+        return crudUserRepository.getAcceptedFriends(userId);
+    }
+
     @Transactional
-    public void setUserFcmToken(User userDto) {
-        if(crudUserRepository.updateUserFcmToken(userDto.getFcmToken(), userDto.getId()) == 0)
+    public void setUserFcmToken(User user) {
+        if(crudUserRepository.updateUserFcmToken(user.getFcmToken(), user.getId()) == 0)
             throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
     }
 
     @Transactional
-    public void releaseUserFcmToken(long userId) {
+    public void releaseUserFcmToken(Long userId) {
+        if(userId == null){
+            throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
+        }
         if(crudUserRepository.deleteUserFcmToken(userId) == 0)
             throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
     }

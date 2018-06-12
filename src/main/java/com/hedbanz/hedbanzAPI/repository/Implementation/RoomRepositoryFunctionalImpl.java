@@ -1,5 +1,6 @@
 package com.hedbanz.hedbanzAPI.repository.Implementation;
 
+import com.hedbanz.hedbanzAPI.entity.Room;
 import com.hedbanz.hedbanzAPI.transfer.RoomDto;
 import com.hedbanz.hedbanzAPI.transfer.RoomFilterDto;
 import com.hedbanz.hedbanzAPI.error.RoomError;
@@ -14,15 +15,15 @@ import java.util.List;
 
 @Component
 public class RoomRepositoryFunctionalImpl implements RoomRepositoryFunctional {
-    private final static String FIND_ROOMS = "SELECT new com.hedbanz.hedbanzAPI.transfer.RoomDto(r.id, r.name, r.maxPlayers, r.currentPlayersNumber, r.isPrivate) FROM Room r ";
-    private final static String SEARCH_BY_NAME = "SELECT new com.hedbanz.hedbanzAPI.transfer.RoomDto(r.id, r.name, r.maxPlayers, r.currentPlayersNumber, r.isPrivate) FROM Room r WHERE r.name LIKE ";
-    private final static String SEARCH_BY_ID = "SELECT new com.hedbanz.hedbanzAPI.transfer.RoomDto(r.id, r.name, r.maxPlayers, r.currentPlayersNumber, r.isPrivate) FROM Room r WHERE r.id = ";
+    private final static String FIND_ROOMS = "SELECT  r FROM Room r ";
+    private final static String SEARCH_BY_NAME = "SELECT  r FROM Room r WHERE r.name LIKE ";
+    private final static String SEARCH_BY_ID = "SELECT  r FROM Room r WHERE r.id = ";
     private final static String QUERY_END = " r.currentPlayersNumber < r.maxPlayers ORDER BY r.id DESC";
 
     @PersistenceContext
     private EntityManager entityManager;
 
-    public List<RoomDto> findRoomsByFilter(RoomFilterDto roomFilterDto, int page, int size) {
+    public List<Room> findRoomsByFilter(RoomFilterDto roomFilterDto, int page, int size) {
         StringBuilder queryText = new StringBuilder();
 
         if(roomFilterDto.getRoomName() == null || roomFilterDto.getRoomName().equals("")){

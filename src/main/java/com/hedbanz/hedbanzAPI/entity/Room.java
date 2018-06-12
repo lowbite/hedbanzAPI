@@ -38,6 +38,7 @@ public class Room implements Serializable{
     private Boolean isPrivate;
 
     @Column(name = "game_status", nullable = false)
+    @Enumerated(EnumType.STRING)
     private GameStatus gameStatus;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "room")
@@ -169,7 +170,7 @@ public class Room implements Serializable{
 
     public Player getPlayerByLogin(String login){
             for(Player player : players){
-                if(player.getLogin().equals(login)){
+                if(player.getUser().getLogin().equals(login)){
                     return player;
                 }
             }
