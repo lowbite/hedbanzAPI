@@ -26,11 +26,6 @@ public class SetWordAckCallback extends AckCallback {
             log.info("Ack Callback timeout!");
             client.sendEvent(SERVER_SET_PLAYER_WORD_EVENT, this, new WordDto.WordDTOBuilder().setWordReceiverId(wordReceiverId)
                     .createWordDTO());
-        }else{
-            RoomEventListener.sendWordEventClientsList.add(new WordDto.WordDTOBuilder()
-                                                                        .setSenderId(client.get("userId"))
-                                                                        .setWordReceiverId(wordReceiverId)
-                                                                        .createWordDTO());
         }
     }
 

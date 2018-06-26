@@ -17,6 +17,7 @@ public class UserDtoToUserConverter implements Converter<UserDto, User> {
         user.setImagePath(userDto.getImagePath());
         user.setMoney(userDto.getMoney());
         user.setRegistrationDate(userDto.getRegistrationDate());
+        user.setFcmToken(userDto.getFcmToken());
         return user;
     }
 }

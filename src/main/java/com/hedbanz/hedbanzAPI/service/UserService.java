@@ -1,9 +1,7 @@
 package com.hedbanz.hedbanzAPI.service;
 
 import com.hedbanz.hedbanzAPI.entity.User;
-import com.hedbanz.hedbanzAPI.transfer.FriendDto;
-import com.hedbanz.hedbanzAPI.transfer.UserDto;
-import com.hedbanz.hedbanzAPI.transfer.UserUpdateDto;
+import com.hedbanz.hedbanzAPI.transfer.Friend;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
@@ -23,11 +21,15 @@ public interface UserService {
 
     User getUser(Long userId);
 
-    List<FriendDto> getUserFriends(Long userId);
+    List<Friend> getUserFriends(Long userId);
 
-    List<FriendDto> getUserAcceptedFriends(Long userId);
+    List<Friend> getUserAcceptedFriends(Long userId);
 
     void setUserFcmToken(User user);
 
     void releaseUserFcmToken(Long userId);
+
+    void addFriend(Long userId, Long friendId);
+
+    void deleteFriend(Long userId, Long friendId);
 }

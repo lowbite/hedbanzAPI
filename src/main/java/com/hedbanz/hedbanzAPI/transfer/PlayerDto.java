@@ -7,31 +7,38 @@ public class PlayerDto {
     private String login;
     private String imagePath;
     private String word;
-    private Integer attempts;
+    private Integer attempt;
     private Integer status;
     private Boolean isFriend;
+    private Boolean isPending;
     private Long userId;
+    private Long wordSettingUserId;
+    private Boolean isWinner;
 
     public PlayerDto(){}
 
-    public PlayerDto(Long id, String login, String imagePath, String word, Integer attempts, PlayerStatus status){
+    public PlayerDto(Long id, String login, String imagePath, String word, Integer attempt, PlayerStatus status){
         this.id = id;
         this.login = login;
         this.imagePath = imagePath;
         this.word = word;
-        this.attempts = attempts;
+        this.attempt = attempt;
         this.status = status.getCode();
     }
 
-    private PlayerDto(Long id, String login, String imagePath, String word, Integer attempts, Integer status, Boolean isFriend, Long userId){
+    private PlayerDto(Long id, String login, String imagePath, String word, Integer attempt, Integer status,
+                      Boolean isFriend, Boolean isPending, Long userId, Long wordSettingUserId, Boolean isWinner){
         this.id = id;
         this.login = login;
         this.imagePath = imagePath;
         this.word = word;
-        this.attempts = attempts;
+        this.attempt = attempt;
         this.status = status;
         this.isFriend = isFriend;
+        this.isPending = isPending;
         this.userId = userId;
+        this.wordSettingUserId = wordSettingUserId;
+        this.isWinner = isWinner;
     }
 
 
@@ -67,12 +74,12 @@ public class PlayerDto {
         this.word = word;
     }
 
-    public Integer getAttempts() {
-        return attempts;
+    public Integer getAttempt() {
+        return attempt;
     }
 
-    public void setAttempts(Integer attempts) {
-        this.attempts = attempts;
+    public void setAttempt(Integer attempt) {
+        this.attempt = attempt;
     }
 
     public Integer getStatus() {
@@ -99,15 +106,42 @@ public class PlayerDto {
         this.userId = userId;
     }
 
+    public Long getWordSettingUserId() {
+        return wordSettingUserId;
+    }
+
+    public void setWordSettingUserId(Long wordSettingUserId) {
+        this.wordSettingUserId = wordSettingUserId;
+    }
+
+    public Boolean getIsPending() {
+        return isPending;
+    }
+
+    public void setIsPending(Boolean pending) {
+        isPending = pending;
+    }
+
+    public Boolean getIsWinner() {
+        return isWinner;
+    }
+
+    public void setIsWinner(Boolean winner) {
+        isWinner = winner;
+    }
+
     public static class PlayerDTOBuilder {
         private Long id;
         private String login;
         private String imagePath;
         private String word;
-        private Integer attempts;
+        private Integer attempt;
         private Integer status;
         private Boolean isFriend;
+        private Boolean isPending;
         private Long userId;
+        private Long wordSettingUserId;
+        private Boolean isWinner;
 
         public PlayerDTOBuilder setId(Long id) {
             this.id = id;
@@ -129,8 +163,8 @@ public class PlayerDto {
             return this;
         }
 
-        public PlayerDTOBuilder setAttempts(Integer attempts) {
-            this.attempts = attempts;
+        public PlayerDTOBuilder setAttempt(Integer attempt) {
+            this.attempt = attempt;
             return this;
         }
 
@@ -149,8 +183,23 @@ public class PlayerDto {
             return this;
         }
 
+        public PlayerDTOBuilder setWordSettingUserId(Long wordSettingUserId){
+            this.wordSettingUserId = wordSettingUserId;
+            return this;
+        }
+
+        public PlayerDTOBuilder setIsWinner(Boolean isWinner){
+            this.isWinner = isWinner;
+            return this;
+        }
+
+        public PlayerDTOBuilder setIsPending(Boolean isPending){
+            this.isPending = isPending;
+            return this;
+        }
+
         public PlayerDto createPlayerDTO() {
-            return new PlayerDto(id, login, imagePath, word, attempts, status, isFriend, userId);
+            return new PlayerDto(id, login, imagePath, word, attempt, status, isFriend, isPending, userId, wordSettingUserId, isWinner);
         }
     }
 }

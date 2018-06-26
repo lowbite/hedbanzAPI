@@ -1,6 +1,7 @@
 package com.hedbanz.hedbanzAPI.controller;
 
 import com.hedbanz.hedbanzAPI.constant.ResultStatus;
+import com.hedbanz.hedbanzAPI.exception.FcmException;
 import com.hedbanz.hedbanzAPI.transfer.CustomResponseBody;
 import com.hedbanz.hedbanzAPI.entity.Room;
 import com.hedbanz.hedbanzAPI.entity.User;
@@ -31,6 +32,14 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseStatus(HttpStatus.OK)
     public CustomResponseBody<User> userError(UserException e){
         log.error("User error");
+        return new CustomResponseBody<>(ResultStatus.ERROR_STATUS,
+                new CustomError(e.getCode(), e.getMessage()), null);
+    }
+
+    @ExceptionHandler(FcmException.class)
+    @ResponseStatus(HttpStatus.OK)
+    public CustomResponseBody<User> fcmError(FcmException e){
+        log.error("Fcm error");
         return new CustomResponseBody<>(ResultStatus.ERROR_STATUS,
                 new CustomError(e.getCode(), e.getMessage()), null);
     }

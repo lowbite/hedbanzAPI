@@ -1,7 +1,7 @@
 package com.hedbanz.hedbanzAPI.constant;
 
 public enum VoteType {
-    YES(1), NO(0);
+    NO(0), YES(1), WIN(2);
 
     private int code;
 

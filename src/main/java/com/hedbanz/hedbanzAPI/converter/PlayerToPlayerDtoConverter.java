@@ -8,13 +8,14 @@ public class PlayerToPlayerDtoConverter implements Converter<Player, PlayerDto> 
     @Override
     public PlayerDto convert(Player player) {
         return new PlayerDto.PlayerDTOBuilder()
-                            .setId(player.getId())
-                            .setLogin(player.getUser().getLogin())
-                            .setWord(player.getWord())
-                            .setAttempts(player.getAttempts())
-                            .setImagePath(player.getUser().getImagePath())
-                            .setStatus(player.getStatus().getCode())
-                            .setUserId(player.getUser().getId())
-                            .createPlayerDTO();
+                .setId(player.getId())
+                .setLogin(player.getUser().getLogin())
+                .setWord(player.getWord())
+                .setAttempt(player.getAttempt())
+                .setImagePath(player.getUser().getImagePath())
+                .setStatus(player.getStatus().getCode())
+                .setUserId(player.getUser().getId())
+                .setIsWinner(player.isWinner())
+                .createPlayerDTO();
     }
 }

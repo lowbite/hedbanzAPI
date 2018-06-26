@@ -1,4 +1,4 @@
-package com.hedbanz.hedbanzAPI.entity;
+package com.hedbanz.hedbanzAPI.interceptor;
 
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;

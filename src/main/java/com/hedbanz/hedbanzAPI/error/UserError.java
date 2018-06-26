@@ -13,7 +13,8 @@ public enum UserError {
     INVALID_EMAIL(10, ErrorMessages.INVALID_EMAIL),
     INCORRECT_USER_ID(12, ErrorMessages.NO_USER_ID),
     CANT_SEND_FRIENDSHIP_REQUEST(13, ErrorMessages.CANT_SEND_FRIENDSHIP_REQUEST),
-    ALREADY_FRIENDS(14, ErrorMessages.ALREADY_FRIENDS);
+    ALREADY_FRIENDS(14, ErrorMessages.ALREADY_FRIENDS),
+    NOT_FRIENDS(15, ErrorMessages.NOT_FRIENDS);
 
     private int errorCode;
     private String errorMessage;

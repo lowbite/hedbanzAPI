@@ -10,13 +10,19 @@ import com.hedbanz.hedbanzAPI.transfer.QuestionDto;
 import java.util.List;
 
 public interface MessageService {
-    List<MessageDto> getAllMessages(long roomId, int pageNumber);
+    List<Message> getAllMessages(Long roomId, Integer pageNumber);
 
     MessageDto addMessage(MessageDto messageDto);
 
     void addEventMessage(MessageDto messageDto);
 
-    Message addQuestionMessage(MessageDto messageDto);
+    Message addQuestionText(Long questionId, String text);
 
     Question addVote(Vote vote);
+
+    Question getLastQuestionInRoom(Long roomId);
+
+    Message getMessageByQuestionId(Long questionId);
+
+    Question addSettingQuestionMessage(Long roomId, Long senderId);
 }

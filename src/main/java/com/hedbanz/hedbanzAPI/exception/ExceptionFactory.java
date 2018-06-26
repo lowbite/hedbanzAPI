@@ -1,5 +1,6 @@
 package com.hedbanz.hedbanzAPI.exception;
 
+import com.hedbanz.hedbanzAPI.error.FcmError;
 import com.hedbanz.hedbanzAPI.error.RoomError;
 import com.hedbanz.hedbanzAPI.error.UserError;
 import org.slf4j.Logger;
@@ -28,5 +29,15 @@ public class ExceptionFactory {
     public static UserException create(final UserError error, final Object... messageArguments) {
         LOG.error(MessageFormat.format(error.getErrorMessage(), messageArguments));
         return new UserException(error, messageArguments);
+    }
+
+    public static FcmException create(final Throwable cause, final FcmError error, final Object... messageArguments) {
+        LOG.error(MessageFormat.format(error.getErrorMessage(), messageArguments), cause);
+        return new FcmException (error, cause, messageArguments);
+    }
+
+    public static FcmException create(final FcmError error, final Object... messageArguments) {
+        LOG.error(MessageFormat.format(error.getErrorMessage(), messageArguments));
+        return new FcmException(error, messageArguments);
     }
 }

@@ -13,7 +13,9 @@ public enum RoomError {
     NO_SUCH_ROOM(10, ErrorMessages.NO_SUCH_ROOM),
     NO_SUCH_QUESTION(11, ErrorMessages.NO_SUCH_QUESTION),
     NO_SUCH_PLAYER(12, ErrorMessages.NO_SUCH_PLAYER),
-    SUCH_PLAYER_ALREADY_VOTED(12, ErrorMessages.SUCH_PLAYER_ALREADY_VOTED);
+    SUCH_PLAYER_ALREADY_VOTED(12, ErrorMessages.SUCH_PLAYER_ALREADY_VOTED),
+    GAME_HAS_BEEN_ALREADY_STARTED(13, ErrorMessages.GAME_HAS_BEEN_ALREADY_STARTED),
+    INCORRECT_ROOM_ID(14, ErrorMessages.INCORRECT_ROOM_ID);
 
     private int errorCode;
     private String errorMessage;

@@ -5,15 +5,17 @@ import com.hedbanz.hedbanzAPI.constant.MessageType;
 import javax.persistence.*;
 import java.sql.Timestamp;
 
+import static javax.persistence.FetchType.EAGER;
+
 @Entity(name = "Message")
 @Table(name = "message")
-public class Message{
+public class Message implements Cloneable{
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "message_id")
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne(cascade = CascadeType.PERSIST, fetch = EAGER)
     private User senderUser;
 
     @Column(name = "text")
@@ -26,10 +28,11 @@ public class Message{
     @Column(name = "create_date")
     private Timestamp createDate;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, fetch = EAGER)
     private Question question;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "room_id")
     private Room room;
 
     public Long getId() {
@@ -113,6 +116,25 @@ public class Message{
         result = 31 * result + (type != null ? type.hashCode() : 0);
         result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public Object clone(){
+        try {
+            super.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        Room room = new Room();
+        room.setId(this.room.getId());
+        return Message.MessageBuilder().setText(text)
+                                        .setQuestion(question)
+                                        .setRoom(room)
+                                        .setSenderUser(senderUser)
+                                        .setType(type)
+                                        .setCreateDate(createDate)
+                                        .setId(id)
+                                        .build();
     }
 
     public static MessageBuilder MessageBuilder(){

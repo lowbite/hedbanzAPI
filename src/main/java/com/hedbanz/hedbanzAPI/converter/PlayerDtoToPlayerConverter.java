@@ -1,6 +1,5 @@
 package com.hedbanz.hedbanzAPI.converter;
 
-import com.hedbanz.hedbanzAPI.constant.PlayerStatus;
 import com.hedbanz.hedbanzAPI.transfer.PlayerDto;
 import com.hedbanz.hedbanzAPI.entity.Player;
 import org.springframework.core.convert.converter.Converter;
@@ -11,7 +10,7 @@ public class PlayerDtoToPlayerConverter implements Converter<PlayerDto, Player> 
         Player player = new Player();
         player.setId(playerDto.getId());
         player.setWord(playerDto.getWord());
-        player.setAttempts(playerDto.getAttempts());
+        player.setAttempt(playerDto.getAttempt());
         return player;
     }
 }

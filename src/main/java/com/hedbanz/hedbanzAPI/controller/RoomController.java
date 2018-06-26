@@ -1,5 +1,6 @@
 package com.hedbanz.hedbanzAPI.controller;
 
+import com.hedbanz.hedbanzAPI.constant.MessageType;
 import com.hedbanz.hedbanzAPI.constant.ResultStatus;
 import com.hedbanz.hedbanzAPI.entity.Message;
 import com.hedbanz.hedbanzAPI.entity.Room;
@@ -70,8 +71,15 @@ public class RoomController {
     @RequestMapping(method = RequestMethod.GET, value = "/{roomId}/messages/{pageNumber}")
     @ResponseStatus(HttpStatus.OK)
     public CustomResponseBody<List<MessageDto>> findAllMessages(@PathVariable("roomId") long roomId, @PathVariable("pageNumber") int pageNumber){
-        List<MessageDto> messages = messageService.getAllMessages(roomId, pageNumber);
-        return new CustomResponseBody<>(ResultStatus.SUCCESS_STATUS, null, messages);
+        List<Message> messages = messageService.getAllMessages(roomId, pageNumber);
+        List<MessageDto> resultMessages = messages.stream().map(message -> {
+            if(message.getType() != MessageType.USER_QUESTION){
+                return conversionService.convert(message, MessageDto.class);
+            }else{
+                return conversionService.convert(message, QuestionDto.class);
+            }
+        }).collect(Collectors.toList());
+        return new CustomResponseBody<>(ResultStatus.SUCCESS_STATUS, null, resultMessages);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/password")

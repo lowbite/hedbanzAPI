@@ -19,7 +19,7 @@ public class MessageDto {
     public MessageDto() {
     }
 
-    private MessageDto(Long clientMessageId, UserDto senderUser, Long roomId, String text, Integer type, Date createDate) {
+    protected MessageDto(Long clientMessageId, UserDto senderUser, Long roomId, String text, Integer type, Date createDate) {
         this.clientMessageId = clientMessageId;
         this.senderUser = senderUser;
         this.roomId = roomId;

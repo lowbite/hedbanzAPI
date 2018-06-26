@@ -1,25 +1,27 @@
 package com.hedbanz.hedbanzAPI.transfer;
 
-public class FriendDto {
+public class Friend {
 
     private Long id;
     private String login;
     private String imagePath;
+    private Boolean isPending;
     private Boolean isAccepted;
 
-    public FriendDto(){};
+    public Friend(){};
 
-    public FriendDto(Long id, String login, String imagePath){
+    public Friend(Long id, String login, String imagePath){
         this.id = id;
         this.login = login;
         this.imagePath = imagePath;
     }
 
-    public FriendDto(Long id, String login, String imagePath, int isAccepted){
+    public Friend(Long id, String login, String imagePath, int isAccepted, int isPending){
         this.id = id;
         this.login = login;
         this.imagePath = imagePath;
         this.isAccepted = (isAccepted != 0);
+        this.isPending = (isPending != 0);
     }
 
     public Long getId() {
@@ -54,15 +56,31 @@ public class FriendDto {
         isAccepted = isAccepted;
     }
 
+    public Boolean getIsPending() {
+        return isPending;
+    }
+
+    public void setIsPending(Boolean pending) {
+        isPending = pending;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        FriendDto friendDto = (FriendDto) o;
+        Friend friend = (Friend) o;
 
-        if (!id.equals(friendDto.id)) return false;
-        if (!login.equals(friendDto.login)) return false;
-        return imagePath.equals(friendDto.imagePath);
+        if (id != null ? !id.equals(friend.id) : friend.id != null) return false;
+        if (login != null ? !login.equals(friend.login) : friend.login != null) return false;
+        return imagePath != null ? imagePath.equals(friend.imagePath) : friend.imagePath == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (login != null ? login.hashCode() : 0);
+        result = 31 * result + (imagePath != null ? imagePath.hashCode() : 0);
+        return result;
     }
 }

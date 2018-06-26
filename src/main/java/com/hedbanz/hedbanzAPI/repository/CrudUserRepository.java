@@ -2,7 +2,7 @@ package com.hedbanz.hedbanzAPI.repository;
 
 
 import com.hedbanz.hedbanzAPI.entity.User;
-import com.hedbanz.hedbanzAPI.transfer.FriendDto;
+import com.hedbanz.hedbanzAPI.transfer.Friend;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -20,13 +20,17 @@ public interface CrudUserRepository extends JpaRepository<User, Long> {
 
     User findUserBySecurityToken(String securityToken);
 
-    @Query(value = "SELECT new com.hedbanz.hedbanzAPI.transfer.FriendDto(f.id, f.login, f.imagePath, 1) FROM User u " +
+    @Query(value = "SELECT new com.hedbanz.hedbanzAPI.transfer.Friend(f.id, f.login, f.imagePath, 1, 0) FROM User u " +
             "INNER JOIN u.friends f INNER JOIN f.friends ff WHERE u.id = :userId AND ff.id = :userId")
-    List<FriendDto>  getAcceptedFriends(@Param("userId") long userId);
+    List<Friend> findAcceptedFriends(@Param("userId") long userId);
 
-    @Query(value = "SELECT new com.hedbanz.hedbanzAPI.transfer.FriendDto(f.id, f.login, f.imagePath) FROM User u " +
+    @Query(value = "SELECT new com.hedbanz.hedbanzAPI.transfer.Friend(f.id, f.login, f.imagePath, 0, 1) FROM User u " +
             "INNER JOIN u.friends f WHERE u.id = :userId")
-    List<FriendDto> getAllFriends(@Param("userId") long userId);
+    List<Friend> findPendingAndAcceptedFriends(@Param("userId") long userId);
+
+    @Query("SELECT new com.hedbanz.hedbanzAPI.transfer.Friend(u.id, u.login, u.imagePath, 0, 0) FROM  User u " +
+            "INNER JOIN u.friends f WHERE f.id = :userId")
+    List<Friend> findRequestingFriends(@Param("userId") long userId);
 
     @Modifying
     @Query("UPDATE User u SET u.fcmToken = :token WHERE u.id = :user_id")

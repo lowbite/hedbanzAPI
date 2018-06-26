@@ -1,7 +1,5 @@
 package com.hedbanz.hedbanzAPI.entity;
 
-import org.hibernate.annotations.Cascade;
-
 import javax.persistence.*;
 import java.util.List;
 
@@ -13,17 +11,24 @@ public class Question {
     @Column(name = "question_id")
     private Long id;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH})
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH})
     private List<Player> yesVoters;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH})
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH})
     private List<Player> noVoters;
+
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH})
+    private List<Player> winVoters;
+
+    private Integer attempt;
 
     public Question(){}
 
-    private Question(List<Player> yesVoters, List<Player> noVoters) {
+    private Question(List<Player> yesVoters, List<Player> noVoters, List<Player> winVoters, Integer attempt) {
         this.yesVoters = yesVoters;
         this.noVoters = noVoters;
+        this.winVoters = winVoters;
+        this.attempt = attempt;
     }
 
     public Long getId() {
@@ -50,6 +55,22 @@ public class Question {
         this.noVoters = noVoters;
     }
 
+    public List<Player> getWinVoters() {
+        return winVoters;
+    }
+
+    public void setWinVoters(List<Player> winVoters) {
+        this.winVoters = winVoters;
+    }
+
+    public Integer getAttempt() {
+        return attempt;
+    }
+
+    public void setAttempt(Integer attempt) {
+        this.attempt = attempt;
+    }
+
     public boolean addYesVoter(Player player){
         if(!yesVoters.contains(player)){
             yesVoters.add(player);
@@ -58,29 +79,35 @@ public class Question {
         return false;
     }
 
-    public boolean removeYesVoter(Player player){
-        if(yesVoters.contains(player)){
+    public void removeYesVoter(Player player){
+        if(yesVoters.contains(player))
             yesVoters.remove(player);
-            return true;
-        }
-        return false;
     }
 
-    public boolean addNoVoter(Player player){
-        if(!noVoters.contains(player)){
+    public boolean addNoVoter(Player player) {
+        if (!noVoters.contains(player)) {
             noVoters.add(player);
             return true;
         }
         return false;
     }
 
-
-    public boolean removeNoVoter(Player player){
-        if(noVoters.contains(player)){
+    public void removeNoVoter(Player player){
+        if(noVoters.contains(player))
             noVoters.remove(player);
+    }
+
+    public boolean addWinVoter(Player player) {
+        if (!winVoters.contains(player)) {
+            winVoters.add(player);
             return true;
         }
         return false;
+    }
+
+    public void removeWinVoter(Player player){
+        if(winVoters.contains(player))
+            winVoters.remove(player);
     }
 
     public boolean noVotersContainPlayer(Player player){
@@ -89,6 +116,10 @@ public class Question {
 
     public boolean yesVotersContainPlayer(Player player){
         return yesVoters.contains(player);
+    }
+
+    public boolean winVotersContainPlayer(Player player){
+        return winVoters.contains(player);
     }
 
     @Override
@@ -106,22 +137,34 @@ public class Question {
         return id != null ? id.hashCode() : 0;
     }
 
-    public static class QuestionBuilder {
+    public static class Builder {
         private List<Player> yesVoters;
         private List<Player> noVoters;
+        private List<Player> winVoters;
+        private Integer attempt;
 
-        public QuestionBuilder setYesVoters(List<Player> yesVoters) {
+        public Builder setYesVoters(List<Player> yesVoters) {
             this.yesVoters = yesVoters;
             return this;
         }
 
-        public QuestionBuilder setNoVoters(List<Player> noVoters) {
+        public Builder setNoVoters(List<Player> noVoters) {
             this.noVoters = noVoters;
             return this;
         }
 
-        public Question createQuestion() {
-            return new Question(yesVoters, noVoters);
+        public Builder setWinVoters(List<Player> winVoters) {
+            this.winVoters = winVoters;
+            return this;
+        }
+
+        public Builder setAttempt(Integer attempt){
+            this.attempt = attempt;
+            return this;
+        }
+
+        public Question build() {
+            return new Question(yesVoters, noVoters, winVoters, attempt);
         }
     }
 }

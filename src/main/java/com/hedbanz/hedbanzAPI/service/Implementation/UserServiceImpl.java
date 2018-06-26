@@ -1,7 +1,7 @@
 package com.hedbanz.hedbanzAPI.service.Implementation;
 
 import com.hedbanz.hedbanzAPI.security.SecurityUserDetails;
-import com.hedbanz.hedbanzAPI.transfer.FriendDto;
+import com.hedbanz.hedbanzAPI.transfer.Friend;
 import com.hedbanz.hedbanzAPI.entity.User;
 import com.hedbanz.hedbanzAPI.error.UserError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
@@ -14,9 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -144,25 +142,28 @@ public class UserServiceImpl implements UserService {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
-    public List<FriendDto> getUserFriends(Long userId){
+    public List<Friend> getUserFriends(Long userId){
         if(userId == null){
             throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
         }
-        List<FriendDto> friends = crudUserRepository.getAllFriends(userId);
-        List<FriendDto> acceptedFriends = crudUserRepository.getAcceptedFriends(userId);
+        Set<Friend> friends = new HashSet<>();
+        crudUserRepository.findPendingAndAcceptedFriends(userId);
+        List<Friend> acceptedFriends = crudUserRepository.findAcceptedFriends(userId);
+        List<Friend> friendsWithRequest = crudUserRepository.findRequestingFriends(userId);
         //Removing accepted friendDTOS object from all friendDTOS, because they have wrong flag
         friends.removeAll(acceptedFriends);
         //Adding accepted friendDTOS
         friends.addAll(acceptedFriends);
-        return friends;
+        friends.addAll(friendsWithRequest);
+        return new ArrayList<>(friends);
     }
 
     @Override
-    public List<FriendDto> getUserAcceptedFriends(Long userId) {
+    public List<Friend> getUserAcceptedFriends(Long userId) {
         if(userId == null){
             throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
         }
-        return crudUserRepository.getAcceptedFriends(userId);
+        return crudUserRepository.findAcceptedFriends(userId);
     }
 
     @Transactional
@@ -178,5 +179,27 @@ public class UserServiceImpl implements UserService {
         }
         if(crudUserRepository.deleteUserFcmToken(userId) == 0)
             throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
+    }
+
+    @Transactional
+    public void addFriend(Long userId, Long friendId){
+        User friend = crudUserRepository.findOne(friendId);
+        User user = crudUserRepository.findOne(userId);
+
+        if(!user.addFriend(friend))
+            throw ExceptionFactory.create(UserError.ALREADY_FRIENDS);
+
+        crudUserRepository.saveAndFlush(user);
+    }
+
+    @Transactional
+    public void deleteFriend(Long userId, Long friendId) {
+        User friend = crudUserRepository.findOne(friendId);
+        User user = crudUserRepository.findOne(userId);
+
+        if(!user.removeFriend(friend))
+            throw ExceptionFactory.create(UserError.NOT_FRIENDS);
+
+        crudUserRepository.saveAndFlush(user);
     }
 }

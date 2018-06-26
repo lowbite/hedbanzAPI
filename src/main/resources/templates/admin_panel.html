@@ -2,23 +2,52 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/4.0.0/css/bootstrap.min.css"/>
+
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script type="text/javascript" src="/webjars/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/4.0.0/css/bootstrap.min.css"/>
+    <link rel="stylesheet" type="text/css" href="css/login.css"/>
+    <link rel="stylesheet" type="text/css" href="css/util.css"/>
+    <link rel="stylesheet" type="text/css" href="css/panel.css"/>
     <title>Admin panel</title>
 </head>
-<body height="100%">
-    <div class="container-fluid" height="100%">
-        <div class="row">
-            <div class="col-lg-2" style="border: thin solid black">
-                <div class="btn-group-vertical">
-                    <button type="button" class="btn-info" value="Application properties"/>
-                    <button type="button" class="btn-info"  value="User"/>
-                    <button type="button" class="btn-info" value="Room"/>
-                </div>
-            </div>
-            <div class="col-lg-10" style="border: thin solid black">asds</div>
+<body>
+<div class="container-fluid">
+    <div class="row header">
+        <div class="col-12">
+            <span class="title">Admin Panel</span>
         </div>
     </div>
+    <div class="row">
+        <div class="col-lg-2 col-3 align-content-center" id="sideBar">
+            <div class="list-group list-group-flush">
+                <button type="button" class="list-group-item list-group-item-action align-content-center active">Application version</button>
+                <button type="button" class="list-group-item list-group-item-action align-content-center">Dapibus ac facilisis in</button>
+                <button type="button" class="list-group-item list-group-item-action align-content-center">Morbi leo risus</button>
+                <button type="button" class="list-group-item list-group-item-action align-content-center">Porta ac consectetur ac</button>
+                <button type="button" class="list-group-item list-group-item-action align-content-center">Vestibulum at eros</button>
+            </div>
+        </div>
+        <div class="col-9">
+            <div class="row align-content-center version">
+                <div class="col-2"></div>
+                <div class="col-4">
+                    <form th:method="post" th:object="${app}">
+                        <div class="wrap-input100 m-b-30">
+                            <input class="input100" type="text" name="version" placeholder="Application version" th:field="*{version}"/>
+                            <span></span>
+                        </div>
+                        <div class="container-login100-form-btn m-b-20">
+                            <button class="login100-form-btn">
+                                Update
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

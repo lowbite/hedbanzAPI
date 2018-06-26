@@ -5,7 +5,7 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.Set;
+import java.util.List;
 
 @Entity
 @Table(name = "user")
@@ -48,8 +48,7 @@ public class User implements Serializable {
     @JoinTable(name = "friendship",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "friend_id"))
-    private Set<User> friends;
-
+    private List<User> friends;
 
     public User(){
 
@@ -64,7 +63,8 @@ public class User implements Serializable {
         this.email = email;
     }
 
-    public User(Long id, String login, String password, Integer money, Timestamp registrationDate, String imagePath, String email, String securityToken, String fcmToken, Set<User> friends) {
+    public User(Long id, String login, String password, Integer money, Timestamp registrationDate, String imagePath,
+                String email, String securityToken, String fcmToken, List<User> friends) {
         this.id = id;
         this.login = login;
         this.password = password;
@@ -141,7 +141,7 @@ public class User implements Serializable {
         this.securityToken = securityToken;
     }
 
-    public void setFriends(Set<User> friends) {
+    public void setFriends(List<User> friends) {
         this.friends = friends;
     }
 
@@ -177,79 +177,66 @@ public class User implements Serializable {
         User user = (User) o;
 
         if (id != null ? !id.equals(user.id) : user.id != null) return false;
-        if (login != null ? !login.equals(user.login) : user.login != null) return false;
-        if (password != null ? !password.equals(user.password) : user.password != null) return false;
-        if (money != null ? !money.equals(user.money) : user.money != null) return false;
-        if (registrationDate != null ? !registrationDate.equals(user.registrationDate) : user.registrationDate != null)
-            return false;
-        if (imagePath != null ? !imagePath.equals(user.imagePath) : user.imagePath != null) return false;
-        if (email != null ? !email.equals(user.email) : user.email != null) return false;
-        return securityToken != null ? securityToken.equals(user.securityToken) : user.securityToken == null;
+        return login != null ? login.equals(user.login) : user.login == null;
     }
 
     @Override
     public int hashCode() {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (login != null ? login.hashCode() : 0);
-        result = 31 * result + (password != null ? password.hashCode() : 0);
-        result = 31 * result + (money != null ? money.hashCode() : 0);
-        result = 31 * result + (registrationDate != null ? registrationDate.hashCode() : 0);
-        result = 31 * result + (imagePath != null ? imagePath.hashCode() : 0);
-        result = 31 * result + (email != null ? email.hashCode() : 0);
-        result = 31 * result + (securityToken != null ? securityToken.hashCode() : 0);
         return result;
     }
 
-    public static UserBuilder UserBuilder(){
-        return new User(). new UserBuilder();
+    public static Builder Builder(){
+        return new User(). new Builder();
     }
 
-    public class UserBuilder {
-        private UserBuilder(){
+    public class Builder {
+        private Builder(){
 
         }
 
-        public UserBuilder setId(long id){
+        public Builder setId(long id){
             User.this.setId(id);
             return this;
         }
 
-        public UserBuilder setLogin(String login){
+        public Builder setLogin(String login){
             User.this.setLogin(login);
             return this;
         }
 
-        public UserBuilder setPassword(String password) {
+        public Builder setPassword(String password) {
             User.this.setPassword(password);
             return this;
         }
 
-        public UserBuilder setMoney(int money){
+        public Builder setMoney(int money){
             User.this.setMoney(money);
             return this;
         }
 
-        public UserBuilder setRegistrationDate(Timestamp registrationDate) {
+        public Builder setRegistrationDate(Timestamp registrationDate) {
             User.this.setRegistrationDate(registrationDate);
             return this;
         }
 
-        public UserBuilder setImagePath(String imagePath){
+        public Builder setImagePath(String imagePath){
             User.this.setImagePath(imagePath);
             return this;
         }
 
-        public UserBuilder setEmail(String email){
+        public Builder setEmail(String email){
             User.this.setEmail(email);
             return this;
         }
 
-        public UserBuilder setSecurityToken(String securityToken){
+        public Builder setSecurityToken(String securityToken){
             User.this.setSecurityToken(securityToken);
             return this;
         }
 
-        public UserBuilder setFcmToken(String fcmToken){
+        public Builder setFcmToken(String fcmToken){
             User.this.setFcmToken(fcmToken);
             return this;
         }

@@ -6,9 +6,7 @@ import com.hedbanz.hedbanzAPI.constant.GameStatus;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "room")
@@ -43,7 +41,10 @@ public class Room implements Serializable{
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "room")
     @OrderBy("id")
-    private Set<Player> players = new HashSet<>();
+    private List<Player> players = new ArrayList<>();
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "room")
+    private List<Message> messages = new ArrayList<>();
 
     @Column(name = "admin")
     @NotNull
@@ -62,11 +63,11 @@ public class Room implements Serializable{
     }
 
 
-    public Set<Player> getPlayers(){
+    public List<Player> getPlayers(){
         return this.players;
     }
 
-    public void setPlayers(Set<Player> users) {
+    public void setPlayers(List<Player> users) {
         this.players = users;
     }
 
@@ -132,6 +133,14 @@ public class Room implements Serializable{
 
     public void setGameStatus(GameStatus gameStatus) {
         this.gameStatus = gameStatus;
+    }
+
+    public List<Message> getMessages() {
+        return messages;
+    }
+
+    public void setMessages(List<Message> messages) {
+        this.messages = messages;
     }
 
     public boolean updatePlayer(Player player){

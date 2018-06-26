@@ -7,7 +7,7 @@ import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "players")
-public class Player {
+public class Player implements Cloneable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -17,8 +17,8 @@ public class Player {
     @Column(name = "word")
     private String word;
 
-    @Column(name = "attempts")
-    private Integer attempts;
+    @Column(name = "attempt", columnDefinition = "int(11) default 0")
+    private Integer attempt;
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
@@ -32,6 +32,11 @@ public class Player {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User user;
+
+    private Long wordSettingUserId;
+
+    @Column(columnDefinition = "tinyint(1) default 0")
+    private boolean isWinner;
 
     public Player() {
     }
@@ -52,12 +57,12 @@ public class Player {
         this.word = word;
     }
 
-    public Integer getAttempts() {
-        return attempts;
+    public Integer getAttempt() {
+        return attempt;
     }
 
-    public void setAttempts(Integer attempts) {
-        this.attempts = attempts;
+    public void setAttempt(Integer attempt) {
+        this.attempt = attempt;
     }
 
     public PlayerStatus getStatus() {
@@ -84,6 +89,22 @@ public class Player {
         this.user = user;
     }
 
+    public Long getWordSettingUserId() {
+        return wordSettingUserId;
+    }
+
+    public void setWordSettingUserId(Long wordSettingUserId) {
+        this.wordSettingUserId = wordSettingUserId;
+    }
+
+    public boolean isWinner() {
+        return isWinner;
+    }
+
+    public void setIsWinner(boolean winner) {
+        isWinner = winner;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -100,6 +121,26 @@ public class Player {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (user != null ? user.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public Object clone(){
+        try {
+            super.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        Room room = new Room();
+        room.setId(this.room.getId());
+        return Player.PlayerBuilder()
+                .setId(id)
+                .setUser(user)
+                .setAttempts(attempt)
+                .setIsWinner(isWinner)
+                .setStatus(status)
+                .setWord(word)
+                .setWordSettingUserId(wordSettingUserId)
+                .build();
     }
 
     public static PlayerBuilder PlayerBuilder(){
@@ -122,7 +163,7 @@ public class Player {
         }
 
         public PlayerBuilder setAttempts(int attempts){
-            Player.this.setAttempts(attempts);
+            Player.this.setAttempt(attempts);
             return this;
         }
 
@@ -133,6 +174,16 @@ public class Player {
 
         public PlayerBuilder setUser(User user){
             Player.this.setUser(user);
+            return this;
+        }
+
+        public PlayerBuilder setWordSettingUserId(Long userId){
+            Player.this.setWordSettingUserId(userId);
+            return this;
+        }
+
+        public PlayerBuilder setIsWinner(Boolean isWinner){
+            Player.this.setIsWinner(isWinner);
             return this;
         }
 

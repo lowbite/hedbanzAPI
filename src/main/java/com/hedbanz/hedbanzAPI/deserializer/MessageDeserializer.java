@@ -15,7 +15,6 @@ public class MessageDeserializer extends JsonDeserializer<MessageDto> {
     public MessageDto deserialize(JsonParser p, DeserializationContext deserializationContext) throws IOException{
         JsonNode node = p.getCodec().readTree(p);
         Gson gson = new Gson();
-        MessageDto messageDto = gson.fromJson(node.asText(), MessageDto.class);
-        return messageDto;
+        return gson.fromJson(node.asText(), MessageDto.class);
     }
 }

@@ -12,6 +12,7 @@ public interface ErrorMessages {
      String INVALID_LOGIN = "Invalid login!";
      String INVALID_EMAIL = "Invalid email!";
      String ALREADY_FRIENDS = "You are already friends!";
+     String NOT_FRIENDS = "You are not friends!";
      String CANT_SEND_FRIENDSHIP_REQUEST = "Can't send friendship request to this user at this time";
      String NO_SUCH_ROOM = "There is no such room!";
      String USER_ALREADY_IN_ROOM = "This user is already in that room!";
@@ -22,6 +23,8 @@ public interface ErrorMessages {
      String NO_SUCH_PLAYER = "There is no such player!";
      String SUCH_PLAYER_ALREADY_VOTED = "This player has already voted!";
      String NO_USER_ID = "User id is empty!";
+     String GAME_HAS_BEEN_ALREADY_STARTED = "Game has been started!";
+     String INCORRECT_ROOM_ID = "Incorrect room id!";
 
 
      String INCORRECT_INPUT = "Incorrect input!";
@@ -29,5 +32,7 @@ public interface ErrorMessages {
      String ROOM_IS_FULL = "Room is full!";
 
      String DB_ERROR = "Problems with database actions!";
+
+     String CANT_SEND_MESSAGE_NOTIFICATION = "Can't send message push notification!";
 
 }

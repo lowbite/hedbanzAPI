@@ -41,5 +41,5 @@ public interface RoomService {
 
     void checkPlayerInRoom(Long userId, Long roomId);
 
-
+    Room setPlayersWordSetters(Long roomId);
 }

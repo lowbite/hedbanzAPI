@@ -1,7 +1,5 @@
 package com.hedbanz.hedbanzAPI.entity;
 
-import com.hedbanz.hedbanzAPI.constant.VoteType;
-import com.hedbanz.hedbanzAPI.service.Implementation.MessageServiceImpl;
 
 public final class Vote{
     private Long senderId;

@@ -7,32 +7,33 @@ import java.util.Date;
 import java.util.List;
 
 @JsonDeserialize(using = QuestionDtoDeserializer.class)
-public class QuestionDto {
-    private Long id;
+public class QuestionDto extends MessageDto{
     private Long questionId;
-    private Long clientMessageId;
-    private Long senderId;
-    private Long roomId;
-    private String text;
-    private Integer type;
-    private Long createDate;
     private List<PlayerDto> yesVoters;
     private List<PlayerDto> noVoters;
+    private List<PlayerDto> winVoters;
+    private Integer attempt;
     private Integer vote;
 
-    private QuestionDto(Long id, Long questionId, Long clientMessageId, Long senderId, Long roomId, String text, Integer type, Long createDate, List<PlayerDto> yesVoters, List<PlayerDto> noVoters, Integer vote) {
-        this.id = id;
+    private QuestionDto(Long questionId, Long clientMessageId, UserDto senderUser, Long roomId, String text,
+                        Integer type, Date createDate, List<PlayerDto> yesVoters, List<PlayerDto> noVoters, List<PlayerDto> winVoters, Integer attempt, Integer vote) {
+        super(clientMessageId, senderUser, roomId, text, type, createDate);
         this.questionId = questionId;
-        this.clientMessageId = clientMessageId;
-        this.senderId = senderId;
-        this.roomId = roomId;
-        this.text = text;
-        this.type = type;
-        this.createDate = createDate;
+        this.yesVoters = yesVoters;
+        this.noVoters = noVoters;
+        this.winVoters = winVoters;
+        this.attempt = attempt;
+        this.vote = vote;
+    }
+
+    /*public QuestionDto(Long senderId, Long questionId, Long clientMessageId, Long roomId, String text,
+                       Integer type, Date createDate, List<PlayerDto> yesVoters, List<PlayerDto> noVoters, Integer vote) {
+        super(clientMessageId, new UserDto.UserDTOBuilder().setId(senderId).build(), roomId, text, type, createDate);
+        this.questionId = questionId;
         this.yesVoters = yesVoters;
         this.noVoters = noVoters;
         this.vote = vote;
-    }
+    }*/
 
     public Long getQuestionId() {
         return questionId;
@@ -58,22 +59,6 @@ public class QuestionDto {
         this.noVoters = noVoters;
     }
 
-    public Long getSenderId() {
-        return senderId;
-    }
-
-    public void setSenderId(Long senderId) {
-        this.senderId = senderId;
-    }
-
-    public Long getRoomId() {
-        return roomId;
-    }
-
-    public void setRoomId(Long roomId) {
-        this.roomId = roomId;
-    }
-
     public Integer getVote() {
         return vote;
     }
@@ -82,58 +67,36 @@ public class QuestionDto {
         this.vote = vote;
     }
 
-    public Long getClientMessageId() {
-        return clientMessageId;
+    public Integer getAttempt() {
+        return attempt;
     }
 
-    public void setClientMessageId(Long clientMessageId) {
-        this.clientMessageId = clientMessageId;
+    public void setAttempt(Integer attempt) {
+        this.attempt = attempt;
     }
 
-    public String getText() {
-        return text;
+    public List<PlayerDto> getWinVoters() {
+        return winVoters;
     }
 
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    public Integer getType() {
-        return type;
-    }
-
-    public void setType(Integer type) {
-        this.type = type;
-    }
-
-    public Long getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(Long createDate) {
-        this.createDate = createDate;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
+    public void setWinVoters(List<PlayerDto> winVoters) {
+        this.winVoters = winVoters;
     }
 
     public static class QuestionDTOBuilder {
         private Long id;
-        private Long senderId;
+        private UserDto senderUser;
         private Long roomId;
         private List<PlayerDto> yesVoters;
         private List<PlayerDto> noVoters;
+        private List<PlayerDto> winVoters;
         private Integer vote;
         private String text;
         private Integer type;
-        private Long createDate;
+        private Date createDate;
         private Long clientMessageId;
         private Long questionId;
+        private Integer attempt;
 
         public QuestionDTOBuilder setId(Long id) {
             this.id = id;
@@ -150,8 +113,13 @@ public class QuestionDto {
             return this;
         }
 
-        public QuestionDTOBuilder setSenderId(Long senderId) {
-            this.senderId = senderId;
+        public QuestionDTOBuilder setWinVoters(List<PlayerDto> winVoters) {
+            this.winVoters = winVoters;
+            return this;
+        }
+
+        public QuestionDTOBuilder setSenderUser(UserDto senderUser) {
+            this.senderUser = senderUser;
             return this;
         }
 
@@ -176,7 +144,7 @@ public class QuestionDto {
         }
 
         public QuestionDTOBuilder setCreateDate(Date createDate) {
-            this.createDate = createDate.getTime();
+            this.createDate = createDate;
             return this;
         }
 
@@ -190,8 +158,13 @@ public class QuestionDto {
             return this;
         }
 
+        public QuestionDTOBuilder setAttempt(Integer attempt){
+            this.attempt = attempt;
+            return this;
+        }
+
         public QuestionDto build() {
-            return new QuestionDto(id, questionId, clientMessageId, senderId, roomId, text, type, createDate, yesVoters, noVoters, vote);
+            return new QuestionDto(questionId, clientMessageId, senderUser, roomId, text, type, createDate, yesVoters, noVoters, winVoters, attempt, vote);
         }
     }
 

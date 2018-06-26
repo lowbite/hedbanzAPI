@@ -3,6 +3,7 @@ package com.hedbanz.hedbanzAPI;
 import com.corundumstudio.socketio.Configuration;
 import com.corundumstudio.socketio.SocketConfig;
 import com.corundumstudio.socketio.SocketIOServer;
+import com.google.gson.Gson;
 import com.hedbanz.hedbanzAPI.converter.*;
 import com.hedbanz.hedbanzAPI.exception.SocketExceptionListener;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,10 +35,11 @@ public class HedbanzApiApplication {
 
 		SocketConfig socketConfig = new SocketConfig();
 		socketConfig.setReuseAddress(true);
-		configuration.setPingInterval(1000);
-		configuration.setPingTimeout(2000);
+		configuration.setPingInterval(5000);
+		configuration.setPingTimeout(10000);
 		configuration.setExceptionListener(new SocketExceptionListener());
 		configuration.setSocketConfig(socketConfig);
+		configuration.setWorkerThreads(100);
 
 		configuration.setPort(socketIOPort);
 		return new SocketIOServer(configuration);
@@ -66,6 +68,11 @@ public class HedbanzApiApplication {
     @Bean
 	public MessageDtoToMessageConverter messageDTOToMessageConverter(){
 		return new MessageDtoToMessageConverter();
+	}
+
+	@Bean
+	public MessageToMessageNotificationDtoConverter messageToMessageNotificationDtoConverter(){
+		return new MessageToMessageNotificationDtoConverter();
 	}
 
 	@Bean
@@ -119,6 +126,7 @@ public class HedbanzApiApplication {
 		converters.add(userDTOToUserConverter());
 		converters.add(userToUserDTOConverter());
 		converters.add(messageToMessageDTOConverter());
+		converters.add(messageToMessageNotificationDtoConverter());
 		converters.add(messageDTOToMessageConverter());
 		converters.add(userToPlayerConverter());
 		converters.add(playerToUserDTOConverter());
