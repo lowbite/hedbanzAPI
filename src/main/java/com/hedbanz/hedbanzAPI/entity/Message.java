@@ -127,7 +127,7 @@ public class Message implements Cloneable{
         }
         Room room = new Room();
         room.setId(this.room.getId());
-        return Message.MessageBuilder().setText(text)
+        return Message.Builder().setText(text)
                                         .setQuestion(question)
                                         .setRoom(room)
                                         .setSenderUser(senderUser)
@@ -137,46 +137,46 @@ public class Message implements Cloneable{
                                         .build();
     }
 
-    public static MessageBuilder MessageBuilder(){
-        return new Message(). new MessageBuilder();
+    public static Builder Builder(){
+        return new Message(). new Builder();
     }
 
-    public class MessageBuilder {
-        private MessageBuilder(){
+    public class Builder {
+        private Builder(){
 
         }
 
-        public MessageBuilder setId(long id){
+        public Builder setId(long id){
             Message.this.setId(id);
             return this;
         }
 
-        public MessageBuilder setSenderUser(User senderUser){
+        public Builder setSenderUser(User senderUser){
             Message.this.setSenderUser(senderUser);
             return this;
         }
 
-        public MessageBuilder setText(String text) {
+        public Builder setText(String text) {
             Message.this.setText(text);
             return this;
         }
 
-        public MessageBuilder setType(MessageType type){
+        public Builder setType(MessageType type){
             Message.this.setType(type);
             return this;
         }
 
-        public MessageBuilder setCreateDate(Timestamp createDate) {
+        public Builder setCreateDate(Timestamp createDate) {
             Message.this.setCreateDate(createDate);
             return this;
         }
 
-        public MessageBuilder setQuestion(Question question){
+        public Builder setQuestion(Question question){
             Message.this.setQuestion(question);
             return this;
         }
 
-        public MessageBuilder setRoom(Room room){
+        public Builder setRoom(Room room){
             Message.this.setRoom(room);
             return this;
         }

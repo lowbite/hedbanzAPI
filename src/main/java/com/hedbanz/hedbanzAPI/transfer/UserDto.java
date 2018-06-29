@@ -111,7 +111,7 @@ public class UserDto {
         this.fcmToken = fcmToken;
     }
 
-    public static class UserDTOBuilder {
+    public static class Builder {
         private Long id;
         private String login;
         private Integer money;
@@ -121,43 +121,43 @@ public class UserDto {
         private String token;
         private String fcmToken;
 
-        public UserDTOBuilder setId(Long id) {
+        public Builder setId(Long id) {
             this.id = id;
             return this;
         }
 
-        public UserDTOBuilder setLogin(String login) {
+        public Builder setLogin(String login) {
             this.login = login;
             return this;
         }
 
-        public UserDTOBuilder setMoney(Integer money) {
+        public Builder setMoney(Integer money) {
             this.money = money;
             return this;
         }
 
-        public UserDTOBuilder setRegistrationDate(Timestamp registrationDate) {
+        public Builder setRegistrationDate(Timestamp registrationDate) {
             this.registrationDate = registrationDate;
             return this;
         }
 
-        public UserDTOBuilder setImagePath(String imagePath) {
+        public Builder setImagePath(String imagePath) {
             this.imagePath = imagePath;
             return this;
         }
 
-        public UserDTOBuilder setEmail(String email) {
+        public Builder setEmail(String email) {
             this.email = email;
             return this;
         }
 
 
-        public UserDTOBuilder setToken(String token) {
+        public Builder setToken(String token) {
             this.token = token;
             return this;
         }
 
-        public UserDTOBuilder setFcmToken(String fcmToken) {
+        public Builder setFcmToken(String fcmToken) {
             this.fcmToken = fcmToken;
             return this;
         }

@@ -2,7 +2,7 @@ package com.hedbanz.hedbanzAPI.transfer;
 
 import java.io.Serializable;
 
-public class RoomFilterDto implements Serializable{
+public class RoomFilter implements Serializable{
     private String roomName;
     private Integer maxPlayers;
     private Integer minPlayers;

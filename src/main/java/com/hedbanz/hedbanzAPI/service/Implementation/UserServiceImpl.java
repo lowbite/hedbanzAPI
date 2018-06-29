@@ -158,7 +158,7 @@ public class UserServiceImpl implements UserService {
         return new ArrayList<>(friends);
     }
 
-    @Override
+    @Transactional(readOnly = true)
     public List<Friend> getUserAcceptedFriends(Long userId) {
         if(userId == null){
             throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);

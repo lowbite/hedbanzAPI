@@ -7,7 +7,8 @@ public enum  NotificationMessageType {
     FRIEND(4),
     INVITE(5),
     AFK_WARNING(6),
-    USER_KICKED(7);
+    USER_KICKED(7),
+    GAME_OVER(8);
 
     private int code;
 

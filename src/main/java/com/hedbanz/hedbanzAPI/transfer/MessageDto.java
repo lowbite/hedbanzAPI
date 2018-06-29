@@ -30,7 +30,7 @@ public class MessageDto {
     }
 
     public MessageDto(Long senderId, String senderLogin, String senderImagePath, Long roomId, String text, MessageType type, Date createDate) {
-        this.senderUser = new UserDto.UserDTOBuilder().setId(senderId)
+        this.senderUser = new UserDto.Builder().setId(senderId)
                                                     .setLogin(senderLogin)
                                                     .setImagePath(senderImagePath)
                                                     .build();

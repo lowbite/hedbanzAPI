@@ -3,18 +3,62 @@ package com.hedbanz.hedbanzAPI;
 import org.junit.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import javax.annotation.PostConstruct;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 @SpringBootTest
 public class HedbanzApiApplicationTests {
 
-	@Test
-	public void contextLoads() {
-		A a1 = new A();
-		A a2 = new A();
-		System.out.println("A1: " + Integer.toHexString(System.identityHashCode(a1)));
-		System.out.println("A2: " + Integer.toHexString(System.identityHashCode(a2)));
-	}
+    @Test
+    public void contextLoads() {
+    }
+}
 
-	class A{
-		int i;
-	}
+class Base {
+    static {
+        System.out.printf("%s - %s - %s\n", "base", "static", "block");
+    }
+
+    {
+        System.out.printf("%s - %s - %s\n", "base", "instance", "block");
+    }
+
+    public Base() {
+        System.out.printf("%s - %s\n", "base", "constructor");
+    }
+
+    @PostConstruct
+    public void init() {
+        System.out.printf("%s - %s\n", "base", "PostConstruct");
+    }
+
+    public void hello() {
+        System.out.printf("%s - %s\n", "base", "method");
+    }
+}
+
+class Sub extends Base {
+    static {
+        System.out.printf("%s - %s - %s\n", "sub", "static", "block");
+    }
+
+    {
+        System.out.printf("%s - %s - %s\n", "sub", "instance", "block");
+    }
+
+    public Sub() {
+        System.out.printf("%s - %s\n", "sub", "constructor");
+    }
+
+    @PostConstruct
+    public void init() {
+        System.out.printf("%s - %s\n", "sub", "PostConstruct");
+    }
+
+    @Override
+    public void hello() {
+        super.hello();
+        System.out.printf("%s - %s\n", "sub", "method");
+    }
 }

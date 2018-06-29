@@ -1,12 +1,12 @@
 package com.hedbanz.hedbanzAPI.repository;
 
 import com.hedbanz.hedbanzAPI.entity.Room;
-import com.hedbanz.hedbanzAPI.transfer.RoomDto;
-import com.hedbanz.hedbanzAPI.transfer.RoomFilterDto;
+import com.hedbanz.hedbanzAPI.transfer.RoomFilter;
 
 import java.util.List;
 
 public interface RoomRepositoryFunctional{
-    List<Room> findRoomsByFilter(RoomFilterDto roomFilterDto, int page, int size);
+    List<Room> findRoomsByFilter(RoomFilter roomFilter, int page, int size);
 
+    List<Room> findActiveRoomsByFilter(RoomFilter roomFilter, long userId);
 }

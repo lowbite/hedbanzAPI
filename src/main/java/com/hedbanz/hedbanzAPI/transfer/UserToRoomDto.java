@@ -72,22 +72,22 @@ public class UserToRoomDto {
         return result;
     }
 
-    public static class UserToRoomDTOBuilder {
+    public static class Builder {
         private Long userId;
         private Long roomId;
         private String password;
 
-        public UserToRoomDTOBuilder setUserId(Long userId) {
+        public Builder setUserId(Long userId) {
             this.userId = userId;
             return this;
         }
 
-        public UserToRoomDTOBuilder setRoomId(Long roomId) {
+        public Builder setRoomId(Long roomId) {
             this.roomId = roomId;
             return this;
         }
 
-        public UserToRoomDTOBuilder setPassword(String password) {
+        public Builder setPassword(String password) {
             this.password = password;
             return this;
         }

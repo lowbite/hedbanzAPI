@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" href="../static/css/login.css"/>
+    <link rel="stylesheet" type="text/css" href="../static/css/util.css"/>
+    <title>Admin panel</title>
+</head>
+<body>
+
+    <div class="limiter">
+        <div class="container-login100">
+            <div class="wrap-login100">
+                <form class="login100-form p-l-55 p-r-55 p-t-178" th:object="${user}" th:method="post">
+                    <span class="login100-form-title">
+                        Sign In
+                    </span>
+
+                    <div class="wrap-input100 m-b-30">
+                        <input class="input100" type="text" name="username" placeholder="Username" th:field="*{login}"/>
+                        <span></span>
+                    </div>
+
+                    <div class="wrap-input100 m-b-50">
+                        <input class="input100" type="password" name="pass" placeholder="Password" th:field="*{password}"/>
+                        <span></span>
+                    </div>
+
+                    <div class="container-login100-form-btn m-b-20">
+                        <button class="login100-form-btn">
+                            Sign in
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

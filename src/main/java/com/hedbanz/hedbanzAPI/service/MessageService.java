@@ -25,4 +25,6 @@ public interface MessageService {
     Message getMessageByQuestionId(Long questionId);
 
     Question addSettingQuestionMessage(Long roomId, Long senderId);
+
+    Message addSettingWordMessage(Long roomId, Long senderId);
 }

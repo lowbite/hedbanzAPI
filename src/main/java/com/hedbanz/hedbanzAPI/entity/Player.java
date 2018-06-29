@@ -97,7 +97,7 @@ public class Player implements Cloneable{
         this.wordSettingUserId = wordSettingUserId;
     }
 
-    public boolean isWinner() {
+    public boolean getIsWinner() {
         return isWinner;
     }
 

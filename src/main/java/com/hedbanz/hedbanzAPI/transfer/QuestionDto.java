@@ -28,7 +28,7 @@ public class QuestionDto extends MessageDto{
 
     /*public QuestionDto(Long senderId, Long questionId, Long clientMessageId, Long roomId, String text,
                        Integer type, Date createDate, List<PlayerDto> yesVoters, List<PlayerDto> noVoters, Integer vote) {
-        super(clientMessageId, new UserDto.UserDTOBuilder().setId(senderId).build(), roomId, text, type, createDate);
+        super(clientMessageId, new UserDto.Builder().setId(senderId).build(), roomId, text, type, createDate);
         this.questionId = questionId;
         this.yesVoters = yesVoters;
         this.noVoters = noVoters;

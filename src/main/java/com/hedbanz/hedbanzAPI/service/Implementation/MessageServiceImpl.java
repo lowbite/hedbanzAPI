@@ -68,7 +68,7 @@ public class MessageServiceImpl implements MessageService {
         if (player == null)
             throw ExceptionFactory.create(RoomError.NO_SUCH_USER_IN_ROOM);
 
-        Message message = Message.MessageBuilder().setSenderUser(sender)
+        Message message = Message.Builder().setSenderUser(sender)
                 .setText(messageDto.getText())
                 .setType(MessageType.SIMPLE_MESSAGE)
                 .setCreateDate(new Timestamp(new Date().getTime()))
@@ -112,7 +112,7 @@ public class MessageServiceImpl implements MessageService {
         if (!player.getRoom().getId().equals(messageDto.getRoomId()))
             throw ExceptionFactory.create(RoomError.NO_SUCH_USER_IN_ROOM);
 
-        Message message = Message.MessageBuilder().setSenderUser(sender)
+        Message message = Message.Builder().setSenderUser(sender)
                 .setType(MessageTypeUtil.convertCodeIntoEnum(messageDto.getType()))
                 .setQuestion(null)
                 .setRoom(player.getRoom())
@@ -191,7 +191,7 @@ public class MessageServiceImpl implements MessageService {
     @Transactional(readOnly = true)
     public Message getMessageByQuestionId(Long questionId) {
         Message message = crudMessageRepository.findMessageByQuestionId(questionId);
-        if(message == null)
+        if (message == null)
             throw ExceptionFactory.create(RoomError.NO_SUCH_QUESTION);
         return message;
     }
@@ -209,9 +209,11 @@ public class MessageServiceImpl implements MessageService {
         Player player = crudPlayerRepository.findPlayerByUserIdAndRoomId(senderId, roomId);
         if (player == null)
             throw ExceptionFactory.create(RoomError.NO_SUCH_USER_IN_ROOM);
-        Question question = new Question.Builder().setAttempt(player.getAttempt())
+        Question question = new Question.Builder()
+                .setAttempt(player.getAttempt())
                 .build();
-        Message message = Message.MessageBuilder().setSenderUser(user)
+        Message message = Message.Builder()
+                .setSenderUser(user)
                 .setText(null)
                 .setType(MessageType.USER_QUESTION)
                 .setCreateDate(null)
@@ -219,6 +221,31 @@ public class MessageServiceImpl implements MessageService {
                 .setRoom(room)
                 .build();
         return crudMessageRepository.saveAndFlush(message).getQuestion();
+    }
+
+    @Transactional
+    public Message addSettingWordMessage(Long roomId, Long senderId) {
+        if (roomId == null || senderId == null)
+            throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
+
+        User user = crudUserRepository.findOne(senderId);
+        if (user == null)
+            throw ExceptionFactory.create(UserError.NO_SUCH_USER);
+
+        Room room = crudRoomRepository.findOne(roomId);
+        if (room == null)
+            throw ExceptionFactory.create(RoomError.NO_SUCH_ROOM);
+
+        Player player = crudPlayerRepository.findPlayerByUserIdAndRoomId(senderId, roomId);
+        if (player == null)
+            throw ExceptionFactory.create(RoomError.NO_SUCH_USER_IN_ROOM);
+
+        Message message = Message.Builder()
+                .setSenderUser(user)
+                .setRoom(room)
+                .setType(MessageType.WORD_SETTING)
+                .build();
+        return crudMessageRepository.saveAndFlush(message);
     }
 
     @Transactional(readOnly = true)

@@ -69,7 +69,7 @@ public class AfkTimerTask extends TimerTask {
         this.userId = userId;
     }
 
-    public void setRoomId(Long roomId){
+    public void setRoomId(Long roomId) {
         this.roomId = roomId;
     }
 
@@ -80,18 +80,18 @@ public class AfkTimerTask extends TimerTask {
     @Override
     public void run() {
         Player player = crudPlayerRepository.findPlayerByUserIdAndRoomId(userId, roomId);
-        if(player == null){
+        if (player == null) {
             log.info("No such player");
             cancel();
             return;
         }
         log.info("Player status " + player.getStatus());
-        if(player.getStatus() == AFK) {
+        if (player.getStatus() == AFK) {
             if (timeLeft == ONE_MIN_IN_MS) {
                 User user = crudUserRepository.findOne(userId);
                 roomOperations.sendEvent(SERVER_PLAYER_AFK_WARNING, conversionService.convert(user, UserDto.class));
                 log.info(SERVER_PLAYER_AFK_WARNING);
-            }else if (timeLeft == ONE_MIN_IN_MS / 2) {
+            } else if (timeLeft == ONE_MIN_IN_MS / 2) {
                 User user = crudUserRepository.findOne(userId);
                 Room room = crudRoomRepository.findOne(roomId);
                 AfkWarning warning = new AfkWarning(room.getName(), room.getId());
@@ -103,12 +103,7 @@ public class AfkTimerTask extends TimerTask {
                         .setPriority("normal")
                         .setData(fcmPushData)
                         .build();
-                //TODO Check why try catch need here
-                try {
-                    fcmService.sendPushNotification(fcmPush);
-                } catch (JsonProcessingException e) {
-                    e.printStackTrace();
-                }
+                fcmService.sendPushNotification(fcmPush);
                 log.info("FCM Afk warning");
             } else if (timeLeft <= 0) {
                 User user = crudUserRepository.findOne(userId);
@@ -125,16 +120,11 @@ public class AfkTimerTask extends TimerTask {
                         .setPriority("normal")
                         .setData(fcmPushData)
                         .build();
-                //TODO Check why try catch need here
-                try {
-                    fcmService.sendPushNotification(fcmPush);
-                } catch (JsonProcessingException e) {
-                    e.printStackTrace();
-                }
+                fcmService.sendPushNotification(fcmPush);
                 cancel();
             }
             timeLeft -= period;
-        }else{
+        } else {
             cancel();
             log.info("Player was returned!");
         }

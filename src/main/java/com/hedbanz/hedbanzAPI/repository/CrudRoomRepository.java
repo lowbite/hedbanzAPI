@@ -21,7 +21,6 @@ public interface CrudRoomRepository extends JpaRepository<Room, Long>, PagingAnd
     @Query("SELECT r FROM Room r WHERE r.currentPlayersNumber < r.maxPlayers AND r.gameStatus = com.hedbanz.hedbanzAPI.constant.GameStatus.WAITING_FOR_PLAYERS")
     Page<Room> findAllRooms(Pageable pageable);
 
-
-    @Query("SELECT p FROM Room r JOIN r.players p JOIN p.user WHERE r.id = :id ORDER BY p.id ASC")
-    List<Player> findPlayers(@Param("id") Long id);
+    @Query("SELECT r FROM Room r JOIN r.players p JOIN p.user u WHERE u.id = :userId")
+    List<Room> findActiveRooms(@Param("userId") long userId);
 }

@@ -19,7 +19,9 @@ public interface RoomService {
 
     List<Room> getActiveRooms(Long userId);
 
-    List<Room> getRoomsByFilter(RoomFilterDto roomFilterDto, Integer pageNumber);
+    List<Room> getRoomsByFilter(RoomFilter roomFilter, Integer pageNumber);
+
+    List<Room> getActiveRoomsByFilter(RoomFilter roomFilter, Long userId);
 
     void checkRoomPassword(Long roomId, String password);
 
@@ -28,8 +30,6 @@ public interface RoomService {
     Room addUserToRoom(Long userId, Long roomId, String password);
 
     Player setPlayerStatus(Long userId, Long roomId, PlayerStatus status);
-
-    List<Player> getPlayers(Long roomId);
 
     Boolean startGame(Long roomId);
 
@@ -42,4 +42,8 @@ public interface RoomService {
     void checkPlayerInRoom(Long userId, Long roomId);
 
     Room setPlayersWordSetters(Long roomId);
+
+    boolean isGameOver(Long roomId);
+
+    Room restartGame(Long roomId);
 }

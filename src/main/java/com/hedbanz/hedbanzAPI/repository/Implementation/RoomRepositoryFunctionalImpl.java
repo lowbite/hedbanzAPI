@@ -1,11 +1,11 @@
 package com.hedbanz.hedbanzAPI.repository.Implementation;
 
 import com.hedbanz.hedbanzAPI.entity.Room;
-import com.hedbanz.hedbanzAPI.transfer.RoomDto;
-import com.hedbanz.hedbanzAPI.transfer.RoomFilterDto;
+import com.hedbanz.hedbanzAPI.transfer.RoomFilter;
 import com.hedbanz.hedbanzAPI.error.RoomError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
 import com.hedbanz.hedbanzAPI.repository.RoomRepositoryFunctional;
+import org.apache.http.util.TextUtils;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
@@ -16,32 +16,37 @@ import java.util.List;
 @Component
 public class RoomRepositoryFunctionalImpl implements RoomRepositoryFunctional {
     private final static String FIND_ROOMS = "SELECT  r FROM Room r ";
-    private final static String SEARCH_BY_NAME = "SELECT  r FROM Room r WHERE r.name LIKE ";
-    private final static String SEARCH_BY_ID = "SELECT  r FROM Room r WHERE r.id = ";
-    private final static String QUERY_END = " r.currentPlayersNumber < r.maxPlayers ORDER BY r.id DESC";
+    private final static String SEARCH_BY_NAME = "WHERE r.name LIKE ";
+    private final static String SEARCH_BY_ID = "WHERE r.id = ";
+    private final static String QUERY_END = " r.currentPlayersNumber < r.maxPlayers ORDER BY r.id DESC ";
+    private final static String FIND_ACTIVE_ROOMS = "SELECT r FROM Room r JOIN r.players p JOIN p.user u";
+    private final static String SEARCH_ACTIVE_ROOMS = " u.id = :userId ";
 
     @PersistenceContext
     private EntityManager entityManager;
 
-    public List<Room> findRoomsByFilter(RoomFilterDto roomFilterDto, int page, int size) {
+    public List<Room> findRoomsByFilter(RoomFilter roomFilter, int page, int size) {
         StringBuilder queryText = new StringBuilder();
+        queryText.append(FIND_ROOMS);
 
-        if(roomFilterDto.getRoomName() == null || roomFilterDto.getRoomName().equals("")){
-            queryText.append(FIND_ROOMS);
-            if(roomFilterDto.getMaxPlayers() != null || roomFilterDto.isPrivate() != null){
+        if(TextUtils.isEmpty(roomFilter.getRoomName())){
+            if(roomFilter.getMaxPlayers() != null || roomFilter.isPrivate() != null){
                 queryText.append("WHERE ");
-                addFilterConditions(roomFilterDto, queryText);
+                addFilterConditions(roomFilter, queryText);
+                queryText.append(QUERY_END);
             }
-        }else if(roomFilterDto.getRoomName().charAt(0) == '#'){
-            if(roomFilterDto.getRoomName().length() == 1)
+        }else if(roomFilter.getRoomName().charAt(0) == '#'){
+            if(roomFilter.getRoomName().length() == 1)
                 throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
 
-            long roomId = Long.valueOf(roomFilterDto.getRoomName().substring(1, roomFilterDto.getRoomName().length()));
+            long roomId = Long.valueOf(roomFilter.getRoomName().substring(1, roomFilter.getRoomName().length()));
             queryText.append(SEARCH_BY_ID + roomId  + " AND ");
-            addFilterConditions(roomFilterDto, queryText);
+            addFilterConditions(roomFilter, queryText);
+            queryText.append(QUERY_END);
         }else{
-            queryText.append(SEARCH_BY_NAME + "'%" + roomFilterDto.getRoomName() + "%' AND ");
-            addFilterConditions(roomFilterDto, queryText);
+            queryText.append(SEARCH_BY_NAME + "'%" + roomFilter.getRoomName() + "%' AND ");
+            addFilterConditions(roomFilter, queryText);
+            queryText.append(QUERY_END);
         }
 
         Query query = entityManager.createQuery(queryText.toString());
@@ -51,17 +56,44 @@ public class RoomRepositoryFunctionalImpl implements RoomRepositoryFunctional {
         return query.getResultList();
     }
 
-    private void addFilterConditions(RoomFilterDto roomFilterDto, StringBuilder queryText){
-        if(roomFilterDto.getMaxPlayers() != null)
-            queryText.append("(r.maxPlayers BETWEEN " + roomFilterDto.getMinPlayers() + " AND " + roomFilterDto.getMaxPlayers() + ") AND ");
+    public List<Room> findActiveRoomsByFilter(RoomFilter roomFilter, long userId) {
+        StringBuilder queryText = new StringBuilder();
+        queryText.append(FIND_ACTIVE_ROOMS);
 
-        if(roomFilterDto.isPrivate() != null) {
-            if (roomFilterDto.isPrivate() == false)
+        if(TextUtils.isEmpty(roomFilter.getRoomName())){
+            if(roomFilter.getMaxPlayers() != null || roomFilter.isPrivate() != null){
+                queryText.append("WHERE ");
+                addFilterConditions(roomFilter, queryText);
+                queryText.append(SEARCH_ACTIVE_ROOMS);
+            }
+        }else if(roomFilter.getRoomName().charAt(0) == '#'){
+            if(roomFilter.getRoomName().length() == 1)
+                throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
+
+            long roomId = Long.valueOf(roomFilter.getRoomName().substring(1, roomFilter.getRoomName().length()));
+            queryText.append(SEARCH_BY_ID + roomId  + " AND ");
+            addFilterConditions(roomFilter, queryText);
+            queryText.append(SEARCH_ACTIVE_ROOMS);
+        }else{
+            queryText.append(SEARCH_BY_NAME + "'%" + roomFilter.getRoomName() + "%' AND ");
+            addFilterConditions(roomFilter, queryText);
+            queryText.append(SEARCH_ACTIVE_ROOMS);
+        }
+
+        Query query = entityManager.createQuery(queryText.toString());
+        return query.getResultList();
+    }
+
+    private void addFilterConditions(RoomFilter roomFilter, StringBuilder queryText){
+        if(roomFilter.getMaxPlayers() != null)
+            queryText.append("(r.maxPlayers BETWEEN " + roomFilter.getMinPlayers() + " AND " + roomFilter.getMaxPlayers() + ") AND ");
+
+        if(roomFilter.isPrivate() != null) {
+            if (!roomFilter.isPrivate())
                 queryText.append(" r.password IS NULL AND ");
-            else if (roomFilterDto.isPrivate() == true)
+            else if (roomFilter.isPrivate())
                 queryText.append(" r.password IS NOT NULL AND ");
         }
 
-        queryText.append(QUERY_END);
     }
 }

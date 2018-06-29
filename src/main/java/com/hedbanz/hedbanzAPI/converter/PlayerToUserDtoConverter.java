@@ -7,7 +7,7 @@ import org.springframework.core.convert.converter.Converter;
 public class PlayerToUserDtoConverter implements Converter<Player, UserDto> {
     @Override
     public UserDto convert(Player player) {
-        return new UserDto.UserDTOBuilder()
+        return new UserDto.Builder()
                 .setId(player.getId())
                 .setLogin(player.getUser().getLogin())
                 .setImagePath(player.getUser().getImagePath())
