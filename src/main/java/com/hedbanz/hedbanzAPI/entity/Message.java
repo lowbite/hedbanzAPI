@@ -125,8 +125,9 @@ public class Message implements Cloneable{
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
-        Room room = new RoomBuilder().createRoom();
-        room.setId(this.room.getId());
+        Room room = new Room.Builder()
+                .setId(this.room.getId())
+                .build();
         return Message.Builder().setText(text)
                                         .setQuestion(question)
                                         .setRoom(room)

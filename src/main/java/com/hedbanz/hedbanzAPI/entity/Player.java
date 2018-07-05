@@ -130,8 +130,6 @@ public class Player implements Cloneable{
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
-        Room room = new RoomBuilder().createRoom();
-        room.setId(this.room.getId());
         return Player.PlayerBuilder()
                 .setId(id)
                 .setUser(user)
