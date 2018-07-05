@@ -12,6 +12,9 @@ public class HedbanzApiApplicationTests {
 
     @Test
     public void contextLoads() {
+        String str = "\"asdd\",\"asdd\",\"asdd\",\"asdd\"";
+        String str1 = str.replaceAll("\"","");
+        System.out.println(str1);
     }
 }
 
