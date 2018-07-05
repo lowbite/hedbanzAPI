@@ -1,4 +1,4 @@
-package com.hedbanz.hedbanzAPI.transfer;
+package com.hedbanz.hedbanzAPI.model;
 
 import java.io.Serializable;
 

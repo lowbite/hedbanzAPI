@@ -1,4 +1,4 @@
-package com.hedbanz.hedbanzAPI.transfer;
+package com.hedbanz.hedbanzAPI.model;
 
 public class AfkWarning {
     private String roomName;

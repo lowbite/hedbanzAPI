@@ -1,7 +1,7 @@
 package com.hedbanz.hedbanzAPI.service.Implementation;
 
 import com.hedbanz.hedbanzAPI.security.SecurityUserDetails;
-import com.hedbanz.hedbanzAPI.transfer.Friend;
+import com.hedbanz.hedbanzAPI.model.Friend;
 import com.hedbanz.hedbanzAPI.entity.User;
 import com.hedbanz.hedbanzAPI.error.UserError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;

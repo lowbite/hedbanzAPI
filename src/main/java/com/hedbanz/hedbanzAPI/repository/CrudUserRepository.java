@@ -2,7 +2,7 @@ package com.hedbanz.hedbanzAPI.repository;
 
 
 import com.hedbanz.hedbanzAPI.entity.User;
-import com.hedbanz.hedbanzAPI.transfer.Friend;
+import com.hedbanz.hedbanzAPI.model.Friend;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

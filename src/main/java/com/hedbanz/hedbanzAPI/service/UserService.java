@@ -1,7 +1,7 @@
 package com.hedbanz.hedbanzAPI.service;
 
 import com.hedbanz.hedbanzAPI.entity.User;
-import com.hedbanz.hedbanzAPI.transfer.Friend;
+import com.hedbanz.hedbanzAPI.model.Friend;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;

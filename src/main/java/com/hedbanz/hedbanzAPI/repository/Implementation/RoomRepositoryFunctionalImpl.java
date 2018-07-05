@@ -1,7 +1,7 @@
 package com.hedbanz.hedbanzAPI.repository.Implementation;
 
 import com.hedbanz.hedbanzAPI.entity.Room;
-import com.hedbanz.hedbanzAPI.transfer.RoomFilter;
+import com.hedbanz.hedbanzAPI.model.RoomFilter;
 import com.hedbanz.hedbanzAPI.error.RoomError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
 import com.hedbanz.hedbanzAPI.repository.RoomRepositoryFunctional;

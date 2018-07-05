@@ -1,10 +1,11 @@
 package com.hedbanz.hedbanzAPI.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hedbanz.hedbanzAPI.constant.NotificationMessageType;
 import com.hedbanz.hedbanzAPI.constant.ResultStatus;
-import com.hedbanz.hedbanzAPI.entity.FcmPush;
-import com.hedbanz.hedbanzAPI.entity.Notification;
+import com.hedbanz.hedbanzAPI.model.CustomResponseBody;
+import com.hedbanz.hedbanzAPI.model.FcmPush;
+import com.hedbanz.hedbanzAPI.model.Friend;
+import com.hedbanz.hedbanzAPI.model.Notification;
 import com.hedbanz.hedbanzAPI.transfer.*;
 import com.hedbanz.hedbanzAPI.entity.User;
 import com.hedbanz.hedbanzAPI.service.FcmService;

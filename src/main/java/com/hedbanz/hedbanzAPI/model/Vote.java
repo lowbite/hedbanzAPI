@@ -1,4 +1,4 @@
-package com.hedbanz.hedbanzAPI.entity;
+package com.hedbanz.hedbanzAPI.model;
 
 
 public final class Vote{

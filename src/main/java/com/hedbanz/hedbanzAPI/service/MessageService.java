@@ -2,19 +2,16 @@ package com.hedbanz.hedbanzAPI.service;
 
 import com.hedbanz.hedbanzAPI.entity.Message;
 import com.hedbanz.hedbanzAPI.entity.Question;
-import com.hedbanz.hedbanzAPI.entity.Vote;
-import com.hedbanz.hedbanzAPI.service.Implementation.MessageServiceImpl;
-import com.hedbanz.hedbanzAPI.transfer.MessageDto;
-import com.hedbanz.hedbanzAPI.transfer.QuestionDto;
+import com.hedbanz.hedbanzAPI.model.Vote;
 
 import java.util.List;
 
 public interface MessageService {
     List<Message> getAllMessages(Long roomId, Integer pageNumber);
 
-    MessageDto addMessage(MessageDto messageDto);
+    Message addMessage(Message message);
 
-    void addEventMessage(MessageDto messageDto);
+    Message addEventMessage(Message message);
 
     Message addQuestionText(Long questionId, String text);
 

@@ -1,6 +1,5 @@
 package com.hedbanz.hedbanzAPI.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hedbanz.hedbanzAPI.constant.GameStatus;
 
 import javax.persistence.*;
@@ -62,6 +61,19 @@ public class Room implements Serializable{
         this.currentPlayersNumber = currentPlayersNumber;
     }
 
+    private Room(Long id, String name, String password, Integer maxPlayers, Integer currentPlayersNumber, Boolean isPrivate,
+                GameStatus gameStatus, List<Player> players, List<Message> messages, Long roomAdmin) {
+        this.id = id;
+        this.name = name;
+        this.password = password;
+        this.maxPlayers = maxPlayers;
+        this.currentPlayersNumber = currentPlayersNumber;
+        this.isPrivate = isPrivate;
+        this.gameStatus = gameStatus;
+        this.players = players;
+        this.messages = messages;
+        this.roomAdmin = roomAdmin;
+    }
 
     public List<Player> getPlayers(){
         return this.players;
@@ -188,5 +200,90 @@ public class Room implements Serializable{
 
     public int getUserCount(){
         return this.players.size();
+    }
+
+    public static class Builder {
+        private Long id;
+        private String name;
+        private boolean isPrivate;
+        private int maxPlayers;
+        private int currentPlayersNumber;
+        private String password;
+        private Integer maxPlayers0;
+        private Integer currentPlayersNumber0;
+        private Boolean isPrivate0;
+        private GameStatus gameStatus;
+        private List<Player> players;
+        private List<Message> messages;
+        private Long roomAdmin;
+
+        public Builder setId(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder setName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder setIsPrivate(boolean isPrivate) {
+            this.isPrivate = isPrivate;
+            return this;
+        }
+
+        public Builder setMaxPlayers(int maxPlayers) {
+            this.maxPlayers = maxPlayers;
+            return this;
+        }
+
+        public Builder setCurrentPlayersNumber(int currentPlayersNumber) {
+            this.currentPlayersNumber = currentPlayersNumber;
+            return this;
+        }
+
+        public Builder setPassword(String password) {
+            this.password = password;
+            return this;
+        }
+
+        public Builder setMaxPlayers0(Integer maxPlayers0) {
+            this.maxPlayers0 = maxPlayers0;
+            return this;
+        }
+
+        public Builder setCurrentPlayersNumber0(Integer currentPlayersNumber0) {
+            this.currentPlayersNumber0 = currentPlayersNumber0;
+            return this;
+        }
+
+        public Builder setIsPrivate0(Boolean isPrivate0) {
+            this.isPrivate0 = isPrivate0;
+            return this;
+        }
+
+        public Builder setGameStatus(GameStatus gameStatus) {
+            this.gameStatus = gameStatus;
+            return this;
+        }
+
+        public Builder setPlayers(List<Player> players) {
+            this.players = players;
+            return this;
+        }
+
+        public Builder setMessages(List<Message> messages) {
+            this.messages = messages;
+            return this;
+        }
+
+        public Builder setRoomAdmin(Long roomAdmin) {
+            this.roomAdmin = roomAdmin;
+            return this;
+        }
+
+        public Room build() {
+            return new Room(id, name, isPrivate, maxPlayers, currentPlayersNumber);
+        }
     }
 }

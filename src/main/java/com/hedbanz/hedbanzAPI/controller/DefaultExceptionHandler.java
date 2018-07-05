@@ -2,7 +2,7 @@ package com.hedbanz.hedbanzAPI.controller;
 
 import com.hedbanz.hedbanzAPI.constant.ResultStatus;
 import com.hedbanz.hedbanzAPI.exception.FcmException;
-import com.hedbanz.hedbanzAPI.transfer.CustomResponseBody;
+import com.hedbanz.hedbanzAPI.model.CustomResponseBody;
 import com.hedbanz.hedbanzAPI.entity.Room;
 import com.hedbanz.hedbanzAPI.entity.User;
 import com.hedbanz.hedbanzAPI.error.CustomError;

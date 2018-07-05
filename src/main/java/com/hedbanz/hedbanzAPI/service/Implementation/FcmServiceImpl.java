@@ -2,7 +2,7 @@ package com.hedbanz.hedbanzAPI.service.Implementation;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hedbanz.hedbanzAPI.entity.FcmPush;
+import com.hedbanz.hedbanzAPI.model.FcmPush;
 import com.hedbanz.hedbanzAPI.interceptor.HeaderRequestInterceptor;
 import com.hedbanz.hedbanzAPI.error.FcmError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;

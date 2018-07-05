@@ -1,7 +1,7 @@
 package com.hedbanz.hedbanzAPI.repository;
 
 import com.hedbanz.hedbanzAPI.entity.Room;
-import com.hedbanz.hedbanzAPI.transfer.RoomFilter;
+import com.hedbanz.hedbanzAPI.model.RoomFilter;
 
 import java.util.List;
 

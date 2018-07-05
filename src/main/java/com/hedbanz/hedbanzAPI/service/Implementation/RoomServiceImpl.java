@@ -14,8 +14,8 @@ import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
 import com.hedbanz.hedbanzAPI.repository.*;
 import com.hedbanz.hedbanzAPI.service.MessageService;
 import com.hedbanz.hedbanzAPI.service.RoomService;
-import com.hedbanz.hedbanzAPI.transfer.RoomFilter;
-import com.hedbanz.hedbanzAPI.transfer.WordDto;
+import com.hedbanz.hedbanzAPI.model.RoomFilter;
+import com.hedbanz.hedbanzAPI.model.Word;
 import org.apache.http.util.TextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -207,7 +207,7 @@ public class RoomServiceImpl implements RoomService {
                     .setType(MessageType.LEFT_USER)
                     .setQuestion(null)
                     .build();
-            crudMessageRepository.saveAndFlush(message);
+            messageService.addEventMessage(message);
         }
     }
 
@@ -267,7 +267,7 @@ public class RoomServiceImpl implements RoomService {
                 .setType(MessageType.JOINED_USER)
                 .setQuestion(null)
                 .build();
-        crudMessageRepository.saveAndFlush(message);
+        messageService.addEventMessage(message);
         return foundRoom;
     }
 
@@ -310,18 +310,18 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void setPlayerWord(WordDto wordDto) {
+    public void setPlayerWord(Word word) {
         //TODO change input parameter
-        if (wordDto.getSenderId() == null || wordDto.getWordReceiverId() == null
-                || wordDto.getWord() == null || wordDto.getRoomId() == null) {
+        if (word.getSenderId() == null || word.getWordReceiverId() == null
+                || word.getWord() == null || word.getRoomId() == null) {
             throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
         }
 
         Player wordReceiverPlayer = null;
-        List<Player> players = crudPlayerRepository.findPlayersByRoomId(wordDto.getRoomId());
+        List<Player> players = crudPlayerRepository.findPlayersByRoomId(word.getRoomId());
         for (Player player : players) {
-            if (player.getUser().getId().equals(wordDto.getWordReceiverId())) {
-                player.setWord(wordDto.getWord());
+            if (player.getUser().getId().equals(word.getWordReceiverId())) {
+                player.setWord(word.getWord());
                 wordReceiverPlayer = player;
                 break;
             }
@@ -329,14 +329,14 @@ public class RoomServiceImpl implements RoomService {
 
         if (wordReceiverPlayer == null) {
             for (int i = 0; i < players.size(); i++) {
-                if (players.get(i).getUser().getId().equals(wordDto.getSenderId())) {
+                if (players.get(i).getUser().getId().equals(word.getSenderId())) {
                     if (i + 1 < players.size()) {
                         if (players.get(i + 1).getWord() == null) {
-                            players.get(i + 1).setWord(wordDto.getWord());
+                            players.get(i + 1).setWord(word.getWord());
                             wordReceiverPlayer = players.get(i + 1);
                         } else {
                             if (players.get(0).getWord() == null) {
-                                players.get(0).setWord(wordDto.getWord());
+                                players.get(0).setWord(word.getWord());
                                 wordReceiverPlayer = players.get(0);
                             }
                         }

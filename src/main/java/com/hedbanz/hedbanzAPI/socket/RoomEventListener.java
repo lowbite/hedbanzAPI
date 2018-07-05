@@ -7,7 +7,6 @@ import com.corundumstudio.socketio.SocketIOServer;
 import com.corundumstudio.socketio.listener.ConnectListener;
 import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hedbanz.hedbanzAPI.constant.GameStatus;
 import com.hedbanz.hedbanzAPI.constant.MessageType;
 import com.hedbanz.hedbanzAPI.constant.NotificationMessageType;
@@ -15,6 +14,7 @@ import com.hedbanz.hedbanzAPI.constant.PlayerStatus;
 import com.hedbanz.hedbanzAPI.entity.*;
 import com.hedbanz.hedbanzAPI.error.RoomError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
+import com.hedbanz.hedbanzAPI.model.*;
 import com.hedbanz.hedbanzAPI.service.*;
 import com.hedbanz.hedbanzAPI.transfer.*;
 import org.apache.http.util.TextUtils;
@@ -87,7 +87,7 @@ public class RoomEventListener {
         this.socketIONamespace.addEventListener(CLIENT_TYPING_EVENT, UserToRoomDto.class, userStartTyping());
         this.socketIONamespace.addEventListener(CLIENT_STOP_TYPING_EVENT, UserToRoomDto.class, userStopTyping());
         this.socketIONamespace.addEventListener(CLIENT_MESSAGE_EVENT, MessageDto.class, sendUserMessage());
-        this.socketIONamespace.addEventListener(CLIENT_SET_PLAYER_WORD_EVENT, WordDto.class, setPlayerWord());
+        this.socketIONamespace.addEventListener(CLIENT_SET_PLAYER_WORD_EVENT, Word.class, setPlayerWord());
         this.socketIONamespace.addEventListener(CLIENT_CONNECT_INFO_EVENT, ClientInfoDto.class, setClientInfo());
         this.socketIONamespace.addEventListener(CLIENT_RESTORE_ROOM_EVENT, ClientInfoDto.class, restoreRoom());
         this.socketIONamespace.addEventListener(CLIENT_USER_GUESSING_EVENT, QuestionDto.class, userGuessing());
@@ -266,13 +266,15 @@ public class RoomEventListener {
     private DataListener<MessageDto> sendUserMessage() {
         return (client, data, ackSender) -> {
             data.setType(MessageType.SIMPLE_MESSAGE.getCode());
-            MessageDto message = messageService.addMessage(data);
+            Message message = messageService.addMessage(conversionService.convert(data, Message.class));
+            MessageDto resultMessage = conversionService.convert(message, MessageDto.class);
+            resultMessage.setClientMessageId(data.getClientMessageId());
             socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(SERVER_MESSAGE_EVENT, message);
             log.info("User send message: ", data);
         };
     }
 
-    private DataListener<WordDto> setPlayerWord() {
+    private DataListener<Word> setPlayerWord() {
         return (client, data, ackSender) -> {
             roomService.setPlayerWord(data);
             socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(SERVER_THOUGHT_PLAYER_WORD_EVENT, data);
@@ -344,7 +346,7 @@ public class RoomEventListener {
                             .build();
                     fcmService.sendPushNotification(fcmPush);
                     if (client.isChannelOpen()) {
-                        client.sendEvent(SERVER_SET_PLAYER_WORD_EVENT, new WordDto.WordDTOBuilder()
+                        client.sendEvent(SERVER_SET_PLAYER_WORD_EVENT, new Word.WordDTOBuilder()
                                 .setWordReceiverId(player.getWordSettingUserId())
                                 .createWordDTO());
                     }

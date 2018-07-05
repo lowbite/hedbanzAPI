@@ -1,7 +1,6 @@
-package com.hedbanz.hedbanzAPI.transfer;
+package com.hedbanz.hedbanzAPI.model;
 
 public class Friend {
-
     private Long id;
     private String login;
     private String imagePath;

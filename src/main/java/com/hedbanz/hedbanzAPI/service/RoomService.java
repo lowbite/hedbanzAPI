@@ -3,7 +3,8 @@ package com.hedbanz.hedbanzAPI.service;
 import com.hedbanz.hedbanzAPI.constant.PlayerStatus;
 import com.hedbanz.hedbanzAPI.entity.Player;
 import com.hedbanz.hedbanzAPI.entity.Room;
-import com.hedbanz.hedbanzAPI.transfer.*;
+import com.hedbanz.hedbanzAPI.model.RoomFilter;
+import com.hedbanz.hedbanzAPI.model.Word;
 
 import java.util.List;
 
@@ -33,7 +34,7 @@ public interface RoomService {
 
     Boolean startGame(Long roomId);
 
-    void setPlayerWord(WordDto wordDto);
+    void setPlayerWord(Word word);
 
     Player startGuessing(Long roomId);
 

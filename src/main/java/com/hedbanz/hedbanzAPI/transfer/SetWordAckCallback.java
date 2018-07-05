@@ -2,7 +2,7 @@ package com.hedbanz.hedbanzAPI.transfer;
 
 import com.corundumstudio.socketio.AckCallback;
 import com.corundumstudio.socketio.SocketIOClient;
-import com.hedbanz.hedbanzAPI.socket.RoomEventListener;
+import com.hedbanz.hedbanzAPI.model.Word;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +24,7 @@ public class SetWordAckCallback extends AckCallback {
     public void onTimeout() {
         if(client.isChannelOpen()) {
             log.info("Ack Callback timeout!");
-            client.sendEvent(SERVER_SET_PLAYER_WORD_EVENT, this, new WordDto.WordDTOBuilder().setWordReceiverId(wordReceiverId)
+            client.sendEvent(SERVER_SET_PLAYER_WORD_EVENT, this, new Word.WordDTOBuilder().setWordReceiverId(wordReceiverId)
                     .createWordDTO());
         }
     }

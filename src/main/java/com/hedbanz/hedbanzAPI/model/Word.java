@@ -1,17 +1,17 @@
-package com.hedbanz.hedbanzAPI.transfer;
+package com.hedbanz.hedbanzAPI.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.hedbanz.hedbanzAPI.deserializer.WordDTODeserializer;
 
 
 @JsonDeserialize(using = WordDTODeserializer.class)
-public class WordDto {
+public class Word {
     private Long roomId;
     private Long senderId;
     private String word;
     private Long wordReceiverId;
 
-    private WordDto(Long roomId, Long senderId, String word, Long wordReceiverId) {
+    private Word(Long roomId, Long senderId, String word, Long wordReceiverId) {
         this.roomId = roomId;
         this.senderId = senderId;
         this.word = word;
@@ -76,8 +76,8 @@ public class WordDto {
             return this;
         }
 
-        public WordDto createWordDTO() {
-            return new WordDto(roomId, senderId, word, wordReceiverId);
+        public Word createWordDTO() {
+            return new Word(roomId, senderId, word, wordReceiverId);
         }
     }
 }

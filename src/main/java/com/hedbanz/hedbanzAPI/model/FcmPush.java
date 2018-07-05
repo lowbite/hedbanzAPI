@@ -1,4 +1,4 @@
-package com.hedbanz.hedbanzAPI.entity;
+package com.hedbanz.hedbanzAPI.model;
 
 public class FcmPush {
     private String to;
