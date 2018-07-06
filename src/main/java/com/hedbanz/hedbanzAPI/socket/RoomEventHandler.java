@@ -29,7 +29,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
-public class RoomEventListener {
+public class RoomEventHandler {
     private final Logger log = LoggerFactory.getLogger("RoomEventListener");
     private static final String JOIN_ROOM_EVENT = "join-room";
     private static final String LEAVE_ROOM_EVENT = "leave-room";
@@ -76,9 +76,9 @@ public class RoomEventListener {
     private final SocketIONamespace socketIONamespace;
 
     @Autowired
-    public RoomEventListener(SocketIOServer server, RoomService roomService, UserService userService,
-                             MessageService messageService, PlayerService playerService, FcmService fcmService,
-                             @Qualifier("APIConversionService") ConversionService conversionService) {
+    public RoomEventHandler(SocketIOServer server, RoomService roomService, UserService userService,
+                            MessageService messageService, PlayerService playerService, FcmService fcmService,
+                            @Qualifier("APIConversionService") ConversionService conversionService) {
         this.socketIONamespace = server.addNamespace("/game");
         this.socketIONamespace.addConnectListener(onConnected());
         this.socketIONamespace.addDisconnectListener(onDisconnected());
@@ -92,7 +92,7 @@ public class RoomEventListener {
         this.socketIONamespace.addEventListener(CLIENT_RESTORE_ROOM_EVENT, ClientInfoDto.class, restoreRoom());
         this.socketIONamespace.addEventListener(CLIENT_USER_GUESSING_EVENT, QuestionDto.class, userGuessing());
         this.socketIONamespace.addEventListener(CLIENT_USER_ANSWERING_EVENT, QuestionDto.class, userAnswering());
-        this.socketIONamespace.addEventListener(CLIENT_RESTART_GAME, UserToRoomDto.class, getRestartGame());
+        this.socketIONamespace.addEventListener(CLIENT_RESTART_GAME, UserToRoomDto.class, restartGame());
         this.roomService = roomService;
         this.userService = userService;
         this.messageService = messageService;
@@ -101,7 +101,7 @@ public class RoomEventListener {
         this.fcmService = fcmService;
     }
 
-    private DataListener<UserToRoomDto> getRestartGame() {
+    private DataListener<UserToRoomDto> restartGame() {
         return ((client, data, ackSender) -> {
             roomService.checkPlayerInRoom(data.getUserId(), data.getRoomId());
             Room room = roomService.restartGame(data.getRoomId());

@@ -150,7 +150,7 @@ public class Player implements Cloneable{
 
         }
 
-        public PlayerBuilder setId(long id){
+        public PlayerBuilder setId(Long id){
             Player.this.setId(id);
             return this;
         }
@@ -160,7 +160,7 @@ public class Player implements Cloneable{
             return this;
         }
 
-        public PlayerBuilder setAttempts(int attempts){
+        public PlayerBuilder setAttempts(Integer attempts){
             Player.this.setAttempt(attempts);
             return this;
         }

@@ -73,8 +73,11 @@ public class RoomServiceImpl implements RoomService {
             throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
         if (user == null)
             throw ExceptionFactory.create(RoomError.WRONG_USER);
-        if (room.getPassword().equals(""))
+        if (room.getPassword().equals("")) {
             room.setPassword(null);
+            room.setIsPrivate(false);
+        }else
+            room.setIsPrivate(true);
 
         Player player = conversionService.convert(user, Player.class);
         player.setStatus(PlayerStatus.ACTIVE);

@@ -172,7 +172,7 @@ public class Room implements Serializable{
     }
 
     public boolean addPlayer(Player player){
-        if(!this.players.contains(player)) {
+        if(this.players != null && !this.players.contains(player)) {
             player.setRoom(this);
             this.players.add(player);
             return true;
@@ -181,7 +181,7 @@ public class Room implements Serializable{
     }
 
     public boolean removePlayer(Player player){
-        if(this.players.contains(player)){
+        if(this.players != null && this.players.contains(player)){
             player.setRoom(null);
             this.players.remove(player);
             return true;
@@ -205,16 +205,13 @@ public class Room implements Serializable{
     public static class Builder {
         private Long id;
         private String name;
-        private boolean isPrivate;
-        private int maxPlayers;
-        private int currentPlayersNumber;
+        private Boolean isPrivate;
+        private Integer maxPlayers;
+        private Integer currentPlayersNumber;
         private String password;
-        private Integer maxPlayers0;
-        private Integer currentPlayersNumber0;
-        private Boolean isPrivate0;
         private GameStatus gameStatus;
-        private List<Player> players;
-        private List<Message> messages;
+        private List<Player> players = new ArrayList<>();
+        private List<Message> messages = new ArrayList<>();
         private Long roomAdmin;
 
         public Builder setId(Long id) {
@@ -227,38 +224,23 @@ public class Room implements Serializable{
             return this;
         }
 
-        public Builder setIsPrivate(boolean isPrivate) {
+        public Builder setIsPrivate(Boolean isPrivate) {
             this.isPrivate = isPrivate;
             return this;
         }
 
-        public Builder setMaxPlayers(int maxPlayers) {
+        public Builder setMaxPlayers(Integer maxPlayers) {
             this.maxPlayers = maxPlayers;
             return this;
         }
 
-        public Builder setCurrentPlayersNumber(int currentPlayersNumber) {
+        public Builder setCurrentPlayersNumber(Integer currentPlayersNumber) {
             this.currentPlayersNumber = currentPlayersNumber;
             return this;
         }
 
         public Builder setPassword(String password) {
             this.password = password;
-            return this;
-        }
-
-        public Builder setMaxPlayers0(Integer maxPlayers0) {
-            this.maxPlayers0 = maxPlayers0;
-            return this;
-        }
-
-        public Builder setCurrentPlayersNumber0(Integer currentPlayersNumber0) {
-            this.currentPlayersNumber0 = currentPlayersNumber0;
-            return this;
-        }
-
-        public Builder setIsPrivate0(Boolean isPrivate0) {
-            this.isPrivate0 = isPrivate0;
             return this;
         }
 
@@ -283,7 +265,7 @@ public class Room implements Serializable{
         }
 
         public Room build() {
-            return new Room(id, name, isPrivate, maxPlayers, currentPlayersNumber);
+            return new Room(id, name, password, maxPlayers,currentPlayersNumber, isPrivate, gameStatus, players, messages, roomAdmin);
         }
     }
 }

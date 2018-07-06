@@ -1,12 +1,12 @@
-package com.hedbanz.hedbanzAPI.socket;
+package com.hedbanz.hedbanzAPI.transfer;
 
-public class LoginAvailabilityReceiveMessage {
+public class LoginDto {
     private String login;
 
-    public LoginAvailabilityReceiveMessage() {
+    public LoginDto() {
     }
 
-    public LoginAvailabilityReceiveMessage(String login) {
+    public LoginDto(String login) {
         super();
         this.login = login;
     }

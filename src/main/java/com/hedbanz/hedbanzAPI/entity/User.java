@@ -196,7 +196,7 @@ public class User implements Serializable {
 
         }
 
-        public Builder setId(long id){
+        public Builder setId(Long id){
             User.this.setId(id);
             return this;
         }
@@ -211,7 +211,7 @@ public class User implements Serializable {
             return this;
         }
 
-        public Builder setMoney(int money){
+        public Builder setMoney(Integer money){
             User.this.setMoney(money);
             return this;
         }

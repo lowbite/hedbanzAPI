@@ -147,7 +147,7 @@ public class Message implements Cloneable{
 
         }
 
-        public Builder setId(long id){
+        public Builder setId(Long id){
             Message.this.setId(id);
             return this;
         }

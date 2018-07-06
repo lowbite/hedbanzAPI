@@ -20,15 +20,15 @@ public interface CrudUserRepository extends JpaRepository<User, Long> {
 
     User findUserBySecurityToken(String securityToken);
 
-    @Query(value = "SELECT new com.hedbanz.hedbanzAPI.transfer.Friend(f.id, f.login, f.imagePath, 1, 0) FROM User u " +
+    @Query(value = "SELECT new com.hedbanz.hedbanzAPI.model.Friend(f.id, f.login, f.imagePath, 1, 0) FROM User u " +
             "INNER JOIN u.friends f INNER JOIN f.friends ff WHERE u.id = :userId AND ff.id = :userId")
     List<Friend> findAcceptedFriends(@Param("userId") long userId);
 
-    @Query(value = "SELECT new com.hedbanz.hedbanzAPI.transfer.Friend(f.id, f.login, f.imagePath, 0, 1) FROM User u " +
+    @Query(value = "SELECT new com.hedbanz.hedbanzAPI.model.Friend(f.id, f.login, f.imagePath, 0, 1) FROM User u " +
             "INNER JOIN u.friends f WHERE u.id = :userId")
     List<Friend> findPendingAndAcceptedFriends(@Param("userId") long userId);
 
-    @Query("SELECT new com.hedbanz.hedbanzAPI.transfer.Friend(u.id, u.login, u.imagePath, 0, 0) FROM  User u " +
+    @Query("SELECT new com.hedbanz.hedbanzAPI.model.Friend(u.id, u.login, u.imagePath, 0, 0) FROM  User u " +
             "INNER JOIN u.friends f WHERE f.id = :userId")
     List<Friend> findRequestingFriends(@Param("userId") long userId);
 
