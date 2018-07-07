@@ -18,8 +18,8 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
-	<profiles>
-		<!-- Google Cloud-->
+<!--	<profiles>
+		&lt;!&ndash; Google Cloud&ndash;&gt;
 		<profile>
 			<id>gcp</id>
 			<dependencies>
@@ -49,7 +49,7 @@
 				</dependencies>
 			</dependencyManagement>
 		</profile>
-	</profiles>
+	</profiles>-->
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

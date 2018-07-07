@@ -269,7 +269,7 @@ public class RoomEventHandler {
             Message message = messageService.addMessage(conversionService.convert(data, Message.class));
             MessageDto resultMessage = conversionService.convert(message, MessageDto.class);
             resultMessage.setClientMessageId(data.getClientMessageId());
-            socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(SERVER_MESSAGE_EVENT, message);
+            socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(SERVER_MESSAGE_EVENT, resultMessage);
             log.info("User send message: ", data);
         };
     }
