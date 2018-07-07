@@ -102,12 +102,11 @@ public class MessageServiceImpl implements MessageService {
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public Message addEventMessage(Message inputMessage) {
-        if (inputMessage.getRoom().getId() == null || inputMessage.getType() == null || inputMessage.getSenderUser() == null) {
+        if (inputMessage.getRoom().getId() == null || inputMessage.getType() == null || inputMessage.getSenderUser() == null)
             throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
-        }
         Player player = crudPlayerRepository.findPlayerByUserIdAndRoomId(inputMessage.getSenderUser().getId(), inputMessage.getRoom().getId() );
         User sender = crudUserRepository.findOne(inputMessage.getSenderUser().getId());
-        if (!player.getRoom().getId().equals(inputMessage.getRoom().getId() ))
+        if (!player.getRoom().getId().equals(inputMessage.getRoom().getId()))
             throw ExceptionFactory.create(RoomError.NO_SUCH_USER_IN_ROOM);
 
         Message message = Message.Builder().setSenderUser(sender)

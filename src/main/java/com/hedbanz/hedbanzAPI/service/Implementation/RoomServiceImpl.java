@@ -178,14 +178,12 @@ public class RoomServiceImpl implements RoomService {
     @CacheEvict(value = "rooms", allEntries = true)
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void leaveFromRoom(Long userId, Long roomId) {
-        if (userId == null || roomId == null) {
+        if (userId == null || roomId == null)
             throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
-        }
 
         User user = crudUserRepository.findOne(userId);
-        if (user == null) {
+        if (user == null)
             throw ExceptionFactory.create(RoomError.WRONG_USER);
-        }
 
         Room foundRoom = crudRoomRepository.findOne(roomId);
         Player player = foundRoom.getPlayerByLogin(user.getLogin());
@@ -201,16 +199,16 @@ public class RoomServiceImpl implements RoomService {
             foundRoom = crudRoomRepository.saveAndFlush(foundRoom);
         }
 
-
         if (foundRoom.getCurrentPlayersNumber() == 0 || playersAbsent(foundRoom))
             crudRoomRepository.delete(foundRoom.getId());
         else {
-            Message message = Message.Builder().setRoom(foundRoom)
+            Message message = Message.Builder()
+                    .setRoom(foundRoom)
                     .setSenderUser(user)
                     .setType(MessageType.LEFT_USER)
                     .setQuestion(null)
                     .build();
-            messageService.addEventMessage(message);
+            crudMessageRepository.saveAndFlush(message);
         }
     }
 
@@ -270,7 +268,7 @@ public class RoomServiceImpl implements RoomService {
                 .setType(MessageType.JOINED_USER)
                 .setQuestion(null)
                 .build();
-        messageService.addEventMessage(message);
+        crudMessageRepository.saveAndFlush(message);
         return foundRoom;
     }
 
