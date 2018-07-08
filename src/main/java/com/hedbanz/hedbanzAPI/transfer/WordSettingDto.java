@@ -6,6 +6,9 @@ public class WordSettingDto extends MessageDto{
     private String word;
     private Long wordReceiver;
 
+    public WordSettingDto() {
+    }
+
     WordSettingDto(Long clientMessageId, UserDto senderUser, Long roomId, String text, Integer type, Date createDate,
                    String word, Long wordReceiver) {
         super(clientMessageId, senderUser, roomId, text, type, createDate);
