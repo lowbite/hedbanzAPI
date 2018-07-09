@@ -26,6 +26,7 @@ public interface ErrorMessages {
      String GAME_HAS_BEEN_ALREADY_STARTED = "Game has been started!";
      String INCORRECT_ROOM_ID = "Incorrect room id!";
      String MAX_ACTIVE_ROOMS_NUMBER = "Player already play maximal number of allowed games!";
+     String NO_SUCH_MESSAGE = "No such message in this room!";
 
 
      String INCORRECT_INPUT = "Incorrect input!";

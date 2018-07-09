@@ -4,16 +4,16 @@ import java.util.Date;
 
 public class WordSettingDto extends MessageDto{
     private String word;
-    private Long wordReceiver;
+    private UserDto wordReceiverUser;
 
     public WordSettingDto() {
     }
 
     WordSettingDto(Long clientMessageId, UserDto senderUser, Long roomId, String text, Integer type, Date createDate,
-                   String word, Long wordReceiver) {
+                   String word, UserDto wordReceiverUser) {
         super(clientMessageId, senderUser, roomId, text, type, createDate);
         this.word = word;
-        this.wordReceiver = wordReceiver;
+        this.wordReceiverUser = wordReceiverUser;
     }
 
     public String getWord() {
@@ -24,12 +24,12 @@ public class WordSettingDto extends MessageDto{
         this.word = word;
     }
 
-    public Long getWordReceiver() {
-        return wordReceiver;
+    public UserDto getWordReceiverUser() {
+        return wordReceiverUser;
     }
 
-    public void setWordReceiver(Long wordReceiver) {
-        this.wordReceiver = wordReceiver;
+    public void setWordReceiverUser(UserDto wordReceiverUser) {
+        this.wordReceiverUser = wordReceiverUser;
     }
 
     public static class Builder {
@@ -40,7 +40,7 @@ public class WordSettingDto extends MessageDto{
         private Integer type;
         private Date createDate;
         private String word;
-        private Long wordReceiver;
+        private UserDto wordReceiverUser;
 
         public Builder setClientMessageId(Long clientMessageId) {
             this.clientMessageId = clientMessageId;
@@ -77,13 +77,13 @@ public class WordSettingDto extends MessageDto{
             return this;
         }
 
-        public Builder setWordReceiver(Long wordReceiver) {
-            this.wordReceiver = wordReceiver;
+        public Builder setWordReceiverUser(UserDto wordReceiverUser) {
+            this.wordReceiverUser = wordReceiverUser;
             return this;
         }
 
         public WordSettingDto build() {
-            return new WordSettingDto(clientMessageId, senderUser, roomId, text, type, createDate, word, wordReceiver);
+            return new WordSettingDto(clientMessageId, senderUser, roomId, text, type, createDate, word, wordReceiverUser);
         }
     }
 }

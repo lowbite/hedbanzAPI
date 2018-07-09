@@ -31,7 +31,7 @@ public class Message implements Cloneable{
     @OneToOne(cascade = CascadeType.ALL, fetch = EAGER)
     private Question question;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "room_id")
     private Room room;
 

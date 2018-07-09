@@ -37,7 +37,6 @@ public class RoomServiceImpl implements RoomService {
     private static final int MAX_GUESS_ATTEMPTS = 3;
     private static final int MAX_ACTIVE_ROOMS = 15;
     private final ConversionService conversionService;
-    private final FcmServiceImpl fcmService;
     private final MessageService messageService;
     private final CrudRoomRepository crudRoomRepository;
     private final RoomRepositoryFunctional roomRepositoryFunctional;
@@ -47,12 +46,10 @@ public class RoomServiceImpl implements RoomService {
 
     @Autowired
     public RoomServiceImpl(@Qualifier("APIConversionService") ConversionService conversionService,
-                           FcmServiceImpl fcmService, MessageService messageService,
-                           CrudRoomRepository crudRoomRepository, RoomRepositoryFunctional roomRepositoryFunctional,
-                           CrudUserRepository crudUserRepository, CrudPlayerRepository crudPlayerRepository,
-                           CrudMessageRepository crudMessageRepository) {
+                           MessageService messageService, CrudRoomRepository crudRoomRepository,
+                           RoomRepositoryFunctional roomRepositoryFunctional, CrudUserRepository crudUserRepository,
+                           CrudPlayerRepository crudPlayerRepository, CrudMessageRepository crudMessageRepository) {
         this.conversionService = conversionService;
-        this.fcmService = fcmService;
         this.messageService = messageService;
         this.crudRoomRepository = crudRoomRepository;
         this.roomRepositoryFunctional = roomRepositoryFunctional;
@@ -193,7 +190,17 @@ public class RoomServiceImpl implements RoomService {
         if (foundRoom.getGameStatus() == GameStatus.GUESSING_WORDS) {
             player.setStatus(PlayerStatus.LEFT);
             crudPlayerRepository.saveAndFlush(player);
-        } else {
+        } else if(foundRoom.getGameStatus() == GameStatus.SETTING_WORDS){
+                for (Player roomPlayer: foundRoom.getPlayers()) {
+                    if(roomPlayer.getWordSettingUserId().equals(player.getUser().getId())){
+                        roomPlayer.setWordSettingUserId(player.getWordSettingUserId());
+                    }
+                }
+            foundRoom.removePlayer(player);
+            foundRoom.setCurrentPlayersNumber(foundRoom.getPlayers().size());
+            foundRoom = crudRoomRepository.saveAndFlush(foundRoom);
+            messageService.deleteSettingWordMessage(foundRoom.getId(), player.getUser().getId());
+        }else if(foundRoom.getGameStatus() == GameStatus.WAITING_FOR_PLAYERS){
             foundRoom.removePlayer(player);
             foundRoom.setCurrentPlayersNumber(foundRoom.getPlayers().size());
             foundRoom = crudRoomRepository.saveAndFlush(foundRoom);
@@ -312,13 +319,11 @@ public class RoomServiceImpl implements RoomService {
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void setPlayerWord(Word word) {
-        //TODO change input parameter
-        if (word.getSenderId() == null || word.getWordReceiverId() == null
-                || word.getWord() == null || word.getRoomId() == null) {
+        if (word.getSenderId() == null || word.getWord() == null || word.getRoomId() == null) {
             throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
         }
 
-        Player wordReceiverPlayer = null;
+        /*Player wordReceiverPlayer = null;
         List<Player> players = crudPlayerRepository.findPlayersByRoomId(word.getRoomId());
         for (Player player : players) {
             if (player.getUser().getId().equals(word.getWordReceiverId())) {
@@ -346,7 +351,16 @@ public class RoomServiceImpl implements RoomService {
             }
         }
         if (wordReceiverPlayer != null)
-            crudPlayerRepository.saveAndFlush(wordReceiverPlayer);
+            crudPlayerRepository.saveAndFlush(wordReceiverPlayer);*/
+
+        Player wordSetter = crudPlayerRepository.findPlayerByUserIdAndRoomId(word.getSenderId(), word.getRoomId());
+        if(wordSetter == null)
+            throw ExceptionFactory.create(RoomError.NO_SUCH_USER_IN_ROOM);
+        Player wordReceiver = crudPlayerRepository.findPlayerByUserIdAndRoomId(wordSetter.getWordSettingUserId(), word.getRoomId());
+        if(wordReceiver == null)
+            throw ExceptionFactory.create(RoomError.NO_SUCH_USER_IN_ROOM);
+        wordReceiver.setWord(word.getWord());
+        crudPlayerRepository.saveAndFlush(wordReceiver);
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -375,7 +389,7 @@ public class RoomServiceImpl implements RoomService {
         int i = 0;
         while (i < players.size()) {
             attempt = players.get(i).getAttempt();
-            if (attempt != 0 && players.get(i).getStatus() == PlayerStatus.ACTIVE) {
+            if (attempt != 0 && players.get(i).getStatus() == PlayerStatus.ACTIVE && !players.get(i).getIsWinner()) {
                 if (attempt < MAX_GUESS_ATTEMPTS) {
                     resultPlayer = players.get(i);
                     resultPlayer.setAttempt(resultPlayer.getAttempt() + 1);
@@ -386,6 +400,7 @@ public class RoomServiceImpl implements RoomService {
                 }
             } else if (players.get(i).getIsWinner()) {
                 resultPlayer = getNextGuessingPlayer(players, i);
+                break;
             }
             i++;
         }
@@ -396,7 +411,7 @@ public class RoomServiceImpl implements RoomService {
         }
 
         crudPlayerRepository.updatePlayerAttempts(resultPlayer.getAttempt(), resultPlayer.getId());
-        return resultPlayer;
+        return (Player) resultPlayer.clone();
     }
 
     private Player getNextGuessingPlayer(List<Player> players, int i) {
@@ -406,11 +421,11 @@ public class RoomServiceImpl implements RoomService {
         if (i + 1 < players.size()) {
             resultPlayer = players.get(i + 1);
             resultPlayer.setAttempt(1);
-            return resultPlayer;
+            return (Player) resultPlayer.clone();
         } else {
             resultPlayer = players.get(0);
             resultPlayer.setAttempt(1);
-            return resultPlayer;
+            return (Player) resultPlayer.clone();
         }
     }
 

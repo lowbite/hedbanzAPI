@@ -8,6 +8,7 @@ import com.hedbanz.hedbanzAPI.repository.CrudPlayerRepository;
 import com.hedbanz.hedbanzAPI.repository.CrudRoomRepository;
 import com.hedbanz.hedbanzAPI.repository.CrudUserRepository;
 import com.hedbanz.hedbanzAPI.service.FcmService;
+import com.hedbanz.hedbanzAPI.service.MessageService;
 import com.hedbanz.hedbanzAPI.service.RoomService;
 import com.hedbanz.hedbanzAPI.model.AfkWarning;
 import com.hedbanz.hedbanzAPI.transfer.UserDto;
@@ -86,7 +87,6 @@ public class AfkTimerTask extends TimerTask {
             cancel();
             return;
         }
-        log.info("Player status " + player.getStatus());
         if (player.getStatus() == AFK) {
             if (timeLeft == ONE_MIN_IN_MS) {
                 User user = crudUserRepository.findOne(userId);
@@ -95,6 +95,8 @@ public class AfkTimerTask extends TimerTask {
             } else if (timeLeft == ONE_MIN_IN_MS / 2) {
                 User user = crudUserRepository.findOne(userId);
                 Room room = crudRoomRepository.findOne(roomId);
+                if(room == null)
+                    cancel();
                 AfkWarning warning = new AfkWarning(room.getName(), room.getId());
                 FcmPush.FcmPushData<AfkWarning> fcmPushData =
                         new FcmPush.FcmPushData<>(NotificationMessageType.AFK_WARNING.getCode(), warning);
@@ -109,7 +111,9 @@ public class AfkTimerTask extends TimerTask {
             } else if (timeLeft <= 0) {
                 User user = crudUserRepository.findOne(userId);
                 Room room = crudRoomRepository.findOne(roomId);
-                log.info("Player was kicked!");
+                if(room == null)
+                    cancel();
+                log.info(SERVER_KICKED_USER_EVENT);
                 roomService.leaveFromRoom(user.getId(), room.getId());
                 roomOperations.sendEvent(SERVER_KICKED_USER_EVENT, conversionService.convert(user, UserDto.class));
                 AfkWarning warning = new AfkWarning(room.getName(), room.getId());

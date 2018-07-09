@@ -12,16 +12,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class MessageHistoryUtil {
-    public static List<MessageDto> convertToDto(List<Message> messages, List<Player> players, ConversionService conversionService){
+    /*public static List<MessageDto> convertToDto(List<Message> messages, List<Player> players, ConversionService conversionService){
         return messages.stream().map(message -> {
             if (message.getType() == MessageType.USER_QUESTION) {
                 return conversionService.convert(message, QuestionDto.class);
             }else if(message.getType() == MessageType.WORD_SETTING){
-                WordSettingDto wordSettingDto = new WordSettingDto();
-                Player player = getPlayerByUserId(players, wordSettingDto.getSenderUser().getId());
+                WordSettingDto wordSettingDto = conversionService.convert(message, WordSettingDto.class);
+                Player player = getPlayerByUserId(players, message.getSenderUser().getId());
                 if(player != null){
-                    wordSettingDto.setWordReceiver(player.getWordSettingUserId());
-                    player = getPlayerByUserId( players, wordSettingDto.getWordReceiver());
+                    wordSettingDto.setWordReceiverUser(player.getWordSettingUserId());
+                    player = getPlayerByUserId( players, wordSettingDto.getWordReceiverUser());
                     if(player != null)
                         wordSettingDto.setWord(player.getWord());
                 }
@@ -39,6 +39,6 @@ public class MessageHistoryUtil {
             }
         }
         return null;
-    }
+    }*/
 }
 

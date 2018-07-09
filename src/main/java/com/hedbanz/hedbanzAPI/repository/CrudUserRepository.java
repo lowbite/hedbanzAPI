@@ -20,6 +20,8 @@ public interface CrudUserRepository extends JpaRepository<User, Long> {
 
     User findUserBySecurityToken(String securityToken);
 
+    List<User> findAllByFcmTokenIsNotNull();
+
     @Query(value = "SELECT new com.hedbanz.hedbanzAPI.model.Friend(f.id, f.login, f.imagePath, 1, 0) FROM User u " +
             "INNER JOIN u.friends f INNER JOIN f.friends ff WHERE u.id = :userId AND ff.id = :userId")
     List<Friend> findAcceptedFriends(@Param("userId") long userId);

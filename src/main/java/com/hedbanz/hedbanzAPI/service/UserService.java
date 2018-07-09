@@ -21,6 +21,8 @@ public interface UserService {
 
     User getUser(Long userId);
 
+    List<User> getAllUsers();
+
     List<Friend> getUserFriends(Long userId);
 
     List<Friend> getUserAcceptedFriends(Long userId);

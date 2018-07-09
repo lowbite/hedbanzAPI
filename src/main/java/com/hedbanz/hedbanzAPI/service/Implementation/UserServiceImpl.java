@@ -141,6 +141,11 @@ public class UserServiceImpl implements UserService {
         }return crudUserRepository.findOne(userId);
     }
 
+    @Override
+    public List<User> getAllUsers() {
+        return crudUserRepository.findAllByFcmTokenIsNotNull();
+    }
+
     @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
     public List<Friend> getUserFriends(Long userId){
         if(userId == null){

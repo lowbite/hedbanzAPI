@@ -23,4 +23,7 @@ public interface CrudMessageRepository extends JpaRepository<Message, Long>, Pag
 
     @Query("SELECT m FROM Message m JOIN m.question q WHERE q.id = :questionId")
     Message findMessageByQuestionId(@Param("questionId") long questionId);
+
+    @Query("SELECT m FROM Message m  JOIN m.room r JOIN m.senderUser u WHERE r.id = :roomId AND u.id = :senderId AND m.type = 'WORD_SETTING'")
+    Message findMessageByWordSettingType(@Param("senderId") long senderId, @Param("roomId") long roomId);
 }

@@ -1,5 +1,6 @@
 package com.hedbanz.hedbanzAPI.controller;
 
+import com.hedbanz.hedbanzAPI.constant.MessageType;
 import com.hedbanz.hedbanzAPI.constant.NotificationMessageType;
 import com.hedbanz.hedbanzAPI.constant.ResultStatus;
 import com.hedbanz.hedbanzAPI.entity.*;
@@ -8,7 +9,6 @@ import com.hedbanz.hedbanzAPI.model.Notification;
 import com.hedbanz.hedbanzAPI.model.RoomFilter;
 import com.hedbanz.hedbanzAPI.service.*;
 import com.hedbanz.hedbanzAPI.transfer.*;
-import com.hedbanz.hedbanzAPI.utils.MessageHistoryUtil;
 import com.hedbanz.hedbanzAPI.model.FcmPush;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -82,6 +82,7 @@ public class RoomController {
         if (page == 0) {
             List<RoomDto> activeRooms = roomService.getActiveRoomsByFilter(roomFilter, userId)
                     .stream().map(room -> conversionService.convert(room, RoomDto.class)).collect(Collectors.toList());
+
             rooms.put("activeRooms", activeRooms);
         }
         return new CustomResponseBody<>(ResultStatus.SUCCESS_STATUS, null, rooms);
@@ -91,8 +92,20 @@ public class RoomController {
     @ResponseStatus(HttpStatus.OK)
     public CustomResponseBody<List<MessageDto>> findAllMessages(@PathVariable("roomId") long roomId, @PathVariable("pageNumber") int pageNumber) {
         List<Message> messages = messageService.getAllMessages(roomId, pageNumber);
-        List<Player> players = playerService.getPlayers(roomId);
-        List<MessageDto> resultMessages = MessageHistoryUtil.convertToDto(messages, players, conversionService);
+        List<MessageDto> resultMessages = messages.stream().map(message -> {
+            if (message.getType() == MessageType.USER_QUESTION) {
+                return conversionService.convert(message, QuestionDto.class);
+            }else if(message.getType() == MessageType.WORD_SETTING){
+                WordSettingDto wordSettingDto = conversionService.convert(message, WordSettingDto.class);
+                Player wordSetter = playerService.getPlayerByUserIdAndRoomId(wordSettingDto.getSenderUser().getId(), wordSettingDto.getRoomId());
+                Player wordReceiver = playerService.getPlayerByUserIdAndRoomId(wordSetter.getWordSettingUserId(), wordSettingDto.getRoomId());
+                wordSettingDto.setWordReceiverUser(conversionService.convert(wordReceiver.getUser(), UserDto.class));
+                wordSettingDto.setWord(wordReceiver.getWord());
+                return wordSettingDto;
+            }else {
+                return conversionService.convert(message, MessageDto.class);
+            }
+        }).collect(Collectors.toList());
         return new CustomResponseBody<>(ResultStatus.SUCCESS_STATUS, null, resultMessages);
     }
 

@@ -30,8 +30,9 @@ public class ApplicationServiceImpl implements ApplicationService{
 
         if(application.getVersion() == null)
             throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
-
         Application dbApplication = applicationRepository.findOne(1);
+        if(dbApplication.getVersion() >= application.getVersion())
+            throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
         dbApplication.setVersion(application.getVersion());
         return applicationRepository.saveAndFlush(dbApplication);
     }

@@ -22,7 +22,6 @@ import java.util.Timer;
 public class PlayerServiceImpl implements PlayerService {
     public int i;
     private final CrudPlayerRepository crudPlayerRepository;
-    private final CrudRoomRepository crudRoomRepository;
 
     @Lookup
     public AfkTimerTask getAfkTimerTask() {
@@ -30,9 +29,8 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Autowired
-    public PlayerServiceImpl(CrudPlayerRepository crudPlayerRepository, CrudRoomRepository crudRoomRepository) {
+    public PlayerServiceImpl(CrudPlayerRepository crudPlayerRepository) {
         this.crudPlayerRepository = crudPlayerRepository;
-        this.crudRoomRepository = crudRoomRepository;
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
@@ -74,7 +72,7 @@ public class PlayerServiceImpl implements PlayerService {
         Player player = crudPlayerRepository.findPlayerByUserIdAndRoomId(userId, roomId);
         if (player == null)
             throw ExceptionFactory.create(RoomError.NO_SUCH_USER_IN_ROOM);
-        long period = 5000l;
+        long period = 1000l;
 
         AfkTimerTask timerTask = getAfkTimerTask();
         timerTask.setUserId(userId);

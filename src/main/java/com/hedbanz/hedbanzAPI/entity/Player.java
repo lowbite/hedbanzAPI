@@ -133,6 +133,7 @@ public class Player implements Cloneable{
         return Player.PlayerBuilder()
                 .setId(id)
                 .setUser(user)
+                .setRoom(room)
                 .setAttempts(attempt)
                 .setIsWinner(isWinner)
                 .setStatus(status)
@@ -182,6 +183,11 @@ public class Player implements Cloneable{
 
         public PlayerBuilder setIsWinner(Boolean isWinner){
             Player.this.setIsWinner(isWinner);
+            return this;
+        }
+
+        public PlayerBuilder setRoom(Room room){
+            Player.this.setRoom(room);
             return this;
         }
 

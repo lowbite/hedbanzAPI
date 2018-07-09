@@ -8,12 +8,12 @@ public class Application {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
-    private String version;
+    private Integer version;
 
     public Application() {
     }
 
-    public Application(Integer id, String version) {
+    public Application(Integer id, Integer version) {
         this.id = id;
         this.version = version;
     }
@@ -26,11 +26,11 @@ public class Application {
         this.id = id;
     }
 
-    public String getVersion() {
+    public Integer getVersion() {
         return version;
     }
 
-    public void setVersion(String version) {
+    public void setVersion(Integer version) {
         this.version = version;
     }
 }

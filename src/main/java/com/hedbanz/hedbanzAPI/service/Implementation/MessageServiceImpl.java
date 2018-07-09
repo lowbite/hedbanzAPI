@@ -245,8 +245,30 @@ public class MessageServiceImpl implements MessageService {
         return crudMessageRepository.saveAndFlush(message);
     }
 
+    @Transactional
+    public void deleteSettingWordMessage(Long roomId, Long senderId) {
+        if (roomId == null || senderId == null)
+            throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
+        Message message = crudMessageRepository.findMessageByWordSettingType(senderId, roomId);
+        if(message == null)
+            throw ExceptionFactory.create(RoomError.NO_SUCH_MESSAGE);
+        crudMessageRepository.delete(message);
+    }
+
+    @Transactional
+    public Message getSettingWordMessage(Long roomId, Long senderId) {
+        if (roomId == null || senderId == null)
+            throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
+        Message message = crudMessageRepository.findMessageByWordSettingType(senderId, roomId);
+        if(message == null)
+            throw ExceptionFactory.create(RoomError.NO_SUCH_MESSAGE);
+        return (Message) message.clone();
+    }
+
     @Transactional(readOnly = true)
     public List<Message> getAllMessages(Long roomId, Integer pageNumber) {
+        if(crudRoomRepository.findOne(roomId) == null)
+            throw ExceptionFactory.create(RoomError.NO_SUCH_ROOM);
         Pageable pageable = new PageRequest(pageNumber, Constants.PAGE_SIZE);
         Page<Message> page = crudMessageRepository.findAllMessages(pageable, roomId);
         ArrayList<Message> messages = new ArrayList<>(page.getContent());

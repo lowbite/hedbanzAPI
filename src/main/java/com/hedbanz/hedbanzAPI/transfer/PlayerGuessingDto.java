@@ -50,7 +50,7 @@ public class PlayerGuessingDto {
             return this;
         }
 
-        public PlayerGuessingDtoBuilder setAttempts(Integer attempt){
+        public PlayerGuessingDtoBuilder setAttempt(Integer attempt){
             PlayerGuessingDto.this.attempt = attempt;
             return this;
         }
