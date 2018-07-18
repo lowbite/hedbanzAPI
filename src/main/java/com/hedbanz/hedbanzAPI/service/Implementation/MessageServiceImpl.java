@@ -2,21 +2,14 @@ package com.hedbanz.hedbanzAPI.service.Implementation;
 
 import com.hedbanz.hedbanzAPI.constant.Constants;
 import com.hedbanz.hedbanzAPI.constant.MessageType;
-import com.hedbanz.hedbanzAPI.constant.NotificationMessageType;
-import com.hedbanz.hedbanzAPI.constant.PlayerStatus;
 import com.hedbanz.hedbanzAPI.entity.*;
 import com.hedbanz.hedbanzAPI.error.UserError;
 import com.hedbanz.hedbanzAPI.error.RoomError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
-import com.hedbanz.hedbanzAPI.model.Notification;
 import com.hedbanz.hedbanzAPI.model.Vote;
 import com.hedbanz.hedbanzAPI.repository.*;
 import com.hedbanz.hedbanzAPI.service.MessageService;
-import com.hedbanz.hedbanzAPI.model.MessageNotification;
-import com.hedbanz.hedbanzAPI.model.FcmPush;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,27 +28,21 @@ import static com.hedbanz.hedbanzAPI.constant.VoteType.YES;
 
 @Service
 public class MessageServiceImpl implements MessageService {
-
-    private final ConversionService conversionService;
-    private final FcmServiceImpl fcmService;
-    private final CrudRoomRepository crudRoomRepository;
-    private final CrudUserRepository crudUserRepository;
-    private final CrudMessageRepository crudMessageRepository;
-    private final CrudQuestionRepository crudQuestionRepository;
-    private final CrudPlayerRepository crudPlayerRepository;
+    private final RoomRepository roomRepository;
+    private final UserRepository userRepository;
+    private final MessageRepository messageRepository;
+    private final QuestionRepository questionRepository;
+    private final PlayerRepository playerRepository;
 
     @Autowired
-    public MessageServiceImpl(@Qualifier("APIConversionService") ConversionService conversionService,
-                              FcmServiceImpl fcmService, CrudRoomRepository crudRoomRepository, CrudUserRepository crudUserRepository,
-                              CrudMessageRepository crudMessageRepository, CrudQuestionRepository crudQuestionRepository,
-                              CrudPlayerRepository crudPlayerRepository) {
-        this.conversionService = conversionService;
-        this.fcmService = fcmService;
-        this.crudRoomRepository = crudRoomRepository;
-        this.crudUserRepository = crudUserRepository;
-        this.crudMessageRepository = crudMessageRepository;
-        this.crudQuestionRepository = crudQuestionRepository;
-        this.crudPlayerRepository = crudPlayerRepository;
+    public MessageServiceImpl(RoomRepository roomRepository, UserRepository userRepository,
+                              MessageRepository messageRepository, QuestionRepository questionRepository,
+                              PlayerRepository playerRepository) {
+        this.roomRepository = roomRepository;
+        this.userRepository = userRepository;
+        this.messageRepository = messageRepository;
+        this.questionRepository = questionRepository;
+        this.playerRepository = playerRepository;
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -64,8 +51,8 @@ public class MessageServiceImpl implements MessageService {
                 inputMessage.getType() == null || inputMessage.getSenderUser() == null) {
             throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
         }
-        User sender = crudUserRepository.findOne(inputMessage.getSenderUser().getId());
-        Player player = crudPlayerRepository.findPlayerByUserIdAndRoomId(inputMessage.getSenderUser().getId(), inputMessage.getRoom().getId());
+        User sender = userRepository.findOne(inputMessage.getSenderUser().getUserId());
+        Player player = playerRepository.findPlayerByUserIdAndRoomId(inputMessage.getSenderUser().getUserId(), inputMessage.getRoom().getId());
         if (player == null)
             throw ExceptionFactory.create(RoomError.NO_SUCH_USER_IN_ROOM);
 
@@ -76,45 +63,41 @@ public class MessageServiceImpl implements MessageService {
                 .setQuestion(null)
                 .setRoom(player.getRoom())
                 .build();
-        message = crudMessageRepository.saveAndFlush(message);
-
-        for (Player roomPlayer : player.getRoom().getPlayers()) {
-            if (roomPlayer.getStatus() == PlayerStatus.AFK && roomPlayer.getUser().getFcmToken() != null) {
-                fcmService.sendPushNotification(buildFcmPushMessage(message, roomPlayer));
-            }
-        }
-        return message;
-    }
-
-    private FcmPush buildFcmPushMessage(Message message, Player player) {
-        MessageNotification messageNotification = conversionService.convert(message, MessageNotification.class);
-        Notification notification = new Notification("New message!",
-                "User " + messageNotification.getSenderName() + " sent a new message.");
-        FcmPush.FcmPushData<MessageNotification> fcmPushData =
-                new FcmPush.FcmPushData<>(NotificationMessageType.MESSAGE.getCode(), messageNotification);
-
-        return new FcmPush.Builder().setNotification(notification)
-                .setTo(player.getUser().getFcmToken())
-                .setPriority("normal")
-                .setData(fcmPushData)
-                .build();
+        message = messageRepository.saveAndFlush(message);
+        return (Message) message.clone();
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public Message addEventMessage(Message inputMessage) {
-        if (inputMessage.getRoom().getId() == null || inputMessage.getType() == null || inputMessage.getSenderUser() == null)
+    public Message addPlayerEventMessage(MessageType type, Long userId, Long roomId) {
+        if (userId == null || roomId == null || type == null)
             throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
-        Player player = crudPlayerRepository.findPlayerByUserIdAndRoomId(inputMessage.getSenderUser().getId(), inputMessage.getRoom().getId() );
-        User sender = crudUserRepository.findOne(inputMessage.getSenderUser().getId());
-        if (!player.getRoom().getId().equals(inputMessage.getRoom().getId()))
+        Player player = playerRepository.findPlayerByUserIdAndRoomId(userId, roomId);
+        if (player == null) {
             throw ExceptionFactory.create(RoomError.NO_SUCH_USER_IN_ROOM);
-
-        Message message = Message.Builder().setSenderUser(sender)
-                .setType(inputMessage.getType())
+        }
+        Room room = roomRepository.findOne(roomId);
+        User user = userRepository.findOne(userId);
+        if (!player.getRoom().getId().equals(roomId))
+            throw ExceptionFactory.create(RoomError.NO_SUCH_USER_IN_ROOM);
+        return messageRepository.saveAndFlush(Message.Builder()
+                .setRoom(room)
+                .setType(type)
+                .setSenderUser(user)
                 .setQuestion(null)
-                .setRoom(player.getRoom())
-                .build();
-        return crudMessageRepository.saveAndFlush(message);
+                .build());
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public Message addRoomEventMessage(MessageType type, Long roomId) {
+        if (roomId == null || type == null)
+            throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
+        Room room = roomRepository.findOne(roomId);
+        return messageRepository.saveAndFlush(Message.Builder()
+                .setRoom(room)
+                .setType(type)
+                .setSenderUser(null)
+                .setQuestion(null)
+                .build());
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.NESTED)
@@ -122,12 +105,12 @@ public class MessageServiceImpl implements MessageService {
         if (questionId == null || text == null) {
             throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
         }
-        Message message = crudMessageRepository.findMessageByQuestionId(questionId);
+        Message message = messageRepository.findMessageByQuestionId(questionId);
         if (message == null)
             throw ExceptionFactory.create(RoomError.NO_SUCH_QUESTION);
         message.setCreateDate(new Timestamp(new Date().getTime()));
         message.setText(text);
-        message = crudMessageRepository.saveAndFlush(message);
+        message = messageRepository.saveAndFlush(message);
         return (Message) message.clone();
     }
 
@@ -138,7 +121,7 @@ public class MessageServiceImpl implements MessageService {
             throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
         }
 
-        Player player = crudPlayerRepository.findPlayerByUserIdAndRoomId(vote.getSenderId(), vote.getRoomId());
+        Player player = playerRepository.findPlayerByUserIdAndRoomId(vote.getSenderId(), vote.getRoomId());
         if (player == null) {
             throw ExceptionFactory.create(RoomError.NO_SUCH_PLAYER);
         }
@@ -146,7 +129,7 @@ public class MessageServiceImpl implements MessageService {
             throw ExceptionFactory.create(RoomError.NO_SUCH_USER_IN_ROOM);
         }
 
-        Question question = crudQuestionRepository.findOne(vote.getQuestionId());
+        Question question = questionRepository.findOne(vote.getQuestionId());
         if (question == null)
             throw ExceptionFactory.create(RoomError.NO_SUCH_QUESTION);
 
@@ -172,7 +155,7 @@ public class MessageServiceImpl implements MessageService {
             else if (question.yesVotersContainPlayer(player))
                 question.removeYesVoter(player);
         }
-        return crudQuestionRepository.saveAndFlush(question);
+        return questionRepository.saveAndFlush(question);
     }
 
     @Override
@@ -180,14 +163,14 @@ public class MessageServiceImpl implements MessageService {
         if (roomId == null)
             throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
         Pageable pageable = new PageRequest(0, 1);
-        Page<Question> page = crudMessageRepository.findLastQuestionByRoomId(roomId, pageable);
+        Page<Question> page = messageRepository.findLastQuestionByRoomId(roomId, pageable);
         List<Question> questions = page.getContent();
         return questions.get(0);
     }
 
     @Transactional(readOnly = true)
     public Message getMessageByQuestionId(Long questionId) {
-        Message message = crudMessageRepository.findMessageByQuestionId(questionId);
+        Message message = messageRepository.findMessageByQuestionId(questionId);
         if (message == null)
             throw ExceptionFactory.create(RoomError.NO_SUCH_QUESTION);
         return message;
@@ -197,13 +180,13 @@ public class MessageServiceImpl implements MessageService {
     public Question addSettingQuestionMessage(Long roomId, Long senderId) {
         if (roomId == null || senderId == null)
             throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
-        User user = crudUserRepository.findOne(senderId);
+        User user = userRepository.findOne(senderId);
         if (user == null)
             throw ExceptionFactory.create(UserError.NO_SUCH_USER);
-        Room room = crudRoomRepository.findOne(roomId);
+        Room room = roomRepository.findOne(roomId);
         if (room == null)
             throw ExceptionFactory.create(RoomError.NO_SUCH_ROOM);
-        Player player = crudPlayerRepository.findPlayerByUserIdAndRoomId(senderId, roomId);
+        Player player = playerRepository.findPlayerByUserIdAndRoomId(senderId, roomId);
         if (player == null)
             throw ExceptionFactory.create(RoomError.NO_SUCH_USER_IN_ROOM);
         Question question = new Question.Builder()
@@ -217,7 +200,7 @@ public class MessageServiceImpl implements MessageService {
                 .setQuestion(question)
                 .setRoom(room)
                 .build();
-        return crudMessageRepository.saveAndFlush(message).getQuestion();
+        return messageRepository.saveAndFlush(message).getQuestion();
     }
 
     @Transactional
@@ -225,15 +208,15 @@ public class MessageServiceImpl implements MessageService {
         if (roomId == null || senderId == null)
             throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
 
-        User user = crudUserRepository.findOne(senderId);
+        User user = userRepository.findOne(senderId);
         if (user == null)
             throw ExceptionFactory.create(UserError.NO_SUCH_USER);
 
-        Room room = crudRoomRepository.findOne(roomId);
+        Room room = roomRepository.findOne(roomId);
         if (room == null)
             throw ExceptionFactory.create(RoomError.NO_SUCH_ROOM);
 
-        Player player = crudPlayerRepository.findPlayerByUserIdAndRoomId(senderId, roomId);
+        Player player = playerRepository.findPlayerByUserIdAndRoomId(senderId, roomId);
         if (player == null)
             throw ExceptionFactory.create(RoomError.NO_SUCH_USER_IN_ROOM);
 
@@ -242,35 +225,42 @@ public class MessageServiceImpl implements MessageService {
                 .setRoom(room)
                 .setType(MessageType.WORD_SETTING)
                 .build();
-        return crudMessageRepository.saveAndFlush(message);
+        return messageRepository.saveAndFlush(message);
     }
 
     @Transactional
     public void deleteSettingWordMessage(Long roomId, Long senderId) {
         if (roomId == null || senderId == null)
             throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
-        Message message = crudMessageRepository.findMessageByWordSettingType(senderId, roomId);
-        if(message == null)
+        Message message = messageRepository.findMessageByWordSettingType(senderId, roomId);
+        if (message == null)
             throw ExceptionFactory.create(RoomError.NO_SUCH_MESSAGE);
-        crudMessageRepository.delete(message);
+        messageRepository.delete(message);
     }
 
     @Transactional
     public Message getSettingWordMessage(Long roomId, Long senderId) {
         if (roomId == null || senderId == null)
             throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
-        Message message = crudMessageRepository.findMessageByWordSettingType(senderId, roomId);
-        if(message == null)
+        Message message = messageRepository.findMessageByWordSettingType(senderId, roomId);
+        if (message == null)
             throw ExceptionFactory.create(RoomError.NO_SUCH_MESSAGE);
         return (Message) message.clone();
     }
 
+    @Transactional
+    public void deleteAllMessagesByRoom(Long roomId) {
+        if(roomId == null)
+            throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
+        messageRepository.deleteAllByRoom_Id(roomId);
+    }
+
     @Transactional(readOnly = true)
     public List<Message> getAllMessages(Long roomId, Integer pageNumber) {
-        if(crudRoomRepository.findOne(roomId) == null)
+        if (roomRepository.findOne(roomId) == null)
             throw ExceptionFactory.create(RoomError.NO_SUCH_ROOM);
         Pageable pageable = new PageRequest(pageNumber, Constants.PAGE_SIZE);
-        Page<Message> page = crudMessageRepository.findAllMessages(pageable, roomId);
+        Page<Message> page = messageRepository.findAllMessages(pageable, roomId);
         ArrayList<Message> messages = new ArrayList<>(page.getContent());
         Collections.reverse(messages);
         return messages;

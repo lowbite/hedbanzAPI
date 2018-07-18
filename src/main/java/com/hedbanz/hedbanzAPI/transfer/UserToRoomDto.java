@@ -92,7 +92,7 @@ public class UserToRoomDto {
             return this;
         }
 
-        public UserToRoomDto createUserToRoomDTO() {
+        public UserToRoomDto build() {
             return new UserToRoomDto(userId, roomId, password);
         }
     }

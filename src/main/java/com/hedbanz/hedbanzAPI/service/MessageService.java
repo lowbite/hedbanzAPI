@@ -1,5 +1,6 @@
 package com.hedbanz.hedbanzAPI.service;
 
+import com.hedbanz.hedbanzAPI.constant.MessageType;
 import com.hedbanz.hedbanzAPI.entity.Message;
 import com.hedbanz.hedbanzAPI.entity.Question;
 import com.hedbanz.hedbanzAPI.model.Vote;
@@ -11,7 +12,9 @@ public interface MessageService {
 
     Message addMessage(Message message);
 
-    Message addEventMessage(Message message);
+    Message addPlayerEventMessage(MessageType type, Long userId, Long roomId);
+
+    Message addRoomEventMessage(MessageType type, Long roomId);
 
     Message addQuestionText(Long questionId, String text);
 
@@ -28,4 +31,6 @@ public interface MessageService {
     void deleteSettingWordMessage(Long roomId, Long senderId);
 
     Message getSettingWordMessage(Long roomId, Long senderId);
+
+    void deleteAllMessagesByRoom(Long roomId);
 }

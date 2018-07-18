@@ -9,7 +9,7 @@ public class MessageToMessageDtoConverter implements Converter<Message, MessageD
     public MessageDto convert(Message message) {
         UserToUserDtoConverter toUserDtoConverter = new UserToUserDtoConverter();
         return new MessageDto.MessageDTOBuilder()
-                .setSenderUser(toUserDtoConverter.convert(message.getSenderUser()))
+                .setSenderUser(message.getSenderUser() != null ? toUserDtoConverter.convert(message.getSenderUser()) : null)
                 .setRoomId(message.getRoom().getId())
                 .setText(message.getText())
                 .setType(message.getType().getCode())

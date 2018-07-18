@@ -13,7 +13,7 @@ public class User implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "user_id")
-    private Long id;
+    private Long userId;
 
     @Column(name = "login")
     @NotNull
@@ -50,12 +50,18 @@ public class User implements Serializable {
             inverseJoinColumns = @JoinColumn(name = "friend_id"))
     private List<User> friends;
 
-    public User(){
+    @ManyToMany(cascade = CascadeType.PERSIST)
+    @JoinTable(name = "invite",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "room_id"))
+    private List<Room> invitedToRooms;
+
+    public User() {
 
     }
 
-    public User(Long id, String login, Integer money, Date registrationDate, String imagePath, String email) {
-        this.id = id;
+    public User(Long userId, String login, Integer money, Date registrationDate, String imagePath, String email) {
+        this.userId = userId;
         this.login = login;
         this.money = money;
         this.registrationDate = new Timestamp(registrationDate.getTime());
@@ -63,9 +69,9 @@ public class User implements Serializable {
         this.email = email;
     }
 
-    public User(Long id, String login, String password, Integer money, Timestamp registrationDate, String imagePath,
-                String email, String securityToken, String fcmToken, List<User> friends) {
-        this.id = id;
+    public User(Long userId, String login, String password, Integer money, Timestamp registrationDate, String imagePath,
+                String email, String securityToken, String fcmToken, List<User> friends, List<Room> invitedToRooms) {
+        this.userId = userId;
         this.login = login;
         this.password = password;
         this.money = money;
@@ -75,14 +81,15 @@ public class User implements Serializable {
         this.securityToken = securityToken;
         this.fcmToken = fcmToken;
         this.friends = friends;
+        this.invitedToRooms = invitedToRooms;
     }
 
-    public Long getId() {
-        return id;
+    public Long getUserId() {
+        return userId;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public String getLogin() {
@@ -153,17 +160,41 @@ public class User implements Serializable {
         this.fcmToken = fcmToken;
     }
 
-    public boolean addFriend(User user){
-        if(!friends.contains(user)){
+    public List<User> getFriends() {
+        return friends;
+    }
+
+    public List<Room> getInvitedToRooms() {
+        return invitedToRooms;
+    }
+
+    public boolean addFriend(User user) {
+        if (!friends.contains(user)) {
             friends.add(user);
             return true;
         }
         return false;
     }
 
-    public boolean removeFriend(User user){
-        if(friends.contains(user)){
+    public boolean removeFriend(User user) {
+        if (friends.contains(user)) {
             friends.remove(user);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean addInvite(Room room) {
+        if (!invitedToRooms.contains(room)) {
+            invitedToRooms.add(room);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean removeInvite(Room room) {
+        if (invitedToRooms.contains(room)) {
+            invitedToRooms.remove(room);
             return true;
         }
         return false;
@@ -176,32 +207,32 @@ public class User implements Serializable {
 
         User user = (User) o;
 
-        if (id != null ? !id.equals(user.id) : user.id != null) return false;
+        if (userId != null ? !userId.equals(user.userId) : user.userId != null) return false;
         return login != null ? login.equals(user.login) : user.login == null;
     }
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
+        int result = userId != null ? userId.hashCode() : 0;
         result = 31 * result + (login != null ? login.hashCode() : 0);
         return result;
     }
 
-    public static Builder Builder(){
-        return new User(). new Builder();
+    public static Builder Builder() {
+        return new User().new Builder();
     }
 
     public class Builder {
-        private Builder(){
+        private Builder() {
 
         }
 
-        public Builder setId(Long id){
-            User.this.setId(id);
+        public Builder setUserId(Long id) {
+            User.this.setUserId(id);
             return this;
         }
 
-        public Builder setLogin(String login){
+        public Builder setLogin(String login) {
             User.this.setLogin(login);
             return this;
         }
@@ -211,7 +242,7 @@ public class User implements Serializable {
             return this;
         }
 
-        public Builder setMoney(Integer money){
+        public Builder setMoney(Integer money) {
             User.this.setMoney(money);
             return this;
         }
@@ -221,22 +252,22 @@ public class User implements Serializable {
             return this;
         }
 
-        public Builder setImagePath(String imagePath){
+        public Builder setImagePath(String imagePath) {
             User.this.setImagePath(imagePath);
             return this;
         }
 
-        public Builder setEmail(String email){
+        public Builder setEmail(String email) {
             User.this.setEmail(email);
             return this;
         }
 
-        public Builder setSecurityToken(String securityToken){
+        public Builder setSecurityToken(String securityToken) {
             User.this.setSecurityToken(securityToken);
             return this;
         }
 
-        public Builder setFcmToken(String fcmToken){
+        public Builder setFcmToken(String fcmToken) {
             User.this.setFcmToken(fcmToken);
             return this;
         }

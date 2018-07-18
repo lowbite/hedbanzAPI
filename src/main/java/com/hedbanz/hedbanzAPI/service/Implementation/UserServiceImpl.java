@@ -1,11 +1,14 @@
 package com.hedbanz.hedbanzAPI.service.Implementation;
 
+import com.hedbanz.hedbanzAPI.entity.Room;
+import com.hedbanz.hedbanzAPI.error.RoomError;
+import com.hedbanz.hedbanzAPI.repository.RoomRepository;
 import com.hedbanz.hedbanzAPI.security.SecurityUserDetails;
 import com.hedbanz.hedbanzAPI.model.Friend;
 import com.hedbanz.hedbanzAPI.entity.User;
 import com.hedbanz.hedbanzAPI.error.UserError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
-import com.hedbanz.hedbanzAPI.repository.CrudUserRepository;
+import com.hedbanz.hedbanzAPI.repository.UserRepository;
 import com.hedbanz.hedbanzAPI.service.UserService;
 import org.apache.http.util.TextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -25,136 +29,139 @@ public class UserServiceImpl implements UserService {
     private static final String LOGIN_REGEX = "^[a-zA-Z0-9.]{3,10}$";
     private static final String PASSWORD_REGEX = "\\S{4,14}";
 
-    private final CrudUserRepository crudUserRepository;
+    private final UserRepository userRepository;
+    private final RoomRepository roomRepository;
 
     @Autowired
-    public UserServiceImpl(CrudUserRepository CrudUserRepository) {
-        this.crudUserRepository = CrudUserRepository;
+    public UserServiceImpl(UserRepository userRepository, RoomRepository roomRepository) {
+        this.userRepository = userRepository;
+        this.roomRepository = roomRepository;
     }
 
     @Transactional
-    public User authenticate(User user){
-        if(TextUtils.isEmpty(user.getLogin()))
+    public User authenticate(User user) {
+        if (TextUtils.isEmpty(user.getLogin()))
             throw ExceptionFactory.create(UserError.EMPTY_LOGIN);
-        if(TextUtils.isEmpty(user.getPassword()))
+        if (TextUtils.isEmpty(user.getPassword()))
             throw ExceptionFactory.create(UserError.EMPTY_PASSWORD);
 
         Pattern pattern = Pattern.compile(EMAIL_REGEX);
         Matcher matcher = pattern.matcher(user.getLogin());
 
         User foundUser;
-        if(matcher.find()) {
-            foundUser = crudUserRepository.findUserByEmail(user.getLogin());
-        }else {
-            foundUser = crudUserRepository.findUserByLogin(user.getLogin());
+        if (matcher.find()) {
+            foundUser = userRepository.findUserByEmail(user.getLogin());
+        } else {
+            foundUser = userRepository.findUserByLogin(user.getLogin());
         }
 
-        if(foundUser == null)
+        if (foundUser == null)
             throw ExceptionFactory.create(UserError.INVALID_LOGIN);
-        if(!foundUser.getPassword().equals(user.getPassword()))
+        if (!foundUser.getPassword().equals(user.getPassword()))
             throw ExceptionFactory.create(UserError.INCORRECT_PASSWORD);
 
         final String token = UUID.randomUUID().toString();
         foundUser.setSecurityToken(token);
-        crudUserRepository. updateUserToken(token, foundUser.getId());
+        userRepository.updateUserToken(token, foundUser.getUserId());
         return foundUser;
     }
 
     @Transactional(readOnly = true)
     public Optional<UserDetails> findUserByToken(String token) {
         //TODO add no token exception
-        User foundUser = crudUserRepository.findUserBySecurityToken(token);
+        User foundUser = userRepository.findUserBySecurityToken(token);
         return Optional.ofNullable(SecurityUserDetails.from(foundUser));
     }
 
     @Transactional
     public void logout(User user) {
-        if(TextUtils.isEmpty(user.getLogin()))
+        if (TextUtils.isEmpty(user.getLogin()))
             throw ExceptionFactory.create(UserError.EMPTY_LOGIN);
-        if(TextUtils.isEmpty(user.getPassword()))
+        if (TextUtils.isEmpty(user.getPassword()))
             throw ExceptionFactory.create(UserError.EMPTY_PASSWORD);
-        Optional<User> userCandidate = Optional.ofNullable(crudUserRepository.findUserByLogin(user.getLogin()));
-        userCandidate.orElseThrow(()-> ExceptionFactory.create(UserError.INVALID_LOGIN));
-        User foundUser = userCandidate.get();
-        if(!foundUser.getPassword().equals(user.getPassword()))
+        Optional<User> userCandidate = Optional.ofNullable(userRepository.findUserByLogin(user.getLogin()));
+        User foundUser = userCandidate.orElseThrow(() -> ExceptionFactory.create(UserError.INVALID_LOGIN));
+        if (!foundUser.getPassword().equals(user.getPassword()))
             throw ExceptionFactory.create(UserError.INCORRECT_PASSWORD);
         foundUser.setSecurityToken(null);
-        crudUserRepository.deleteUserToken(foundUser.getId());
+        userRepository.deleteUserToken(foundUser.getUserId());
     }
 
     @Transactional
     public User updateUserData(User user) {
-        if(user.getId() == null)
+        if (user.getUserId() == null)
             throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
-        if(TextUtils.isEmpty(user.getLogin()))
+        if (TextUtils.isEmpty(user.getLogin()))
             throw ExceptionFactory.create(UserError.EMPTY_LOGIN);
-        if(TextUtils.isEmpty(user.getPassword()))
+        if (TextUtils.isEmpty(user.getPassword()))
             throw ExceptionFactory.create(UserError.EMPTY_PASSWORD);
 
-        if(crudUserRepository.updateUserData(user.getId(), user.getLogin(), user.getPassword()) != 1)
+        if (userRepository.updateUserData(user.getUserId(), user.getLogin(), user.getPassword()) != 1)
             throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
 
-        return crudUserRepository.findOne(user.getId());
+        return userRepository.findOne(user.getUserId());
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public User register(User user) {
-        if(TextUtils.isEmpty(user.getLogin()))
+        if (TextUtils.isEmpty(user.getLogin()))
             throw ExceptionFactory.create(UserError.EMPTY_LOGIN);
-        if(TextUtils.isEmpty(user.getPassword()))
+        if (TextUtils.isEmpty(user.getPassword()))
             throw ExceptionFactory.create(UserError.EMPTY_PASSWORD);
-        if(TextUtils.isEmpty(user.getEmail()))
+        if (TextUtils.isEmpty(user.getEmail()))
             throw ExceptionFactory.create(UserError.EMPTY_EMAIL);
 
         Pattern pattern = Pattern.compile(LOGIN_REGEX);
         Matcher matcher = pattern.matcher(user.getLogin());
-        if(!matcher.find())
+        if (!matcher.find())
             throw ExceptionFactory.create(UserError.INVALID_LOGIN);
         pattern = Pattern.compile(EMAIL_REGEX);
         matcher = pattern.matcher(user.getEmail());
-        if(!matcher.find())
+        if (!matcher.find())
             throw ExceptionFactory.create(UserError.INVALID_EMAIL);
         pattern = Pattern.compile(PASSWORD_REGEX);
         matcher = pattern.matcher(user.getPassword());
-        if(!matcher.find())
+        if (!matcher.find())
             throw ExceptionFactory.create(UserError.INCORRECT_PASSWORD);
 
-        User foundUser = crudUserRepository.findUserByEmail(user.getEmail());
+        User foundUser = userRepository.findUserByEmail(user.getEmail());
 
         if (foundUser != null)
             throw ExceptionFactory.create(UserError.SUCH_EMAIL_ALREADY_USING);
 
-        foundUser = crudUserRepository.findUserByLogin(user.getLogin());
+        foundUser = userRepository.findUserByLogin(user.getLogin());
 
-        if(foundUser != null)
+        if (foundUser != null)
             throw ExceptionFactory.create(UserError.SUCH_LOGIN_ALREADY_EXIST);
 
         user.setImagePath("source/image.jpg");
         user.setMoney(0);
-        return crudUserRepository.saveAndFlush(user);
+        final String token = UUID.randomUUID().toString();
+        user.setSecurityToken(token);
+        return userRepository.saveAndFlush(user);
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
-    public User getUser(Long userId){
-        if(userId == null){
+    public User getUser(Long userId) {
+        if (userId == null) {
             throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
-        }return crudUserRepository.findOne(userId);
+        }
+        return userRepository.findOne(userId);
     }
 
     @Override
     public List<User> getAllUsers() {
-        return crudUserRepository.findAllByFcmTokenIsNotNull();
+        return userRepository.findAllByFcmTokenIsNotNull();
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
-    public List<Friend> getUserFriends(Long userId){
-        if(userId == null){
+    public List<Friend> getUserFriends(Long userId) {
+        if (userId == null) {
             throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
         }
-        Set<Friend> friends = new HashSet<>();
-        crudUserRepository.findPendingAndAcceptedFriends(userId);
-        List<Friend> acceptedFriends = crudUserRepository.findAcceptedFriends(userId);
-        List<Friend> friendsWithRequest = crudUserRepository.findRequestingFriends(userId);
+        Set<Friend> friends = new HashSet<>(userRepository.findPendingAndAcceptedFriends(userId));
+        List<Friend> acceptedFriends = userRepository.findAcceptedFriends(userId);
+        List<Friend> friendsWithRequest = userRepository.findRequestingFriends(userId);
         //Removing accepted friendDTOS object from all friendDTOS, because they have wrong flag
         friends.removeAll(acceptedFriends);
         //Adding accepted friendDTOS
@@ -165,46 +172,86 @@ public class UserServiceImpl implements UserService {
 
     @Transactional(readOnly = true)
     public List<Friend> getUserAcceptedFriends(Long userId) {
-        if(userId == null){
+        if (userId == null) {
             throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
         }
-        return crudUserRepository.findAcceptedFriends(userId);
+        return userRepository.findAcceptedFriends(userId);
     }
 
     @Transactional
     public void setUserFcmToken(User user) {
-        if(crudUserRepository.updateUserFcmToken(user.getFcmToken(), user.getId()) == 0)
+        if (userRepository.updateUserFcmToken(user.getFcmToken(), user.getUserId()) == 0)
             throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
     }
 
     @Transactional
     public void releaseUserFcmToken(Long userId) {
-        if(userId == null){
+        if (userId == null) {
             throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
         }
-        if(crudUserRepository.deleteUserFcmToken(userId) == 0)
+        if (userRepository.deleteUserFcmToken(userId) == 0)
             throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
     }
 
     @Transactional
-    public void addFriend(Long userId, Long friendId){
-        User friend = crudUserRepository.findOne(friendId);
-        User user = crudUserRepository.findOne(userId);
+    public void addFriend(Long userId, Long friendId) {
+        if (userId == null || friendId == null)
+            throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
+        User friend = userRepository.findOne(friendId);
+        User user = userRepository.findOne(userId);
 
-        if(!user.addFriend(friend))
+        if (!user.addFriend(friend))
             throw ExceptionFactory.create(UserError.ALREADY_FRIENDS);
 
-        crudUserRepository.saveAndFlush(user);
+        userRepository.saveAndFlush(user);
     }
 
     @Transactional
     public void deleteFriend(Long userId, Long friendId) {
-        User friend = crudUserRepository.findOne(friendId);
-        User user = crudUserRepository.findOne(userId);
+        if (userId == null || friendId == null)
+            throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
+        User friend = userRepository.findOne(friendId);
+        User user = userRepository.findOne(userId);
 
-        if(!user.removeFriend(friend))
+        if (!user.removeFriend(friend))
             throw ExceptionFactory.create(UserError.NOT_FRIENDS);
 
-        crudUserRepository.saveAndFlush(user);
+        userRepository.saveAndFlush(user);
+    }
+
+    @Transactional
+    public void addInvite(Long userId, Long roomId) {
+        if(userId == null)
+            throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
+        if(roomId == null)
+            throw ExceptionFactory.create(RoomError.INCORRECT_ROOM_ID);
+
+        User user = userRepository.findOne(userId);
+        if(user == null)
+            throw ExceptionFactory.create(UserError.NO_SUCH_USER);
+
+        Room room = roomRepository.findOne(roomId);
+        if(room == null)
+            throw ExceptionFactory.create(RoomError.NO_SUCH_ROOM);
+
+        user.addInvite(room);
+        userRepository.saveAndFlush(user);
+    }
+
+    @Transactional
+    public List<Friend> getAcceptedFriendsInRoom(Long userId, Long roomId){
+        if(userId == null)
+            throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
+        if(roomId == null)
+            throw ExceptionFactory.create(RoomError.INCORRECT_ROOM_ID);
+
+        List<Friend> allFriends = new LinkedList<>(userRepository.findAcceptedFriends(userId));
+        List<Friend> invitedFriends = new ArrayList<>(userRepository.findAcceptedFriendsWithInvitesToRoom(userId, roomId));
+        List<Friend> friendsInRoom = new ArrayList<>(roomRepository.findAcceptedFriendsInRoom(userId, roomId));
+        allFriends.removeAll(invitedFriends);
+        allFriends.removeAll(friendsInRoom);
+        allFriends.addAll(invitedFriends);
+        allFriends.addAll(friendsInRoom);
+        return allFriends.stream().distinct().collect(Collectors.toList());
     }
 }

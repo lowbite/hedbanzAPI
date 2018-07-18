@@ -34,7 +34,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             // TODO change to login and registration
             //new AntPathRequestMatcher("/**")
             new AntPathRequestMatcher("/user", HttpMethod.POST.toString()),
-            new AntPathRequestMatcher("/user", HttpMethod.PUT.toString())
+            new AntPathRequestMatcher("/user", HttpMethod.PUT.toString()),
+            new AntPathRequestMatcher("/admin", HttpMethod.GET.toString()),
+            new AntPathRequestMatcher("/css/**"),
+            new AntPathRequestMatcher("/fonts/**")
     );
     private static final RequestMatcher PROTECTED_URLS = new NegatedRequestMatcher(PUBLIC_URLS);
 

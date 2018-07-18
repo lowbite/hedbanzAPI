@@ -26,7 +26,7 @@ public interface RoomService {
 
     void checkRoomPassword(Long roomId, String password);
 
-    void leaveFromRoom(Long userId, Long roomId);
+    Room leaveFromRoom(Long userId, Long roomId);
 
     Room addUserToRoom(Long userId, Long roomId, String password);
 
@@ -38,11 +38,13 @@ public interface RoomService {
 
     Player startGuessing(Long roomId);
 
-    Player nextGuessing(Long roomId);
+    Player nextGuessingPlayer(Long roomId);
 
     void checkPlayerInRoom(Long userId, Long roomId);
 
     Room setPlayersWordSetters(Long roomId);
+
+    Room setGameOverStatus(Long roomId);
 
     boolean isGameOver(Long roomId);
 

@@ -21,7 +21,7 @@
 <!--	<profiles>
 		&lt;!&ndash; Google Cloud&ndash;&gt;
 		<profile>
-			<id>gcp</id>
+			<userId>gcp</userId>
 			<dependencies>
 				<dependency>
 					<groupId>org.springframework.cloud</groupId>
@@ -31,7 +31,7 @@
 
 			<repositories>
 				<repository>
-					<id>spring-milestones</id>
+					<userId>spring-milestones</userId>
 					<name>Spring Milestones</name>
 					<url>https://repo.spring.io/milestone</url>
 				</repository>
@@ -70,6 +70,10 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>javax.servlet</groupId>
@@ -77,7 +81,6 @@
 			<version>3.1.0</version>
 			<scope>provided</scope>
 		</dependency>
-
 
 		<dependency>
 			<groupId>mysql</groupId>
@@ -173,7 +176,9 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<version>1.5.7.RELEASE</version>
+				<configuration>
+					<addResources>true</addResources>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>com.heroku.sdk</groupId>

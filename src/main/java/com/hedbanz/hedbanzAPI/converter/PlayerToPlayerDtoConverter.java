@@ -14,7 +14,7 @@ public class PlayerToPlayerDtoConverter implements Converter<Player, PlayerDto> 
                 .setAttempt(player.getAttempt())
                 .setImagePath(player.getUser().getImagePath())
                 .setStatus(player.getStatus().getCode())
-                .setUserId(player.getUser().getId())
+                .setUserId(player.getUser().getUserId())
                 .setIsWinner(player.getIsWinner())
                 .createPlayerDTO();
     }

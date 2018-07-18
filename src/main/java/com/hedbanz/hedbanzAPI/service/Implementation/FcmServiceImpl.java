@@ -7,6 +7,8 @@ import com.hedbanz.hedbanzAPI.interceptor.HeaderRequestInterceptor;
 import com.hedbanz.hedbanzAPI.error.FcmError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
 import com.hedbanz.hedbanzAPI.service.FcmService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -20,6 +22,7 @@ import java.util.concurrent.ExecutionException;
 
 @Service
 public class FcmServiceImpl implements FcmService {
+    private final Logger log = LoggerFactory.getLogger("FcmService");
 
     @Value("${fcm.server.key}")
     private String FIREBASE_SERVER_KEY;
@@ -39,6 +42,8 @@ public class FcmServiceImpl implements FcmService {
             int success = responseObj.get("success").asInt();
 
             if(success == 0){
+                JsonNode resultNode = responseObj.get("results").get(0);
+                log.error(resultNode.get("error").asText());
                 throw ExceptionFactory.create(FcmError.CANT_SEND_MESSAGE_NOTIFICATION);
             }
         } catch (InterruptedException | ExecutionException | IOException e) {

@@ -10,7 +10,7 @@ public class UserDtoToUserConverter implements Converter<UserDto, User> {
     @Override
     public User convert(UserDto userDto) {
         User user = new User();
-        user.setId(userDto.getId());
+        user.setUserId(userDto.getId());
         user.setLogin(userDto.getLogin());
         user.setPassword(userDto.getPassword());
         user.setEmail(userDto.getEmail());

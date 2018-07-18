@@ -113,7 +113,7 @@ public class Player implements Cloneable{
         Player player = (Player) o;
 
         if (id != null ? !id.equals(player.id) : player.id != null) return false;
-        return user != null ? user.getId().equals(player.user.getId()) : player.user == null;
+        return user != null ? user.getUserId().equals(player.user.getUserId()) : player.user == null;
     }
 
     @Override

@@ -71,7 +71,7 @@ public class SecurityUserDetails implements UserDetails {
     public static SecurityUserDetails from(User user) {
         if(user != null)
             return new SecurityUserDetailsBuilder()
-                                            .setId(user.getId())
+                                            .setId(user.getUserId())
                                             .setUsername(user.getLogin())
                                             .setPassword(user.getPassword())
                                             .setToken(user.getSecurityToken())

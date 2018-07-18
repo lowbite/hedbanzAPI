@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface CrudUserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, Long> {
 
     User findUserByLogin(String login);
 
@@ -25,6 +25,10 @@ public interface CrudUserRepository extends JpaRepository<User, Long> {
     @Query(value = "SELECT new com.hedbanz.hedbanzAPI.model.Friend(f.id, f.login, f.imagePath, 1, 0) FROM User u " +
             "INNER JOIN u.friends f INNER JOIN f.friends ff WHERE u.id = :userId AND ff.id = :userId")
     List<Friend> findAcceptedFriends(@Param("userId") long userId);
+
+    @Query(value = "SELECT new com.hedbanz.hedbanzAPI.model.Friend(f.id, f.login, f.imagePath, 1, 0, 0, 1) FROM User u " +
+            "INNER JOIN u.friends f INNER JOIN f.friends ff JOIN f.invitedToRooms r WHERE u.id = :userId AND ff.id = :userId AND r.id = :roomId")
+    List<Friend> findAcceptedFriendsWithInvitesToRoom(@Param("userId") long userId, @Param("roomId") long roomId);
 
     @Query(value = "SELECT new com.hedbanz.hedbanzAPI.model.Friend(f.id, f.login, f.imagePath, 0, 1) FROM User u " +
             "INNER JOIN u.friends f WHERE u.id = :userId")

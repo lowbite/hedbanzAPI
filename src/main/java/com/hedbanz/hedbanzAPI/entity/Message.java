@@ -9,7 +9,7 @@ import static javax.persistence.FetchType.EAGER;
 
 @Entity(name = "Message")
 @Table(name = "message")
-public class Message implements Cloneable{
+public class Message implements Cloneable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "message_id")
@@ -119,7 +119,7 @@ public class Message implements Cloneable{
     }
 
     @Override
-    public Object clone(){
+    public Object clone() {
         try {
             super.clone();
         } catch (CloneNotSupportedException e) {
@@ -129,30 +129,30 @@ public class Message implements Cloneable{
                 .setId(this.room.getId())
                 .build();
         return Message.Builder().setText(text)
-                                        .setQuestion(question)
-                                        .setRoom(room)
-                                        .setSenderUser(senderUser)
-                                        .setType(type)
-                                        .setCreateDate(createDate)
-                                        .setId(id)
-                                        .build();
+                .setQuestion(question)
+                .setRoom(room)
+                .setSenderUser(senderUser)
+                .setType(type)
+                .setCreateDate(createDate)
+                .setId(id)
+                .build();
     }
 
-    public static Builder Builder(){
-        return new Message(). new Builder();
+    public static Builder Builder() {
+        return new Message().new Builder();
     }
 
     public class Builder {
-        private Builder(){
+        private Builder() {
 
         }
 
-        public Builder setId(Long id){
+        public Builder setId(Long id) {
             Message.this.setId(id);
             return this;
         }
 
-        public Builder setSenderUser(User senderUser){
+        public Builder setSenderUser(User senderUser) {
             Message.this.setSenderUser(senderUser);
             return this;
         }
@@ -162,7 +162,7 @@ public class Message implements Cloneable{
             return this;
         }
 
-        public Builder setType(MessageType type){
+        public Builder setType(MessageType type) {
             Message.this.setType(type);
             return this;
         }
@@ -172,12 +172,12 @@ public class Message implements Cloneable{
             return this;
         }
 
-        public Builder setQuestion(Question question){
+        public Builder setQuestion(Question question) {
             Message.this.setQuestion(question);
             return this;
         }
 
-        public Builder setRoom(Room room){
+        public Builder setRoom(Room room) {
             Message.this.setRoom(room);
             return this;
         }

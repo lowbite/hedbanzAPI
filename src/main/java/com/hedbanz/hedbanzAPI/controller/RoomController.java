@@ -4,12 +4,10 @@ import com.hedbanz.hedbanzAPI.constant.MessageType;
 import com.hedbanz.hedbanzAPI.constant.NotificationMessageType;
 import com.hedbanz.hedbanzAPI.constant.ResultStatus;
 import com.hedbanz.hedbanzAPI.entity.*;
-import com.hedbanz.hedbanzAPI.model.CustomResponseBody;
-import com.hedbanz.hedbanzAPI.model.Notification;
-import com.hedbanz.hedbanzAPI.model.RoomFilter;
+import com.hedbanz.hedbanzAPI.model.*;
 import com.hedbanz.hedbanzAPI.service.*;
 import com.hedbanz.hedbanzAPI.transfer.*;
-import com.hedbanz.hedbanzAPI.model.FcmPush;
+import org.apache.http.util.TextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
@@ -44,8 +42,22 @@ public class RoomController {
 
     @RequestMapping(method = RequestMethod.PUT, consumes = "application/json")
     @ResponseStatus(HttpStatus.OK)
-    public CustomResponseBody<RoomDto> createRoom(@RequestBody RoomDto roomDto) {
+    public CustomResponseBody<RoomDto> addRoom(@RequestBody RoomDto roomDto) {
         Room createdRoom = roomService.addRoom(conversionService.convert(roomDto, Room.class), roomDto.getUserId());
+        List<User> users = userService.getAllUsers();
+        new Thread(() -> users.forEach(user -> {
+            if (!TextUtils.isEmpty(user.getFcmToken())) {
+                Notification notification = new Notification("New room!", "Room " + createdRoom.getName() + " is available to join");
+                FcmPush.FcmPushData<RoomDto> fcmPushData =
+                        new FcmPush.FcmPushData<>(NotificationMessageType.NEW_ROOM_CREATED.getCode(), conversionService.convert(createdRoom, RoomDto.class));
+                FcmPush fcmPush = new FcmPush.Builder().setNotification(notification)
+                        .setTo(user.getFcmToken())
+                        .setPriority("normal")
+                        .setData(fcmPushData)
+                        .build();
+                fcmService.sendPushNotification(fcmPush);
+            }
+        })).start();
         return new CustomResponseBody<>(ResultStatus.SUCCESS_STATUS, null, conversionService.convert(createdRoom, RoomDto.class));
     }
 
@@ -95,14 +107,14 @@ public class RoomController {
         List<MessageDto> resultMessages = messages.stream().map(message -> {
             if (message.getType() == MessageType.USER_QUESTION) {
                 return conversionService.convert(message, QuestionDto.class);
-            }else if(message.getType() == MessageType.WORD_SETTING){
+            } else if (message.getType() == MessageType.WORD_SETTING) {
                 WordSettingDto wordSettingDto = conversionService.convert(message, WordSettingDto.class);
                 Player wordSetter = playerService.getPlayerByUserIdAndRoomId(wordSettingDto.getSenderUser().getId(), wordSettingDto.getRoomId());
                 Player wordReceiver = playerService.getPlayerByUserIdAndRoomId(wordSetter.getWordSettingUserId(), wordSettingDto.getRoomId());
                 wordSettingDto.setWordReceiverUser(conversionService.convert(wordReceiver.getUser(), UserDto.class));
                 wordSettingDto.setWord(wordReceiver.getWord());
                 return wordSettingDto;
-            }else {
+            } else {
                 return conversionService.convert(message, MessageDto.class);
             }
         }).collect(Collectors.toList());
@@ -113,23 +125,6 @@ public class RoomController {
     @ResponseStatus(HttpStatus.OK)
     public CustomResponseBody<UserToRoomDto> checkPassword(@RequestBody UserToRoomDto userToRoomDto) {
         roomService.checkRoomPassword(userToRoomDto.getRoomId(), userToRoomDto.getPassword());
-        return new CustomResponseBody<>(ResultStatus.SUCCESS_STATUS, null, null);
-    }
-
-    @RequestMapping(method = RequestMethod.POST, value = "/invite")
-    @ResponseStatus(HttpStatus.OK)
-    public CustomResponseBody<InviteDto> inviteFriendIntoRoom(@RequestBody InviteDto inviteDto) {
-        roomService.checkPlayerInRoom(inviteDto.getSenderId(), inviteDto.getSenderId());
-        Room room = roomService.addUserToRoom(inviteDto.getInvitedUserId(), inviteDto.getRoomId(), inviteDto.getPassword());
-        User user = userService.getUser(inviteDto.getInvitedUserId());
-        FcmPush.FcmPushData fcmPushData = new FcmPush.FcmPushData(NotificationMessageType.INVITE.getCode(), null);
-        FcmPush fcmPush = new FcmPush.Builder()
-                .setTo(user.getFcmToken())
-                .setNotification(new Notification("Invite to room", "Friend inviting you to room " + room.getName()))
-                .setData(fcmPushData)
-                .setPriority("normal")
-                .build();
-        fcmService.sendPushNotification(fcmPush);
         return new CustomResponseBody<>(ResultStatus.SUCCESS_STATUS, null, null);
     }
 }

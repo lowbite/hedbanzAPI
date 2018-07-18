@@ -18,7 +18,7 @@ public class MessageHistoryUtil {
                 return conversionService.convert(message, QuestionDto.class);
             }else if(message.getType() == MessageType.WORD_SETTING){
                 WordSettingDto wordSettingDto = conversionService.convert(message, WordSettingDto.class);
-                Player player = getPlayerByUserId(players, message.getSenderUser().getId());
+                Player player = getPlayerByUserId(players, message.getSenderUser().getUserId());
                 if(player != null){
                     wordSettingDto.setWordReceiverUser(player.getWordSettingUserId());
                     player = getPlayerByUserId( players, wordSettingDto.getWordReceiverUser());
@@ -34,7 +34,7 @@ public class MessageHistoryUtil {
 
     private static Player getPlayerByUserId(List<Player> players, Long userId){
         for (Player player: players) {
-            if(player.getUser().getId().equals(userId)){
+            if(player.getUser().getUserId().equals(userId)){
                 return player;
             }
         }

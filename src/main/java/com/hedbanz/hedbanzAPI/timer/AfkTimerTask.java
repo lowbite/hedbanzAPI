@@ -1,14 +1,13 @@
-package com.hedbanz.hedbanzAPI;
+package com.hedbanz.hedbanzAPI.timer;
 
 import com.corundumstudio.socketio.BroadcastOperations;
 import com.hedbanz.hedbanzAPI.constant.NotificationMessageType;
 import com.hedbanz.hedbanzAPI.entity.*;
 import com.hedbanz.hedbanzAPI.model.Notification;
-import com.hedbanz.hedbanzAPI.repository.CrudPlayerRepository;
-import com.hedbanz.hedbanzAPI.repository.CrudRoomRepository;
-import com.hedbanz.hedbanzAPI.repository.CrudUserRepository;
+import com.hedbanz.hedbanzAPI.repository.PlayerRepository;
+import com.hedbanz.hedbanzAPI.repository.RoomRepository;
+import com.hedbanz.hedbanzAPI.repository.UserRepository;
 import com.hedbanz.hedbanzAPI.service.FcmService;
-import com.hedbanz.hedbanzAPI.service.MessageService;
 import com.hedbanz.hedbanzAPI.service.RoomService;
 import com.hedbanz.hedbanzAPI.model.AfkWarning;
 import com.hedbanz.hedbanzAPI.transfer.UserDto;
@@ -49,11 +48,11 @@ public class AfkTimerTask extends TimerTask {
     @Qualifier("APIConversionService")
     private ConversionService conversionService;
     @Autowired
-    private CrudPlayerRepository crudPlayerRepository;
+    private PlayerRepository playerRepository;
     @Autowired
-    private CrudUserRepository crudUserRepository;
+    private UserRepository userRepository;
     @Autowired
-    private CrudRoomRepository crudRoomRepository;
+    private RoomRepository roomRepository;
 
     public int getTimeLeft() {
         return timeLeft;
@@ -81,7 +80,7 @@ public class AfkTimerTask extends TimerTask {
 
     @Override
     public void run() {
-        Player player = crudPlayerRepository.findPlayerByUserIdAndRoomId(userId, roomId);
+        Player player = playerRepository.findPlayerByUserIdAndRoomId(userId, roomId);
         if (player == null) {
             log.info("No such player");
             cancel();
@@ -89,12 +88,12 @@ public class AfkTimerTask extends TimerTask {
         }
         if (player.getStatus() == AFK) {
             if (timeLeft == ONE_MIN_IN_MS) {
-                User user = crudUserRepository.findOne(userId);
+                User user = userRepository.findOne(userId);
                 roomOperations.sendEvent(SERVER_PLAYER_AFK_WARNING, conversionService.convert(user, UserDto.class));
                 log.info(SERVER_PLAYER_AFK_WARNING);
             } else if (timeLeft == ONE_MIN_IN_MS / 2) {
-                User user = crudUserRepository.findOne(userId);
-                Room room = crudRoomRepository.findOne(roomId);
+                User user = userRepository.findOne(userId);
+                Room room = roomRepository.findOne(roomId);
                 if(room == null)
                     cancel();
                 AfkWarning warning = new AfkWarning(room.getName(), room.getId());
@@ -109,12 +108,12 @@ public class AfkTimerTask extends TimerTask {
                 fcmService.sendPushNotification(fcmPush);
                 log.info("FCM Afk warning");
             } else if (timeLeft <= 0) {
-                User user = crudUserRepository.findOne(userId);
-                Room room = crudRoomRepository.findOne(roomId);
+                User user = userRepository.findOne(userId);
+                Room room = roomRepository.findOne(roomId);
                 if(room == null)
                     cancel();
                 log.info(SERVER_KICKED_USER_EVENT);
-                roomService.leaveFromRoom(user.getId(), room.getId());
+                roomService.leaveFromRoom(user.getUserId(), room.getId());
                 roomOperations.sendEvent(SERVER_KICKED_USER_EVENT, conversionService.convert(user, UserDto.class));
                 AfkWarning warning = new AfkWarning(room.getName(), room.getId());
                 FcmPush.FcmPushData<AfkWarning> fcmPushData =

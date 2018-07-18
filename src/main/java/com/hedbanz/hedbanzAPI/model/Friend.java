@@ -6,8 +6,10 @@ public class Friend {
     private String imagePath;
     private Boolean isPending;
     private Boolean isAccepted;
+    private Boolean isInRoom;
+    private Boolean isInvited;
 
-    public Friend(){};
+    public Friend(){}
 
     public Friend(Long id, String login, String imagePath){
         this.id = id;
@@ -21,6 +23,16 @@ public class Friend {
         this.imagePath = imagePath;
         this.isAccepted = (isAccepted != 0);
         this.isPending = (isPending != 0);
+    }
+
+    public Friend(Long id, String login, String imagePath, int isPending, int isAccepted, int isInRoom, int isInvited) {
+        this.id = id;
+        this.login = login;
+        this.imagePath = imagePath;
+        this.isAccepted = (isAccepted != 0);
+        this.isPending = (isPending != 0);
+        this.isInRoom = isInRoom != 0;
+        this.isInvited = isInvited != 0;
     }
 
     public Long getId() {
@@ -51,16 +63,20 @@ public class Friend {
         return isAccepted;
     }
 
-    public void setIsAccepted(Boolean isAccepted) {
-        isAccepted = isAccepted;
-    }
-
     public Boolean getIsPending() {
         return isPending;
     }
 
     public void setIsPending(Boolean pending) {
         isPending = pending;
+    }
+
+    public Boolean getIsInRoom() {
+        return isInRoom;
+    }
+
+    public Boolean getIsInvited() {
+        return isInvited;
     }
 
     @Override

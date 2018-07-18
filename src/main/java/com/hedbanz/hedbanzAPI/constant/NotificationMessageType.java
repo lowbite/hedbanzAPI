@@ -9,6 +9,8 @@ public enum  NotificationMessageType {
     AFK_WARNING(6),
     USER_KICKED(7),
     GAME_OVER(8),
+    NEW_ROOM_CREATED(9),
+    LAST_PLAYER(10),
     APP_NEW_VERSION(20);
 
     private int code;

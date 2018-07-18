@@ -10,7 +10,7 @@ public class UserToUserDtoConverter implements Converter<User, UserDto> {
     @Override
     public UserDto convert(User user) {
         return new UserDto.Builder()
-                    .setId(user.getId())
+                    .setId(user.getUserId())
                     .setLogin(user.getLogin())
                     .setEmail(user.getEmail())
                     .setImagePath(user.getImagePath())

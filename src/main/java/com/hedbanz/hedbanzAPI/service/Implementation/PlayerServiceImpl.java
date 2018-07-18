@@ -1,13 +1,12 @@
 package com.hedbanz.hedbanzAPI.service.Implementation;
 
 import com.corundumstudio.socketio.BroadcastOperations;
-import com.hedbanz.hedbanzAPI.AfkTimerTask;
+import com.hedbanz.hedbanzAPI.timer.AfkTimerTask;
 import com.hedbanz.hedbanzAPI.entity.Player;
 import com.hedbanz.hedbanzAPI.error.RoomError;
 import com.hedbanz.hedbanzAPI.error.UserError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
-import com.hedbanz.hedbanzAPI.repository.CrudPlayerRepository;
-import com.hedbanz.hedbanzAPI.repository.CrudRoomRepository;
+import com.hedbanz.hedbanzAPI.repository.PlayerRepository;
 import com.hedbanz.hedbanzAPI.service.PlayerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Lookup;
@@ -20,8 +19,7 @@ import java.util.Timer;
 
 @Service
 public class PlayerServiceImpl implements PlayerService {
-    public int i;
-    private final CrudPlayerRepository crudPlayerRepository;
+    private final PlayerRepository playerRepository;
 
     @Lookup
     public AfkTimerTask getAfkTimerTask() {
@@ -29,13 +27,13 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Autowired
-    public PlayerServiceImpl(CrudPlayerRepository crudPlayerRepository) {
-        this.crudPlayerRepository = crudPlayerRepository;
+    public PlayerServiceImpl(PlayerRepository playerRepository) {
+        this.playerRepository = playerRepository;
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
     public List<Player> getPlayers(Long roomId) {
-        return crudPlayerRepository.findPlayersByRoomId(roomId);
+        return playerRepository.findPlayersByRoomId(roomId);
     }
 
     @Transactional(readOnly = true)
@@ -44,7 +42,7 @@ public class PlayerServiceImpl implements PlayerService {
             throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
         if (roomId == null)
             throw ExceptionFactory.create(RoomError.INCORRECT_ROOM_ID);
-        Player player = crudPlayerRepository.findPlayerByUserIdAndRoomId(userId, roomId);
+        Player player = playerRepository.findPlayerByUserIdAndRoomId(userId, roomId);
         if (player == null)
             throw ExceptionFactory.create(RoomError.NO_SUCH_USER_IN_ROOM);
         return player;
@@ -56,11 +54,12 @@ public class PlayerServiceImpl implements PlayerService {
             throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
         if (roomId == null)
             throw ExceptionFactory.create(RoomError.INCORRECT_ROOM_ID);
-        Player player = crudPlayerRepository.findPlayerByUserIdAndRoomId(userId, roomId);
+        Player player = playerRepository.findPlayerByUserIdAndRoomId(userId, roomId);
         if (player == null)
             throw ExceptionFactory.create(RoomError.NO_SUCH_USER_IN_ROOM);
         player.setIsWinner(true);
-        return crudPlayerRepository.saveAndFlush(player);
+        player.setAttempt(0);
+        return playerRepository.saveAndFlush(player);
     }
 
     @Transactional
@@ -69,10 +68,10 @@ public class PlayerServiceImpl implements PlayerService {
             throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
         if (roomId == null)
             throw ExceptionFactory.create(RoomError.INCORRECT_ROOM_ID);
-        Player player = crudPlayerRepository.findPlayerByUserIdAndRoomId(userId, roomId);
+        Player player = playerRepository.findPlayerByUserIdAndRoomId(userId, roomId);
         if (player == null)
             throw ExceptionFactory.create(RoomError.NO_SUCH_USER_IN_ROOM);
-        long period = 1000l;
+        long period = 1000L;
 
         AfkTimerTask timerTask = getAfkTimerTask();
         timerTask.setUserId(userId);

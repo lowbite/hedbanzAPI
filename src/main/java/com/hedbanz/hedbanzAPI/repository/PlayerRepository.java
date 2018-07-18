@@ -11,7 +11,7 @@ import org.springframework.security.access.method.P;
 import javax.persistence.OrderBy;
 import java.util.List;
 
-public interface CrudPlayerRepository extends JpaRepository<Player, Long>, PagingAndSortingRepository<Player, Long> {
+public interface PlayerRepository extends JpaRepository<Player, Long>, PagingAndSortingRepository<Player, Long> {
     @Modifying
     @Query("UPDATE Player p SET p.attempt = :attempt WHERE p.id = :id")
     int updatePlayerAttempts(@Param("attempt") int attempt, @Param("id") long id);

@@ -1,12 +1,14 @@
 package com.hedbanz.hedbanzAPI.transfer;
 
+import java.util.List;
+
 public class InviteDto {
     private Long senderId;
     private Long roomId;
-    private Long invitedUserId;
+    private List<Long> invitedUserId;
     private String password;
 
-    public InviteDto(Long senderId, Long roomId, Long invitedUserId, String password) {
+    public InviteDto(Long senderId, Long roomId, List<Long> invitedUserId, String password) {
         this.senderId = senderId;
         this.roomId = roomId;
         this.invitedUserId = invitedUserId;
@@ -29,11 +31,11 @@ public class InviteDto {
         this.roomId = roomId;
     }
 
-    public Long getInvitedUserId() {
+    public List<Long> getInvitedUserId() {
         return invitedUserId;
     }
 
-    public void setInvitedUserId(Long invitedUserId) {
+    public void setInvitedUserId(List<Long> invitedUserId) {
         this.invitedUserId = invitedUserId;
     }
 

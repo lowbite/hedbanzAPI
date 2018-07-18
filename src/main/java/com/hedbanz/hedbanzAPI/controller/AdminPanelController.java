@@ -36,32 +36,32 @@ public class AdminPanelController {
     }
 
     @GetMapping(value = "/admin")
-    public ModelAndView getAdminPage(ModelAndView modelAndView){
+    public ModelAndView getAdminPage(ModelAndView modelAndView) {
         modelAndView.setViewName("admin_login");
         modelAndView.addObject("admin", Admin.AdminBuilder().build());
         return modelAndView;
     }
 
     @PostMapping(value = "/admin")
-    public ModelAndView authorizeAdmin(@ModelAttribute("admin") Admin admin){
+    public ModelAndView authorizeAdmin(@ModelAttribute("admin") Admin admin) {
         adminService.authorizeAdmin(admin);
         return new ModelAndView("redirect:/admin_panel");
     }
 
     @GetMapping(value = "/admin_panel")
-    public ModelAndView getAdminPanel(ModelAndView modelAndView){
+    public ModelAndView getAdminPanel(ModelAndView modelAndView) {
         modelAndView.setViewName("admin_panel");
         modelAndView.addObject("app", applicationService.getApplication());
         return modelAndView;
     }
 
     @PostMapping(value = "/admin_panel")
-    public ModelAndView updateApplicationData(@ModelAttribute("application")Application application){
+    public ModelAndView updateApplicationData(@ModelAttribute("application") Application application) {
         Application newApplication = applicationService.updateVersion(application);
         List<User> users = userService.getAllUsers();
-        new Thread(()->{
-            for (User user: users) {
-                FcmPush.FcmPushData fcmPushData = new FcmPush.FcmPushData(NotificationMessageType.APP_NEW_VERSION.getCode(), newApplication);
+        new Thread(() -> users.forEach(user -> {
+            if(user.getFcmToken() != null) {
+                FcmPush.FcmPushData fcmPushData = new FcmPush.FcmPushData<>(NotificationMessageType.APP_NEW_VERSION.getCode(), newApplication);
                 FcmPush fcmPush = new FcmPush.Builder()
                         .setTo(user.getFcmToken())
                         .setData(fcmPushData)
@@ -70,7 +70,7 @@ public class AdminPanelController {
                         .build();
                 fcmService.sendPushNotification(fcmPush);
             }
-        }).start();
+        })).start();
         ModelAndView modelAndView = new ModelAndView("redirect:/admin_panel");
         modelAndView.addObject("app", newApplication);
         return modelAndView;
