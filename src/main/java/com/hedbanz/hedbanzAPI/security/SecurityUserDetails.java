@@ -2,6 +2,7 @@ package com.hedbanz.hedbanzAPI.security;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hedbanz.hedbanzAPI.entity.Admin;
 import com.hedbanz.hedbanzAPI.entity.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -76,6 +77,18 @@ public class SecurityUserDetails implements UserDetails {
                                             .setPassword(user.getPassword())
                                             .setToken(user.getSecurityToken())
                                             .build();
+        else
+            return null;
+    }
+
+    public static SecurityUserDetails from(Admin admin) {
+        if(admin != null)
+            return new SecurityUserDetailsBuilder()
+                    .setId(admin.getId())
+                    .setUsername(admin.getLogin())
+                    .setPassword(admin.getPassword())
+                    .setToken(admin.getSecurityToken())
+                    .build();
         else
             return null;
     }

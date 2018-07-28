@@ -32,7 +32,7 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, readOnly = true)
-    public List<Player> getPlayers(Long roomId) {
+    public List<Player> getPlayersFromRoom(Long roomId) {
         return playerRepository.findPlayersByRoomId(roomId);
     }
 

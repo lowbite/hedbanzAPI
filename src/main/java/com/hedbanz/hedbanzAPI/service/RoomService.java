@@ -38,7 +38,7 @@ public interface RoomService {
 
     Player startGuessing(Long roomId);
 
-    Player nextGuessingPlayer(Long roomId);
+    Player getNextGuessingPlayer(Long roomId);
 
     void checkPlayerInRoom(Long userId, Long roomId);
 

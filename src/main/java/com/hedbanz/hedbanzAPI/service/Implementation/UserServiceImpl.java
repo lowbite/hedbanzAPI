@@ -1,5 +1,6 @@
 package com.hedbanz.hedbanzAPI.service.Implementation;
 
+import static com.hedbanz.hedbanzAPI.constant.Constants.*;
 import com.hedbanz.hedbanzAPI.entity.Room;
 import com.hedbanz.hedbanzAPI.error.RoomError;
 import com.hedbanz.hedbanzAPI.repository.RoomRepository;
@@ -22,12 +23,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+
+
 @Service
 public class UserServiceImpl implements UserService {
 
-    private static final String EMAIL_REGEX = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}";
-    private static final String LOGIN_REGEX = "^[a-zA-Z0-9.]{3,10}$";
-    private static final String PASSWORD_REGEX = "\\S{4,14}";
 
     private final UserRepository userRepository;
     private final RoomRepository roomRepository;
@@ -45,7 +45,7 @@ public class UserServiceImpl implements UserService {
         if (TextUtils.isEmpty(user.getPassword()))
             throw ExceptionFactory.create(UserError.EMPTY_PASSWORD);
 
-        Pattern pattern = Pattern.compile(EMAIL_REGEX);
+        Pattern pattern = Pattern.compile(EMAIL_REGEX_PATTERN);
         Matcher matcher = pattern.matcher(user.getLogin());
 
         User foundUser;
@@ -111,15 +111,15 @@ public class UserServiceImpl implements UserService {
         if (TextUtils.isEmpty(user.getEmail()))
             throw ExceptionFactory.create(UserError.EMPTY_EMAIL);
 
-        Pattern pattern = Pattern.compile(LOGIN_REGEX);
+        Pattern pattern = Pattern.compile(LOGIN_REGEX_PATTERN);
         Matcher matcher = pattern.matcher(user.getLogin());
         if (!matcher.find())
             throw ExceptionFactory.create(UserError.INVALID_LOGIN);
-        pattern = Pattern.compile(EMAIL_REGEX);
+        pattern = Pattern.compile(EMAIL_REGEX_PATTERN);
         matcher = pattern.matcher(user.getEmail());
         if (!matcher.find())
             throw ExceptionFactory.create(UserError.INVALID_EMAIL);
-        pattern = Pattern.compile(PASSWORD_REGEX);
+        pattern = Pattern.compile(PASSWORD_REGEX_PATTERN);
         matcher = pattern.matcher(user.getPassword());
         if (!matcher.find())
             throw ExceptionFactory.create(UserError.INCORRECT_PASSWORD);
@@ -207,6 +207,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Transactional
+    public void declineFriendship(Long userId, Long friendId) {
+        if (userId == null || friendId == null)
+            throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
+        User friend = userRepository.findOne(friendId);
+        User user = userRepository.findOne(userId);
+
+        if (!user.removeFriend(friend))
+            throw ExceptionFactory.create(UserError.NOT_FRIENDS);
+        userRepository.saveAndFlush(user);
+    }
+
+    @Transactional
     public void deleteFriend(Long userId, Long friendId) {
         if (userId == null || friendId == null)
             throw ExceptionFactory.create(UserError.INCORRECT_USER_ID);
@@ -215,8 +227,11 @@ public class UserServiceImpl implements UserService {
 
         if (!user.removeFriend(friend))
             throw ExceptionFactory.create(UserError.NOT_FRIENDS);
+        if(!friend.removeFriend(user))
+            throw ExceptionFactory.create(UserError.NOT_FRIENDS);
 
         userRepository.saveAndFlush(user);
+        userRepository.saveAndFlush(friend);
     }
 
     @Transactional
@@ -254,4 +269,6 @@ public class UserServiceImpl implements UserService {
         allFriends.addAll(friendsInRoom);
         return allFriends.stream().distinct().collect(Collectors.toList());
     }
+
+
 }

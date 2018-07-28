@@ -7,7 +7,7 @@ import com.hedbanz.hedbanzAPI.entity.Player;
 import java.util.List;
 
 public interface PlayerService {
-    List<Player> getPlayers(Long roomId);
+    List<Player> getPlayersFromRoom(Long roomId);
 
     Player getPlayerByUserIdAndRoomId(Long userId, Long roomId);
 

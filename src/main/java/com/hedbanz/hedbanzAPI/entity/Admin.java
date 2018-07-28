@@ -14,13 +14,16 @@ public class Admin {
     @NotNull
     private String password;
 
+    private String securityToken;
+
     public Admin() {
     }
 
-    public Admin(Long id, String login, String password) {
+    public Admin(Long id, String login, String password, String securityToken) {
         this.id = id;
         this.login = login;
         this.password = password;
+        this.securityToken = securityToken;
     }
 
     public Long getId() {
@@ -47,6 +50,14 @@ public class Admin {
         this.password = password;
     }
 
+    public String getSecurityToken() {
+        return securityToken;
+    }
+
+    public void setSecurityToken(String securityToken) {
+        this.securityToken = securityToken;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -65,27 +76,32 @@ public class Admin {
         return result;
     }
 
-    public static AdminBuilder AdminBuilder(){
-        return new Admin().new AdminBuilder();
+    public static Builder AdminBuilder(){
+        return new Admin().new Builder();
     }
 
-    public class AdminBuilder{
-        private AdminBuilder(){
+    public class Builder {
+        private Builder(){
 
         }
 
-        public AdminBuilder setId(Long id){
+        public Builder setId(Long id){
             Admin.this.setId(id);
             return this;
         }
 
-        public AdminBuilder setLogin(String login){
+        public Builder setLogin(String login){
             Admin.this.setLogin(login);
             return this;
         }
 
-        public AdminBuilder setPassword(String password){
+        public Builder setPassword(String password){
             Admin.this.setPassword(password);
+            return this;
+        }
+
+        public Builder setSeurityToken(String securityToken){
+            Admin.this.setSecurityToken(securityToken);
             return this;
         }
 

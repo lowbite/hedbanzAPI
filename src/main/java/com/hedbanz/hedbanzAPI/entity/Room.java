@@ -49,6 +49,14 @@ public class Room implements Serializable{
     @NotNull
     private Long roomAdmin;
 
+    @Column(name = "sticker_id")
+    @NotNull
+    private Long stickerId;
+
+    @Column(name = "icon_id")
+    @NotNull
+    private Long iconId;
+
     public Room(){
 
     }
@@ -62,7 +70,7 @@ public class Room implements Serializable{
     }
 
     private Room(Long id, String name, String password, Integer maxPlayers, Integer currentPlayersNumber, Boolean isPrivate,
-                GameStatus gameStatus, List<Player> players, List<Message> messages, Long roomAdmin) {
+                GameStatus gameStatus, List<Player> players, List<Message> messages, Long roomAdmin, Long stickerId, Long iconId) {
         this.id = id;
         this.name = name;
         this.password = password;
@@ -73,6 +81,8 @@ public class Room implements Serializable{
         this.players = players;
         this.messages = messages;
         this.roomAdmin = roomAdmin;
+        this.stickerId = stickerId;
+        this.iconId = iconId;
     }
 
     public List<Player> getPlayers(){
@@ -202,6 +212,22 @@ public class Room implements Serializable{
         return this.players.size();
     }
 
+    public Long getStickerId() {
+        return stickerId;
+    }
+
+    public void setStickerId(Long stickerId) {
+        this.stickerId = stickerId;
+    }
+
+    public Long getIconId() {
+        return iconId;
+    }
+
+    public void setIconId(Long iconId) {
+        this.iconId = iconId;
+    }
+
     public static class Builder {
         private Long id;
         private String name;
@@ -213,6 +239,8 @@ public class Room implements Serializable{
         private List<Player> players = new ArrayList<>();
         private List<Message> messages = new ArrayList<>();
         private Long roomAdmin;
+        private Long stickerId;
+        private Long iconId;
 
         public Builder setId(Long id) {
             this.id = id;
@@ -264,8 +292,19 @@ public class Room implements Serializable{
             return this;
         }
 
+        public Builder setStickerId(Long stickerId){
+            this.stickerId = stickerId;
+            return this;
+        }
+
+        public Builder setIconId(Long iconId){
+            this.iconId = iconId;
+            return this;
+        }
+
         public Room build() {
-            return new Room(id, name, password, maxPlayers,currentPlayersNumber, isPrivate, gameStatus, players, messages, roomAdmin);
+            return new Room(id, name, password, maxPlayers,currentPlayersNumber, isPrivate, gameStatus, players,
+                    messages, roomAdmin, stickerId, iconId);
         }
     }
 }

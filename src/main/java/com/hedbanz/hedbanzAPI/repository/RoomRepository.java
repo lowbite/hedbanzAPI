@@ -20,6 +20,8 @@ import java.util.List;
 @Repository
 public interface RoomRepository extends JpaRepository<Room, Long>, PagingAndSortingRepository<Room, Long>, JpaSpecificationExecutor<Room> {
 
+    List<Room> findRoomsByName(String name);
+
     @Query("SELECT r FROM Room r WHERE r.currentPlayersNumber < r.maxPlayers AND r.gameStatus = com.hedbanz.hedbanzAPI.constant.GameStatus.WAITING_FOR_PLAYERS")
     Page<Room> findAllRooms(Pageable pageable);
 

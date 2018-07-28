@@ -16,13 +16,11 @@ import com.hedbanz.hedbanzAPI.error.RoomError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
 import com.hedbanz.hedbanzAPI.model.*;
 import com.hedbanz.hedbanzAPI.service.*;
-import com.hedbanz.hedbanzAPI.timer.AfkTimerTask;
 import com.hedbanz.hedbanzAPI.transfer.*;
 import org.apache.http.util.TextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
@@ -30,36 +28,11 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.hedbanz.hedbanzAPI.constant.SocketEvents.*;
+
 @Component
 public class RoomEventHandler {
     private final Logger log = LoggerFactory.getLogger("RoomEventListener");
-    private static final String JOIN_ROOM_EVENT = "join-room";
-    private static final String LEAVE_ROOM_EVENT = "leave-room";
-    private static final String ROOM_INFO_EVENT = "joined-room";
-    private static final String JOINED_USER_EVENT = "joined-user";
-    private static final String LEFT_USER_EVENT = "left-user";
-    private static final String CLIENT_CONNECT_INFO_EVENT = "client-connect-info";
-    private static final String CLIENT_TYPING_EVENT = "client-start-typing";
-    private static final String CLIENT_STOP_TYPING_EVENT = "client-stop-typing";
-    private static final String CLIENT_MESSAGE_EVENT = "client-msg";
-    private static final String CLIENT_SET_PLAYER_WORD_EVENT = "client-set-word";
-    private static final String CLIENT_RESTORE_ROOM_EVENT = "client-restore-room";
-    private static final String CLIENT_USER_GUESSING_EVENT = "client-user-guessing";
-    private static final String CLIENT_USER_ANSWERING_EVENT = "client-user-answering";
-    private static final String CLIENT_RESTART_GAME = "client-restart-game";
-    private static final String SERVER_TYPING_EVENT = "server-start-typing";
-    private static final String SERVER_STOP_TYPING_EVENT = "server-stop-typing";
-    private static final String SERVER_MESSAGE_EVENT = "server-msg";
-    private static final String SERVER_SET_PLAYER_WORD_EVENT = "server-set-word";
-    private static final String SERVER_THOUGHT_PLAYER_WORD_EVENT = "server-thought-player-word";
-    private static final String SERVER_RESTORE_ROOM_EVENT = "server-restore-room";
-    private static final String SERVER_USER_AFK_EVENT = "server-user-afk";
-    private static final String SERVER_USER_RETURNED_EVENT = "server-user-returned";
-    private static final String SERVER_USER_GUESSING_EVENT = "server-user-guessing";
-    private static final String SERVER_USER_ASKING_EVENT = "server-user-asking";
-    private static final String SERVER_USER_ANSWERING_EVENT = "server-user-answering";
-    private static final String SERVER_USER_WIN_EVENT = "server-user-win";
-    private static final String SERVER_GAME_OVER = "server-game-over";
 
 
     private static final String USER_ID_FIELD = "userId";
@@ -93,7 +66,7 @@ public class RoomEventHandler {
         this.socketIONamespace.addEventListener(CLIENT_CONNECT_INFO_EVENT, ClientInfoDto.class, setClientInfo());
         this.socketIONamespace.addEventListener(CLIENT_RESTORE_ROOM_EVENT, ClientInfoDto.class, restoreRoom());
         this.socketIONamespace.addEventListener(CLIENT_USER_GUESSING_EVENT, QuestionDto.class, userGuessing());
-        this.socketIONamespace.addEventListener(CLIENT_USER_ANSWERING_EVENT, QuestionDto.class, userAnswering());
+        this.socketIONamespace.addEventListener(CLIENT_USER_ANSWERING_EVENT, QuestionDto.class, addVoteToQuestion());
         this.socketIONamespace.addEventListener(CLIENT_RESTART_GAME, UserToRoomDto.class, restartGame());
         this.roomService = roomService;
         this.userService = userService;
@@ -151,7 +124,8 @@ public class RoomEventHandler {
                 Player player = roomService.setPlayerStatus(userToRoom.getUserId(), userToRoom.getRoomId(), PlayerStatus.ACTIVE);
                 RoomDto roomDto = conversionService.convert(room, RoomDto.class);
                 roomDto.setPlayers(room.getPlayers().stream()
-                        .map(roomPlayer -> conversionService.convert(roomPlayer, PlayerDto.class)).collect(Collectors.toList()));
+                        .map(streamPlayer -> conversionService.convert(streamPlayer, PlayerDto.class))
+                        .collect(Collectors.toList()));
                 client.sendEvent(SERVER_RESTORE_ROOM_EVENT, roomDto);
                 client.set(ROOM_ID_FIELD, data.getRoomId());
                 client.joinRoom(String.valueOf(data.getRoomId()));
@@ -178,7 +152,11 @@ public class RoomEventHandler {
                 log.info("Setting player status active");
                 Player player = roomService.setPlayerStatus(userToRoom.getUserId(), userToRoom.getRoomId(), PlayerStatus.ACTIVE);
                 socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(SERVER_USER_RETURNED_EVENT, conversionService.convert(player, PlayerDto.class));
-
+                List<Player> players = playerService.getPlayersFromRoom(data.getRoomId());
+                List<PlayerDto> playerDtos = players.stream()
+                        .map(streamPlayer -> conversionService.convert(streamPlayer, PlayerDto.class))
+                        .collect(Collectors.toList());
+                client.sendEvent(SERVER_PLAYERS_STATUS, playerDtos);
                 log.info("Client reconnect set userId: " + data.getUserId() + ", roomId: " + data.getRoomId());
             }
         };
@@ -203,7 +181,7 @@ public class RoomEventHandler {
                     Notification notification = new Notification("Last player in room!",
                             "You left the last player in room");
                     FcmPush.FcmPushData<UserToRoomDto> fcmPushData =
-                            new FcmPush.FcmPushData<UserToRoomDto>(NotificationMessageType.LAST_PLAYER.getCode(),
+                            new FcmPush.FcmPushData<>(NotificationMessageType.LAST_PLAYER.getCode(),
                                     new UserToRoomDto.Builder()
                                             .setRoomId(room.getId())
                                             .build());
@@ -361,7 +339,7 @@ public class RoomEventHandler {
             socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(SERVER_THOUGHT_PLAYER_WORD_EVENT, wordSettingDto);
             log.info("User set word: " + data.getWord());
 
-            List<Player> players = playerService.getPlayers(data.getRoomId());
+            List<Player> players = playerService.getPlayersFromRoom(data.getRoomId());
             boolean gameIsReady = true;
             for (Player player : players) {
                 if (TextUtils.isEmpty(player.getWord()))
@@ -410,7 +388,8 @@ public class RoomEventHandler {
 
     private void sendPlayersSetWordsRequest(long roomId) {
         Room room = roomService.setPlayersWordSetters(roomId);
-        room.getPlayers().forEach(player -> messageService.addSettingWordMessage(room.getId(), player.getUser().getUserId()));
+        for  (Player player: room.getPlayers())
+            messageService.addSettingWordMessage(room.getId(), player.getUser().getUserId());
         sendWords(socketIONamespace.getRoomOperations(String.valueOf(roomId)).getClients(), room.getPlayers());
         log.info("Game started in room: " + roomId);
     }
@@ -465,7 +444,7 @@ public class RoomEventHandler {
         };
     }
 
-    private DataListener<QuestionDto> userAnswering() {
+    private DataListener<QuestionDto> addVoteToQuestion() {
         return (client, data, ackSender) -> {
             Question question = messageService.addVote(Vote.VoteBuilder().setSenderId(data.getSenderUser().getId())
                     .setRoomId(data.getRoomId())
@@ -477,21 +456,23 @@ public class RoomEventHandler {
                     .sendEvent(SERVER_USER_ANSWERING_EVENT, conversionService.convert(question, QuestionDto.class));
             Room room = roomService.getRoom(client.get(ROOM_ID_FIELD));
             Message message = messageService.getMessageByQuestionId(data.getQuestionId());
-            Question lastQuestion = messageService.getLastQuestionInRoom(data.getRoomId());
+            Question lastQuestion = messageService.getLastQuestionInRoom(room.getId());
             if ((double) question.getWinVoters().size() / (room.getCurrentPlayersNumber() - 1) >= MIN_WIN_PERCENTAGE) {
-                Player player = playerService.getPlayerByUserIdAndRoomId(message.getSenderUser().getUserId(), data.getRoomId());
+                Player player = playerService.getPlayerByUserIdAndRoomId(message.getSenderUser().getUserId(), room.getId());
                 if (!player.getIsWinner()) {
-                    player = playerService.setPlayerWinner(message.getSenderUser().getUserId(), data.getRoomId());
+                    player = playerService.setPlayerWinner(message.getSenderUser().getUserId(), room.getId());
                     socketIONamespace.getRoomOperations(String.valueOf((Long) client.get(ROOM_ID_FIELD)))
                             .sendEvent(SERVER_USER_WIN_EVENT, conversionService.convert(player, PlayerDto.class));
-                    messageService.addPlayerEventMessage(MessageType.USER_WIN, data.getSenderUser().getId(), data.getRoomId());
-                    if (roomService.isGameOver(data.getRoomId())) {
-                        roomService.setGameOverStatus(data.getRoomId());
+                    log.info("Adding player win message");
+                    messageService.addPlayerEventMessage(MessageType.USER_WIN, player.getUser().getUserId(), room.getId());
+                    if (roomService.isGameOver(room.getId())) {
+                        log.info("Setting room status to game over");
+                        roomService.setGameOverStatus(room.getId());
                         for (Player roomPlayer : room.getPlayers()) {
                             if (roomPlayer.getStatus() == PlayerStatus.AFK && !TextUtils.isEmpty(roomPlayer.getUser().getFcmToken())) {
                                 FcmPush.FcmPushData<SetWordNotification> fcmPushData =
                                         new FcmPush.FcmPushData<>(NotificationMessageType.GAME_OVER.getCode(),
-                                                new SetWordNotification(roomPlayer.getRoom().getId(), roomPlayer.getRoom().getName()));
+                                                new SetWordNotification(room.getId(), room.getName()));
                                 FcmPush fcmPush = new FcmPush.Builder()
                                         .setTo(roomPlayer.getUser().getFcmToken())
                                         .setData(fcmPushData)
@@ -502,26 +483,29 @@ public class RoomEventHandler {
                                 fcmService.sendPushNotification(fcmPush);
                             }
                         }
-                        socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId()))
+                        socketIONamespace.getRoomOperations(String.valueOf(room.getId()))
                                 .sendEvent(SERVER_GAME_OVER, new UserToRoomDto());
-                        messageService.addRoomEventMessage(MessageType.GAME_OVER, data.getRoomId());
+                        log.info("Adding game over message");
+                        messageService.addRoomEventMessage(MessageType.GAME_OVER, room.getId());
                     } else
-                        sendNextGuessingPLayer(data.getRoomId(), client);
+                        sendNextGuessingPlayerToRoom(room.getId());
                 }
             } else if (lastQuestion.getId().equals(question.getId())) {
                 double votersPercentage = (double) (question.getNoVoters().size() + question.getYesVoters().size())
                         / (room.getCurrentPlayersNumber() - 1);
                 if (votersPercentage >= MIN_NEXT_GUESS_PERCENTAGE) {
-                    sendNextGuessingPLayer(data.getRoomId(), client);
+                    sendNextGuessingPlayerToRoom(room.getId());
                 }
             }
         };
     }
 
-    private void sendNextGuessingPLayer(Long roomId, SocketIOClient client) {
-        Player player = roomService.nextGuessingPlayer(roomId);
+    private void sendNextGuessingPlayerToRoom(Long roomId) {
+        log.info("Getting next guessing player");
+        Player player = roomService.getNextGuessingPlayer(roomId);
         Room room = roomService.getRoom(roomId);
         if (player.getStatus() == PlayerStatus.AFK && !TextUtils.isEmpty(player.getUser().getFcmToken())) {
+            log.info("Sending push notification to guessing player");
             FcmPush.FcmPushData<SetWordNotification> fcmPushData = new FcmPush.FcmPushData<>(NotificationMessageType.GUESS_WORD.getCode(),
                     new SetWordNotification(room.getId(), room.getName()));
             FcmPush fcmPush = new FcmPush.Builder()
@@ -531,15 +515,17 @@ public class RoomEventHandler {
                     .setNotification(new Notification("Time to guess your word", "It's your turn to guess your word"))
                     .build();
             fcmService.sendPushNotification(fcmPush);
-            playerService.startAfkCountdown(player.getUser().getUserId(), roomId, socketIONamespace.getRoomOperations(String.valueOf((Long) client.get(ROOM_ID_FIELD))));
+            log.info("Starting afk countdown");
+            playerService.startAfkCountdown(player.getUser().getUserId(), roomId, socketIONamespace.getRoomOperations(String.valueOf(roomId)));
         }
+        log.info("Adding question message");
         Question newQuestion = messageService.addSettingQuestionMessage(roomId, player.getUser().getUserId());
         PlayerGuessingDto playerGuessingDto = PlayerGuessingDto.PlayerGuessingDtoBuilder()
                 .setPlayer(conversionService.convert(player, PlayerDto.class))
                 .setAttempt(player.getAttempt())
                 .setQuestionId(newQuestion.getId())
                 .build();
-        socketIONamespace.getRoomOperations(String.valueOf((Long) client.get(ROOM_ID_FIELD)))
+        socketIONamespace.getRoomOperations(String.valueOf(roomId))
                 .sendEvent(SERVER_USER_GUESSING_EVENT, playerGuessingDto);
     }
 

@@ -127,6 +127,13 @@ public class Message implements Cloneable {
         }
         Room room = new Room.Builder()
                 .setId(this.room.getId())
+                .setName(this.room.getName())
+                .setIsPrivate(this.room.getIsPrivate())
+                .setMaxPlayers(this.room.getMaxPlayers())
+                .setCurrentPlayersNumber(this.room.getCurrentPlayersNumber())
+                .setGameStatus(this.room.getGameStatus())
+                .setPlayers(this.room.getPlayers())
+                .setRoomAdmin(this.room.getRoomAdmin())
                 .build();
         return Message.Builder().setText(text)
                 .setQuestion(question)

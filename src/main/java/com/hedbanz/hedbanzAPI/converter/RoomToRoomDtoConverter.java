@@ -19,6 +19,8 @@ public class RoomToRoomDtoConverter implements Converter<Room, RoomDto> {
         roomDto.setCurrentPlayersNumber(room.getPlayers().size());
         roomDto.setMaxPlayers(room.getMaxPlayers());
         roomDto.setIsPrivate(room.getIsPrivate());
+        roomDto.setStickerId(room.getStickerId());
+        roomDto.setIconId(room.getIconId());
         return roomDto;
     }
 }

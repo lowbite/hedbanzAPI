@@ -23,15 +23,14 @@ import org.springframework.stereotype.Component;
 import java.util.TimerTask;
 
 import static com.hedbanz.hedbanzAPI.constant.PlayerStatus.AFK;
+import static com.hedbanz.hedbanzAPI.constant.SocketEvents.*;
 
 @Component
 @Scope("prototype")
 public class AfkTimerTask extends TimerTask {
     private final Logger log = LoggerFactory.getLogger("AFKTimerTask");
-    //Time to playerId will be kicked from room in ms
+    //Time after which player will be kicked from room in ms
     private static final int ONE_MIN_IN_MS = 60000;
-    private static final String SERVER_PLAYER_AFK_WARNING = "server-player-afk-warning";
-    private static final String SERVER_KICKED_USER_EVENT = "server-kicked-user";
 
     private int timeLeft;
     private BroadcastOperations roomOperations;

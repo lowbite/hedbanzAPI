@@ -31,27 +31,35 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private static final RequestMatcher PUBLIC_URLS = new OrRequestMatcher(
-            // TODO change to login and registration
-            //new AntPathRequestMatcher("/**")
-            new AntPathRequestMatcher("/user", HttpMethod.POST.toString()),
+            new AntPathRequestMatcher("/**")
+            /*new AntPathRequestMatcher("/user", HttpMethod.POST.toString()),
             new AntPathRequestMatcher("/user", HttpMethod.PUT.toString()),
-            new AntPathRequestMatcher("/admin", HttpMethod.GET.toString()),
+            new AntPathRequestMatcher("/admin"),
+            new AntPathRequestMatcher("/admin_panel", HttpMethod.GET.toString()),
             new AntPathRequestMatcher("/css/**"),
-            new AntPathRequestMatcher("/fonts/**")
+            new AntPathRequestMatcher("/fonts/**"),
+            new AntPathRequestMatcher("/js/**")*/
     );
     private static final RequestMatcher PROTECTED_URLS = new NegatedRequestMatcher(PUBLIC_URLS);
+    private static final RequestMatcher ADMIN_PROTECTED_URLS = new OrRequestMatcher(
+            new AntPathRequestMatcher("/admin_panel/app", HttpMethod.POST.toString())
+    );
 
-    final private TokenAuthenticationProvider provider;
+
+    final private TokenAuthenticationProvider userAuthenticationProvider;
+    final private AdminAuthenticationProvider adminAuthenticationProvider;
 
     @Autowired
-    SecurityConfig(final TokenAuthenticationProvider provider) {
+    SecurityConfig(final TokenAuthenticationProvider userAuthenticationProvider, AdminAuthenticationProvider adminAuthenticationProvider) {
         super();
-        this.provider = Objects.requireNonNull(provider);
+        this.userAuthenticationProvider = Objects.requireNonNull(userAuthenticationProvider);
+        this.adminAuthenticationProvider = adminAuthenticationProvider;
     }
 
     @Override
     protected void configure(final AuthenticationManagerBuilder auth) {
-        auth.authenticationProvider(provider);
+        auth.authenticationProvider(userAuthenticationProvider);
+        auth.authenticationProvider(adminAuthenticationProvider);
     }
 
     @Override
@@ -70,7 +78,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // authenticated
                 .defaultAuthenticationEntryPointFor(forbiddenEntryPoint(), PROTECTED_URLS)
                 .and()
-                .authenticationProvider(provider)
+                .authenticationProvider(userAuthenticationProvider)
+                .authenticationProvider(adminAuthenticationProvider)
+                .addFilterBefore(adminAuthenticationFilter(), AnonymousAuthenticationFilter.class)
                 .addFilterBefore(restAuthenticationFilter(), AnonymousAuthenticationFilter.class)
                 .authorizeRequests()
                 .anyRequest()
@@ -85,6 +95,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     TokenAuthenticationFilter restAuthenticationFilter() throws Exception {
         final TokenAuthenticationFilter filter = new TokenAuthenticationFilter(PROTECTED_URLS);
+        filter.setAuthenticationManager(authenticationManager());
+        filter.setAuthenticationSuccessHandler(successHandler());
+        return filter;
+    }
+
+    @Bean
+    AdminAuthenticationFilter adminAuthenticationFilter() throws Exception{
+        final AdminAuthenticationFilter filter = new AdminAuthenticationFilter(ADMIN_PROTECTED_URLS);
         filter.setAuthenticationManager(authenticationManager());
         filter.setAuthenticationSuccessHandler(successHandler());
         return filter;

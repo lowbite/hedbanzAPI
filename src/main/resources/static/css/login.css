@@ -297,7 +297,7 @@ iframe {
   padding: 0 20px;
   width: 100%;
   height: 50px;
-  background-color: #EBEB00;
+  background-color: yellow;
   border-radius: 25px;
 
   font-family: Ubuntu-Bold;
@@ -313,9 +313,14 @@ iframe {
 }
 
 .login100-form-btn:hover {
-  background-color: #9B9B00;
+  background-color: yellow;
 }
-
+.error-block{
+  color : red;
+  text-align: center;
+  font-size: 2.5ex;
+  margin-bottom: 10px;
+}
 
 /*------------------------------------------------------------------
 [ Alert validate ]*/

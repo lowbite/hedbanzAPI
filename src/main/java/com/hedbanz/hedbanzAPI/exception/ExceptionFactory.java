@@ -1,8 +1,6 @@
 package com.hedbanz.hedbanzAPI.exception;
 
-import com.hedbanz.hedbanzAPI.error.FcmError;
-import com.hedbanz.hedbanzAPI.error.RoomError;
-import com.hedbanz.hedbanzAPI.error.UserError;
+import com.hedbanz.hedbanzAPI.error.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,5 +37,25 @@ public class ExceptionFactory {
     public static FcmException create(final FcmError error, final Object... messageArguments) {
         LOG.error(MessageFormat.format(error.getErrorMessage(), messageArguments));
         return new FcmException(error, messageArguments);
+    }
+
+    public static PasswordResetException create(final Throwable cause, final PasswordResetError error, final Object... messageArguments) {
+        LOG.error(MessageFormat.format(error.getErrorMessage(), messageArguments), cause);
+        return new PasswordResetException (error, cause, messageArguments);
+    }
+
+    public static PasswordResetException create(final PasswordResetError error, final Object... messageArguments) {
+        LOG.error(MessageFormat.format(error.getErrorMessage(), messageArguments));
+        return new PasswordResetException(error, messageArguments);
+    }
+
+    public static MessageException create(final Throwable cause, final MessageError error, final Object... messageArguments) {
+        LOG.error(MessageFormat.format(error.getErrorMessage(), messageArguments), cause);
+        return new MessageException (error, cause, messageArguments);
+    }
+
+    public static MessageException create(final MessageError error, final Object... messageArguments) {
+        LOG.error(MessageFormat.format(error.getErrorMessage(), messageArguments));
+        return new MessageException(error, messageArguments);
     }
 }

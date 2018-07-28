@@ -16,6 +16,8 @@ public class RoomDto {
     private Integer currentPlayersNumber;
     private Boolean isPrivate;
     private Long userId;
+    private Long stickerId;
+    private Long iconId;
 
     public RoomDto(){
 
@@ -91,5 +93,21 @@ public class RoomDto {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public Long getStickerId() {
+        return stickerId;
+    }
+
+    public void setStickerId(Long stickerId) {
+        this.stickerId = stickerId;
+    }
+
+    public Long getIconId() {
+        return iconId;
+    }
+
+    public void setIconId(Long iconId) {
+        this.iconId = iconId;
     }
 }

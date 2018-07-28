@@ -12,9 +12,9 @@ public interface MessageService {
 
     Message addMessage(Message message);
 
-    Message addPlayerEventMessage(MessageType type, Long userId, Long roomId);
+    void addPlayerEventMessage(MessageType type, Long userId, Long roomId);
 
-    Message addRoomEventMessage(MessageType type, Long roomId);
+    void addRoomEventMessage(MessageType type, Long roomId);
 
     Message addQuestionText(Long questionId, String text);
 
@@ -26,7 +26,7 @@ public interface MessageService {
 
     Question addSettingQuestionMessage(Long roomId, Long senderId);
 
-    Message addSettingWordMessage(Long roomId, Long senderId);
+    void addSettingWordMessage(Long roomId, Long senderId);
 
     void deleteSettingWordMessage(Long roomId, Long senderId);
 

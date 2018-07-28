@@ -12,20 +12,21 @@ import com.hedbanz.hedbanzAPI.transfer.LoginDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import static com.hedbanz.hedbanzAPI.constant.SocketEvents.CLIENT_CHECK_LOGIN;
+import static com.hedbanz.hedbanzAPI.constant.SocketEvents.SERVER_CHECK_LOGIN;
+
 @Component
-public class LoginEventHandler {
+public class CheckLoginEventHandler {
     private final SocketIONamespace socketIONamespace;
-    private final SocketIOServer server;
 
     private final UserRepository userRepository;
 
     @Autowired
-    public LoginEventHandler(SocketIOServer server, UserRepository userRepository){
-        this.server = server;
+    public CheckLoginEventHandler(SocketIOServer server, UserRepository userRepository){
         this.socketIONamespace = server.addNamespace("/login");
         this.socketIONamespace.addConnectListener(onConnected());
         this.socketIONamespace.addDisconnectListener(onDisconnected());
-        this.socketIONamespace.addEventListener("checkLogin", LoginDto.class, onRecieved());
+        this.socketIONamespace.addEventListener(CLIENT_CHECK_LOGIN, LoginDto.class, onRecieved());
         this.userRepository = userRepository;
     }
 
@@ -33,7 +34,7 @@ public class LoginEventHandler {
         return (client, data, ackSender) -> {
             User foundUserDTO = userRepository.findUserByLogin(data.getLogin());
             boolean isLoginAvailable = foundUserDTO == null;
-            socketIONamespace.getBroadcastOperations().sendEvent("loginResult", new LoginAnswerDto(isLoginAvailable));
+            socketIONamespace.getBroadcastOperations().sendEvent(SERVER_CHECK_LOGIN, new LoginAnswerDto(isLoginAvailable));
         };
     }
 

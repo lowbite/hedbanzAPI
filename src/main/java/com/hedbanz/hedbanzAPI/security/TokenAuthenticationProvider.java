@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @Component
 public class TokenAuthenticationProvider extends AbstractUserDetailsAuthenticationProvider {
-    final UserService userService;
+    final private UserService userService;
 
     @Autowired
     public TokenAuthenticationProvider(UserService userService) {

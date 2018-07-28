@@ -2,66 +2,32 @@ package com.hedbanz.hedbanzAPI;
 
 import org.junit.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import javax.annotation.PostConstruct;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 @SpringBootTest
-public class HedbanzApiApplicationTests {
-
+public class HedbanzApiApplicationTests{
     @Test
     public void contextLoads() {
-        String str = "\"asdd\",\"asdd\",\"asdd\",\"asdd\"";
-        String str1 = str.replaceAll("\"","");
-        System.out.println(str1);
+        List<Player> players = new ArrayList<>();
+        for (int i = 0; i < 1000000; i++) {
+            players.add(new Player());
+        }
+        long time = System.currentTimeMillis();
+        for (Player player: players) {
+            player.setId(1);
+        }
+        //players.forEach(player -> {player.setId(1);});
+        System.out.println(System.currentTimeMillis() - time);
     }
 }
 
-class Base {
-    static {
-        System.out.printf("%s - %s - %s\n", "base", "static", "block");
-    }
+class Player{
+    long id;
 
-    {
-        System.out.printf("%s - %s - %s\n", "base", "instance", "block");
-    }
+    public Player(){}
 
-    public Base() {
-        System.out.printf("%s - %s\n", "base", "constructor");
-    }
-
-    @PostConstruct
-    public void init() {
-        System.out.printf("%s - %s\n", "base", "PostConstruct");
-    }
-
-    public void hello() {
-        System.out.printf("%s - %s\n", "base", "method");
+    public void setId(long id) {
+        this.id = id;
     }
 }
 
-class Sub extends Base {
-    static {
-        System.out.printf("%s - %s - %s\n", "sub", "static", "block");
-    }
-
-    {
-        System.out.printf("%s - %s - %s\n", "sub", "instance", "block");
-    }
-
-    public Sub() {
-        System.out.printf("%s - %s\n", "sub", "constructor");
-    }
-
-    @PostConstruct
-    public void init() {
-        System.out.printf("%s - %s\n", "sub", "PostConstruct");
-    }
-
-    @Override
-    public void hello() {
-        super.hello();
-        System.out.printf("%s - %s\n", "sub", "method");
-    }
-}

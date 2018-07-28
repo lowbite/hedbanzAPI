@@ -43,8 +43,7 @@ public class FcmServiceImpl implements FcmService {
 
             if(success == 0){
                 JsonNode resultNode = responseObj.get("results").get(0);
-                log.error(resultNode.get("error").asText());
-                throw ExceptionFactory.create(FcmError.CANT_SEND_MESSAGE_NOTIFICATION);
+                log.error("FCMPush result error: " + resultNode.get("error").asText());
             }
         } catch (InterruptedException | ExecutionException | IOException e) {
             throw ExceptionFactory.create(FcmError.CANT_SEND_MESSAGE_NOTIFICATION);
