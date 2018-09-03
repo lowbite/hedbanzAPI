@@ -1,5 +1,7 @@
 package com.hedbanz.hedbanzAPI.transfer;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
+
 import java.sql.Timestamp;
 
 public class UserDto {
@@ -9,7 +11,9 @@ public class UserDto {
     private String password;
     private Integer money;
     private Timestamp registrationDate;
-    private String imagePath;
+    private Long gamesNumber;
+    private Long friendsNumber;
+    private Integer iconId;
     private String email;
     private String securityToken;
     private String fcmToken;
@@ -18,31 +22,36 @@ public class UserDto {
 
     }
 
-    private UserDto(Long id, String login, Integer money, Timestamp registrationDate, String imagePath, String email) {
+    private UserDto(Long id, String login, Integer money, Timestamp registrationDate, Integer iconId, String email) {
         this.id = id;
         this.login = login;
         this.money = money;
         this.registrationDate = registrationDate;
-        this.imagePath = imagePath;
+        this.iconId = iconId;
         this.email = email;
     }
 
-    public UserDto(Long id, String login, Integer money, Timestamp registrationDate, String imagePath, String email, String securityToken, String fcmToken) {
+    public UserDto(Long id, String login, Integer money, Timestamp registrationDate, Long gamesNumber,
+                   Long friendsNumber, Integer iconId, String email,
+                   String securityToken, String fcmToken) {
         this.id = id;
         this.login = login;
         this.password = password;
         this.money = money;
         this.registrationDate = registrationDate;
-        this.imagePath = imagePath;
+        this.iconId = iconId;
         this.email = email;
         this.securityToken = securityToken;
         this.fcmToken = fcmToken;
+        this.gamesNumber = gamesNumber;
+        this.friendsNumber = friendsNumber;
     }
 
     public Long getId() {
         return id;
     }
 
+    @JsonSetter("id")
     public void setId(Long id) {
         this.id = id;
     }
@@ -51,6 +60,7 @@ public class UserDto {
         return login;
     }
 
+    @JsonSetter("login")
     public void setLogin(String login) {
         this.login = login;
     }
@@ -59,6 +69,7 @@ public class UserDto {
         return password;
     }
 
+    @JsonSetter("password")
     public void setPassword(String password) {
         this.password = password;
     }
@@ -67,6 +78,7 @@ public class UserDto {
         return money;
     }
 
+    @JsonSetter("money")
     public void setMoney(Integer money) {
         this.money = money;
     }
@@ -75,22 +87,25 @@ public class UserDto {
         return registrationDate;
     }
 
+    @JsonSetter("registrationDate")
     public void setRegistrationDate(Timestamp registrationDate) {
         this.registrationDate = registrationDate;
     }
 
-    public String getImagePath() {
-        return imagePath;
+    public Integer getIconId() {
+        return iconId;
     }
 
-    public void setImagePath(String imagePath) {
-        this.imagePath = imagePath;
+    @JsonSetter("iconId")
+    public void setIconId(Integer iconId) {
+        this.iconId = iconId;
     }
 
     public String getEmail() {
         return email;
     }
 
+    @JsonSetter("email")
     public void setEmail(String email) {
         this.email = email;
     }
@@ -99,6 +114,7 @@ public class UserDto {
         return securityToken;
     }
 
+    @JsonSetter("securityToken")
     public void setSecurityToken(String securityToken) {
         this.securityToken = securityToken;
     }
@@ -107,8 +123,27 @@ public class UserDto {
         return fcmToken;
     }
 
+    @JsonSetter("fcmToken")
     public void setFcmToken(String fcmToken) {
         this.fcmToken = fcmToken;
+    }
+
+    public Long getGamesNumber() {
+        return gamesNumber;
+    }
+
+    @JsonSetter("gamesNumber")
+    public void setGamesNumber(Long gamesNumber) {
+        this.gamesNumber = gamesNumber;
+    }
+
+    public Long getFriendsNumber() {
+        return friendsNumber;
+    }
+
+    @JsonSetter("friendsNumber")
+    public void setFriendsNumber(Long friendsNumber) {
+        this.friendsNumber = friendsNumber;
     }
 
     public static class Builder {
@@ -116,7 +151,9 @@ public class UserDto {
         private String login;
         private Integer money;
         private Timestamp registrationDate;
-        private String imagePath;
+        private Long gamesNumber;
+        private Long friendsNumber;
+        private Integer iconId;
         private String email;
         private String token;
         private String fcmToken;
@@ -141,8 +178,8 @@ public class UserDto {
             return this;
         }
 
-        public Builder setImagePath(String imagePath) {
-            this.imagePath = imagePath;
+        public Builder setIconId(Integer iconId) {
+            this.iconId = iconId;
             return this;
         }
 
@@ -162,8 +199,18 @@ public class UserDto {
             return this;
         }
 
+        public Builder setGamesNumber(Long gamesNumber){
+            this.gamesNumber = gamesNumber;
+            return this;
+        }
+
+        public Builder setFriendsNumber(Long friendsNumber){
+            this.friendsNumber = friendsNumber;
+            return this;
+        }
+
         public UserDto build() {
-            return new UserDto(id, login, money, registrationDate, imagePath, email, token, fcmToken);
+            return new UserDto(id, login, money, registrationDate, gamesNumber, friendsNumber, iconId,  email, token, fcmToken);
         }
     }
 }

@@ -3,9 +3,7 @@ package com.hedbanz.hedbanzAPI.service.Implementation;
 import com.hedbanz.hedbanzAPI.constant.Constants;
 import com.hedbanz.hedbanzAPI.constant.MessageType;
 import com.hedbanz.hedbanzAPI.entity.*;
-import com.hedbanz.hedbanzAPI.error.MessageError;
-import com.hedbanz.hedbanzAPI.error.UserError;
-import com.hedbanz.hedbanzAPI.error.RoomError;
+import com.hedbanz.hedbanzAPI.error.*;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
 import com.hedbanz.hedbanzAPI.model.Vote;
 import com.hedbanz.hedbanzAPI.repository.*;
@@ -49,18 +47,18 @@ public class MessageServiceImpl implements MessageService {
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public Message addMessage(Message inputMessage) {
         if (inputMessage.getRoom().getId() == null)
-            throw ExceptionFactory.create(MessageError.EMPTY_ROOM_ID);
+            throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
         if (inputMessage.getText() == null)
-            throw ExceptionFactory.create(MessageError.EMPTY_MESSAGE_TEXT);
+            throw ExceptionFactory.create(InputError.EMPTY_MESSAGE_TEXT);
         if (inputMessage.getType() == null)
-            throw ExceptionFactory.create(MessageError.EMPTY_MESSAGE_TYPE);
+            throw ExceptionFactory.create(InputError.EMPTY_MESSAGE_TYPE);
         if (inputMessage.getSenderUser() == null) {
-            throw ExceptionFactory.create(MessageError.EMPTY_MESSAGE_SENDER);
+            throw ExceptionFactory.create(InputError.EMPTY_MESSAGE_SENDER);
         }
         User sender = userRepository.findOne(inputMessage.getSenderUser().getUserId());
-        Player player = playerRepository.findPlayerByUserIdAndRoomId(inputMessage.getSenderUser().getUserId(), inputMessage.getRoom().getId());
+        Player player = playerRepository.findPlayerByUser_UserIdAndRoom_Id(inputMessage.getSenderUser().getUserId(), inputMessage.getRoom().getId());
         if (player == null)
-            throw ExceptionFactory.create(MessageError.NO_SUCH_USER_IN_ROOM);
+            throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER_IN_ROOM);
 
         Message message = Message.Builder().setSenderUser(sender)
                 .setText(inputMessage.getText())
@@ -76,20 +74,20 @@ public class MessageServiceImpl implements MessageService {
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void addPlayerEventMessage(MessageType type, Long userId, Long roomId) {
         if (userId == null)
-            throw ExceptionFactory.create(MessageError.EMPTY_USER_ID);
+            throw ExceptionFactory.create(InputError.EMPTY_USER_ID);
         if (roomId == null)
-            throw ExceptionFactory.create(MessageError.EMPTY_ROOM_ID);
+            throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
         if (type == null)
-            throw ExceptionFactory.create(MessageError.EMPTY_MESSAGE_TYPE);
+            throw ExceptionFactory.create(InputError.EMPTY_MESSAGE_TYPE);
 
-        Player player = playerRepository.findPlayerByUserIdAndRoomId(userId, roomId);
+        Player player = playerRepository.findPlayerByUser_UserIdAndRoom_Id(userId, roomId);
         if (player == null) {
-            throw ExceptionFactory.create(MessageError.NO_SUCH_USER_IN_ROOM);
+            throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER_IN_ROOM);
         }
         Room room = roomRepository.findOne(roomId);
         User user = userRepository.findOne(userId);
         if (!player.getRoom().getId().equals(roomId))
-            throw ExceptionFactory.create(MessageError.NO_SUCH_USER_IN_ROOM);
+            throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER_IN_ROOM);
         messageRepository.saveAndFlush(Message.Builder()
                 .setRoom(room)
                 .setType(type)
@@ -101,9 +99,9 @@ public class MessageServiceImpl implements MessageService {
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void addRoomEventMessage(MessageType type, Long roomId) {
         if (roomId == null)
-            throw ExceptionFactory.create(MessageError.EMPTY_ROOM_ID);
+            throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
         if (type == null)
-            throw ExceptionFactory.create(MessageError.EMPTY_MESSAGE_TYPE);
+            throw ExceptionFactory.create(InputError.EMPTY_MESSAGE_TYPE);
         Room room = roomRepository.findOne(roomId);
         messageRepository.saveAndFlush(Message.Builder()
                 .setRoom(room)
@@ -116,13 +114,13 @@ public class MessageServiceImpl implements MessageService {
     @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.NESTED)
     public Message addQuestionText(Long questionId, String text) {
         if (questionId == null)
-            throw ExceptionFactory.create(MessageError.EMPTY_QUESTION_ID);
+            throw ExceptionFactory.create(InputError.EMPTY_QUESTION_ID);
         if (text == null) {
-            throw ExceptionFactory.create(MessageError.EMPTY_MESSAGE_TEXT);
+            throw ExceptionFactory.create(InputError.EMPTY_MESSAGE_TEXT);
         }
         Message message = messageRepository.findMessageByQuestionId(questionId);
         if (message == null)
-            throw ExceptionFactory.create(MessageError.NO_SUCH_QUESTION);
+            throw ExceptionFactory.create(NotFoundError.NO_SUCH_QUESTION);
         message.setCreateDate(new Timestamp(new Date().getTime()));
         message.setText(text);
         message = messageRepository.saveAndFlush(message);
@@ -132,25 +130,25 @@ public class MessageServiceImpl implements MessageService {
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public Question addVote(Vote vote) {
         if (vote.getQuestionId() == null)
-            throw ExceptionFactory.create(MessageError.EMPTY_QUESTION_ID);
+            throw ExceptionFactory.create(InputError.EMPTY_QUESTION_ID);
         if (vote.getSenderId() == null)
-            throw ExceptionFactory.create(MessageError.EMPTY_USER_ID);
+            throw ExceptionFactory.create(InputError.EMPTY_USER_ID);
         if (vote.getRoomId() == null)
-            throw ExceptionFactory.create(MessageError.EMPTY_ROOM_ID);
+            throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
         if (vote.getVoteType() == null)
-            throw ExceptionFactory.create(MessageError.EMPTY_VOTE_TYPE);
+            throw ExceptionFactory.create(InputError.EMPTY_VOTE_TYPE);
 
-        Player player = playerRepository.findPlayerByUserIdAndRoomId(vote.getSenderId(), vote.getRoomId());
+        Player player = playerRepository.findPlayerByUser_UserIdAndRoom_Id(vote.getSenderId(), vote.getRoomId());
         if (player == null) {
-            throw ExceptionFactory.create(MessageError.NO_SUCH_USER_IN_ROOM);
+            throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER_IN_ROOM);
         }
         if (!player.getRoom().getId().equals(vote.getRoomId())) {
-            throw ExceptionFactory.create(MessageError.NO_SUCH_USER_IN_ROOM);
+            throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER_IN_ROOM);
         }
 
         Question question = questionRepository.findOne(vote.getQuestionId());
         if (question == null)
-            throw ExceptionFactory.create(MessageError.NO_SUCH_QUESTION);
+            throw ExceptionFactory.create(NotFoundError.NO_SUCH_QUESTION);
 
         if (vote.getVoteType() == NO.getCode()) {
             if (!question.addNoVoter(player))
@@ -180,7 +178,7 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public Question getLastQuestionInRoom(Long roomId) {
         if (roomId == null)
-            throw ExceptionFactory.create(MessageError.EMPTY_ROOM_ID);
+            throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
 
         Pageable pageable = new PageRequest(0, 1);
         Page<Question> page = messageRepository.findLastQuestionByRoomId(roomId, pageable);
@@ -191,29 +189,29 @@ public class MessageServiceImpl implements MessageService {
     @Transactional(readOnly = true)
     public Message getMessageByQuestionId(Long questionId) {
         if (questionId == null)
-            throw ExceptionFactory.create(MessageError.EMPTY_QUESTION_ID);
+            throw ExceptionFactory.create(InputError.EMPTY_QUESTION_ID);
 
         Message message = messageRepository.findMessageByQuestionId(questionId);
         if (message == null)
-            throw ExceptionFactory.create(MessageError.NO_SUCH_QUESTION);
+            throw ExceptionFactory.create(NotFoundError.NO_SUCH_QUESTION);
         return message;
     }
 
     @Transactional
     public Question addSettingQuestionMessage(Long roomId, Long senderId) {
         if (roomId == null)
-            throw ExceptionFactory.create(MessageError.EMPTY_ROOM_ID);
+            throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
         if (senderId == null)
-            throw ExceptionFactory.create(MessageError.EMPTY_USER_ID);
+            throw ExceptionFactory.create(InputError.EMPTY_USER_ID);
         User user = userRepository.findOne(senderId);
         if (user == null)
-            throw ExceptionFactory.create(MessageError.NO_SUCH_USER);
+            throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER);
         Room room = roomRepository.findOne(roomId);
         if (room == null)
-            throw ExceptionFactory.create(MessageError.NO_SUCH_ROOM);
-        Player player = playerRepository.findPlayerByUserIdAndRoomId(senderId, roomId);
+            throw ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM);
+        Player player = playerRepository.findPlayerByUser_UserIdAndRoom_Id(senderId, roomId);
         if (player == null)
-            throw ExceptionFactory.create(MessageError.NO_SUCH_USER_IN_ROOM);
+            throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER_IN_ROOM);
         Question question = new Question.Builder()
                 .setAttempt(player.getAttempt())
                 .build();
@@ -229,23 +227,23 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Transactional
-    public void addSettingWordMessage(Long roomId, Long senderId) {
+    public void addEmptyWordSetMessage(Long roomId, Long senderId) {
         if (roomId == null)
-            throw ExceptionFactory.create(MessageError.EMPTY_ROOM_ID);
+            throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
         if (senderId == null)
-            throw ExceptionFactory.create(MessageError.EMPTY_USER_ID);
+            throw ExceptionFactory.create(InputError.EMPTY_USER_ID);
 
         User user = userRepository.findOne(senderId);
         if (user == null)
-            throw ExceptionFactory.create(MessageError.NO_SUCH_USER);
+            throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER);
 
         Room room = roomRepository.findOne(roomId);
         if (room == null)
-            throw ExceptionFactory.create(MessageError.NO_SUCH_ROOM);
+            throw ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM);
 
-        Player player = playerRepository.findPlayerByUserIdAndRoomId(senderId, roomId);
+        Player player = playerRepository.findPlayerByUser_UserIdAndRoom_Id(senderId, roomId);
         if (player == null)
-            throw ExceptionFactory.create(MessageError.NO_SUCH_USER_IN_ROOM);
+            throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER_IN_ROOM);
 
         Message message = Message.Builder()
                 .setSenderUser(user)
@@ -258,38 +256,38 @@ public class MessageServiceImpl implements MessageService {
     @Transactional
     public void deleteSettingWordMessage(Long roomId, Long senderId) {
         if (roomId == null)
-            throw ExceptionFactory.create(MessageError.EMPTY_ROOM_ID);
+            throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
         if (senderId == null)
-            throw ExceptionFactory.create(MessageError.EMPTY_USER_ID);
+            throw ExceptionFactory.create(InputError.EMPTY_USER_ID);
         Message message = messageRepository.findMessageByWordSettingType(senderId, roomId);
         if (message == null)
-            throw ExceptionFactory.create(MessageError.NO_SUCH_MESSAGE);
+            throw ExceptionFactory.create(NotFoundError.NO_SUCH_MESSAGE);
         messageRepository.delete(message);
     }
 
     @Transactional
     public Message getSettingWordMessage(Long roomId, Long senderId) {
         if (roomId == null)
-            throw ExceptionFactory.create(MessageError.EMPTY_ROOM_ID);
+            throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
         if (senderId == null)
-            throw ExceptionFactory.create(MessageError.EMPTY_USER_ID);
+            throw ExceptionFactory.create(InputError.EMPTY_USER_ID);
         Message message = messageRepository.findMessageByWordSettingType(senderId, roomId);
         if (message == null)
-            throw ExceptionFactory.create(MessageError.NO_SUCH_MESSAGE);
+            throw ExceptionFactory.create(NotFoundError.NO_SUCH_MESSAGE);
         return (Message) message.clone();
     }
 
     @Transactional
     public void deleteAllMessagesByRoom(Long roomId) {
         if (roomId == null)
-            throw ExceptionFactory.create(MessageError.EMPTY_ROOM_ID);
+            throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
         messageRepository.deleteAllByRoom_Id(roomId);
     }
 
     @Transactional(readOnly = true)
     public List<Message> getAllMessages(Long roomId, Integer pageNumber) {
         if (roomRepository.findOne(roomId) == null)
-            throw ExceptionFactory.create(MessageError.NO_SUCH_ROOM);
+            throw ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM);
         Pageable pageable = new PageRequest(pageNumber, Constants.PAGE_SIZE);
         Page<Message> page = messageRepository.findAllMessages(pageable, roomId);
         ArrayList<Message> messages = new ArrayList<>(page.getContent());

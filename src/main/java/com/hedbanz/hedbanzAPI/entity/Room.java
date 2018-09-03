@@ -16,23 +16,23 @@ public class Room implements Serializable{
     @Column(name = "room_id")
     private Long id;
 
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     @NotNull
     private String name;
 
-    @Column(name = "password")
+    @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "max_players")
+    @Column(name = "max_players", nullable = false)
     @NotNull
     private Integer maxPlayers;
 
-    @Column(name = "current_players_number")
+    @Column(name = "current_players_number", nullable = false)
     @NotNull
     private Integer currentPlayersNumber;
 
-    @Column(name = "is_private", columnDefinition = "tinyint(1) default 0", nullable = false)
-    private Boolean isPrivate;
+    @Column(name = "is_private", nullable = false)
+    private Boolean isPrivate = false;
 
     @Column(name = "game_status", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -49,11 +49,11 @@ public class Room implements Serializable{
     @NotNull
     private Long roomAdmin;
 
-    @Column(name = "sticker_id")
+    @Column(name = "sticker_id", nullable = false)
     @NotNull
     private Long stickerId;
 
-    @Column(name = "icon_id")
+    @Column(name = "icon_id", nullable = false)
     @NotNull
     private Long iconId;
 

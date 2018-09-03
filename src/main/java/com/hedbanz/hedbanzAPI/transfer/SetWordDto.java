@@ -2,15 +2,15 @@ package com.hedbanz.hedbanzAPI.transfer;
 
 import java.util.Date;
 
-public class WordSettingDto extends MessageDto{
+public class SetWordDto extends MessageDto{
     private String word;
     private UserDto wordReceiverUser;
 
-    public WordSettingDto() {
+    public SetWordDto() {
     }
 
-    WordSettingDto(Long clientMessageId, UserDto senderUser, Long roomId, String text, Integer type, Date createDate,
-                   String word, UserDto wordReceiverUser) {
+    SetWordDto(Long clientMessageId, UserDto senderUser, Long roomId, String text, Integer type, Date createDate,
+               String word, UserDto wordReceiverUser) {
         super(clientMessageId, senderUser, roomId, text, type, createDate);
         this.word = word;
         this.wordReceiverUser = wordReceiverUser;
@@ -82,8 +82,8 @@ public class WordSettingDto extends MessageDto{
             return this;
         }
 
-        public WordSettingDto build() {
-            return new WordSettingDto(clientMessageId, senderUser, roomId, text, type, createDate, word, wordReceiverUser);
+        public SetWordDto build() {
+            return new SetWordDto(clientMessageId, senderUser, roomId, text, type, createDate, word, wordReceiverUser);
         }
     }
 }

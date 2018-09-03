@@ -79,7 +79,7 @@ public class AfkTimerTask extends TimerTask {
 
     @Override
     public void run() {
-        Player player = playerRepository.findPlayerByUserIdAndRoomId(userId, roomId);
+        Player player = playerRepository.findPlayerByUser_UserIdAndRoom_Id(userId, roomId);
         if (player == null) {
             log.info("No such player");
             cancel();
@@ -112,7 +112,7 @@ public class AfkTimerTask extends TimerTask {
                 if(room == null)
                     cancel();
                 log.info(SERVER_KICKED_USER_EVENT);
-                roomService.leaveFromRoom(user.getUserId(), room.getId());
+                roomService.leaveUserFromRoom(user.getUserId(), room.getId());
                 roomOperations.sendEvent(SERVER_KICKED_USER_EVENT, conversionService.convert(user, UserDto.class));
                 AfkWarning warning = new AfkWarning(room.getName(), room.getId());
                 FcmPush.FcmPushData<AfkWarning> fcmPushData =

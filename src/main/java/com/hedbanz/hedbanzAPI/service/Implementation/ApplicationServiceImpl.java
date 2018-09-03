@@ -1,6 +1,7 @@
 package com.hedbanz.hedbanzAPI.service.Implementation;
 
 import com.hedbanz.hedbanzAPI.entity.Application;
+import com.hedbanz.hedbanzAPI.error.InputError;
 import com.hedbanz.hedbanzAPI.error.RoomError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
 import com.hedbanz.hedbanzAPI.repository.ApplicationRepository;
@@ -25,14 +26,11 @@ public class ApplicationServiceImpl implements ApplicationService{
 
     @Transactional
     public Application updateVersion(Application application) {
-        if(application == null)
-            throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
-
         if(application.getVersion() == null)
-            throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
+            throw ExceptionFactory.create(InputError.EMPTY_VERSION_FIELD);
         Application dbApplication = applicationRepository.findOne(1);
         if(dbApplication.getVersion() >= application.getVersion())
-            throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
+            throw ExceptionFactory.create(InputError.INCORRECT_VERSION_FIELD);
         dbApplication.setVersion(application.getVersion());
         return applicationRepository.saveAndFlush(dbApplication);
     }

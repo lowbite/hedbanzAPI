@@ -2,12 +2,12 @@ package com.hedbanz.hedbanzAPI.model;
 
 import com.hedbanz.hedbanzAPI.error.CustomError;
 
-public class CustomResponseBody<T>{
+public class ResponseBody<T>{
     private String status;
     private CustomError error;
     private T data;
 
-    public CustomResponseBody(String status,CustomError error, T data){
+    public ResponseBody(String status, CustomError error, T data){
         this.status = status;
         this.error = error;
         this.data = data;

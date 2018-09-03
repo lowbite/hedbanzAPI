@@ -10,7 +10,7 @@
 <div class="limiter">
     <div class="container-login100">
         <div class="wrap-login100">
-            <div class="login100-form p-l-55 p-r-55 p-t-178" onsubmit="signIn()">
+            <form class="login100-form p-l-55 p-r-55 p-t-178" th:action="@{/admin/login}" method="post">
                 <span class="login100-form-title">
                     Sign In
                 </span>
@@ -21,7 +21,7 @@
                 </div>
 
                 <div class="wrap-input100 m-b-50">
-                    <input class="input100 password" type="password" name="pass" placeholder="Password"/>
+                    <input class="input100 password" type="password" name="password" placeholder="Password"/>
                     <span></span>
                 </div>
 
@@ -30,7 +30,7 @@
                         Sign in
                     </button>
                 </div>
-            </div>
+            </form>
             <div class="row mt-5">
                 <div class="col-md-4 offset-md-4 text-center error-block"></div>
             </div>
@@ -38,7 +38,5 @@
     </div>
 </div>
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-<script type="text/javascript" src="/js/jquery.cookie.js"></script>
-<script src="/js/login_script.js"></script>
 </body>
 </html>

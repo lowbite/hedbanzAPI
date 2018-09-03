@@ -1,5 +1,6 @@
 package com.hedbanz.hedbanzAPI.transfer;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.hedbanz.hedbanzAPI.constant.MessageType;
 import com.hedbanz.hedbanzAPI.deserializer.MessageDeserializer;
@@ -7,7 +8,6 @@ import com.hedbanz.hedbanzAPI.deserializer.MessageDeserializer;
 import java.util.Date;
 
 
-@JsonDeserialize(using = MessageDeserializer.class)
 public class MessageDto {
     private Long clientMessageId;
     private UserDto senderUser;
@@ -29,10 +29,10 @@ public class MessageDto {
             this.createDate = createDate.getTime();
     }
 
-    public MessageDto(Long senderId, String senderLogin, String senderImagePath, Long roomId, String text, MessageType type, Date createDate) {
+    public MessageDto(Long senderId, String senderLogin, Integer senderImagePath, Long roomId, String text, MessageType type, Date createDate) {
         this.senderUser = new UserDto.Builder().setId(senderId)
                                                     .setLogin(senderLogin)
-                                                    .setImagePath(senderImagePath)
+                                                    .setIconId(senderImagePath)
                                                     .build();
         this.roomId = roomId;
         this.text = text;
@@ -45,6 +45,7 @@ public class MessageDto {
         return clientMessageId;
     }
 
+    @JsonSetter("clientMessageId")
     public void setClientMessageId(Long clientMessageId) {
         this.clientMessageId = clientMessageId;
     }
@@ -53,14 +54,16 @@ public class MessageDto {
         return senderUser;
     }
 
-    public void setSenderUser(UserDto senderId) {
-        this.senderUser = senderId;
+    @JsonSetter("senderUser")
+    public void setSenderUser(UserDto senderUser) {
+        this.senderUser = senderUser;
     }
 
     public Long getRoomId() {
         return roomId;
     }
 
+    @JsonSetter("roomId")
     public void setRoomId(Long roomId) {
         this.roomId = roomId;
     }
@@ -69,6 +72,7 @@ public class MessageDto {
         return text;
     }
 
+    @JsonSetter("text")
     public void setText(String text) {
         this.text = text;
     }
@@ -77,6 +81,7 @@ public class MessageDto {
         return type;
     }
 
+    @JsonSetter("type")
     public void setType(Integer type) {
         this.type = type;
     }
@@ -85,6 +90,7 @@ public class MessageDto {
         return createDate;
     }
 
+    @JsonSetter("createDate")
     public void setCreateDate(Long   createDate) {
         this.createDate = createDate;
     }

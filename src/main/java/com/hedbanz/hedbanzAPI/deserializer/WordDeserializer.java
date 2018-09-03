@@ -10,12 +10,16 @@ import com.hedbanz.hedbanzAPI.model.Word;
 
 import java.io.IOException;
 
-public class WordDTODeserializer extends JsonDeserializer<Word> {
+public class WordDeserializer extends JsonDeserializer<Word> {
 
     @Override
     public Word deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
         JsonNode node = jsonParser.getCodec().readTree(jsonParser);
-        Gson gson = new Gson();
-        return gson.fromJson(node.asText(), Word.class);
+        return new Word.WordDTOBuilder()
+                .setWordReceiverId(node.get("wordReceiverId").asLong())
+                .setRoomId(node.get("roomId").asLong())
+                .setWord(node.get("word").asText())
+                .setSenderId(node.get("senderId").asLong())
+                .createWordDTO();
     }
 }

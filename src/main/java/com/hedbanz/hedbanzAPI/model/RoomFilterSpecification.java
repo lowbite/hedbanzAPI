@@ -4,6 +4,7 @@ import com.hedbanz.hedbanzAPI.constant.GameStatus;
 import com.hedbanz.hedbanzAPI.entity.Player;
 import com.hedbanz.hedbanzAPI.entity.Room;
 import com.hedbanz.hedbanzAPI.entity.User;
+import com.hedbanz.hedbanzAPI.error.InputError;
 import com.hedbanz.hedbanzAPI.error.RoomError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
 import org.apache.http.util.TextUtils;
@@ -33,7 +34,7 @@ public class RoomFilterSpecification implements Specification<Room> {
         if (!TextUtils.isEmpty(filter.getRoomName())) {
             if (filter.getRoomName().startsWith("#")) {
                 if (filter.getRoomName().length() == 1)
-                    throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
+                    throw ExceptionFactory.create(InputError.INCORRECT_FILTER);
 
                 long roomId = Long.valueOf(filter.getRoomName().substring(1, filter.getRoomName().length()));
                 predicates.add(cb.equal(root.get("id"), roomId));
@@ -44,14 +45,14 @@ public class RoomFilterSpecification implements Specification<Room> {
 
         if(filter.getMaxPlayers() != null){
             if(filter.getMaxPlayers() > 8 || filter.getMaxPlayers() < 0)
-                throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
+                throw ExceptionFactory.create(InputError.INCORRECT_FILTER);
 
             predicates.add(cb.lessThanOrEqualTo(root.get("maxPlayers"), filter.getMaxPlayers()));
         }
 
         if(filter.getMinPlayers() != null){
             if(filter.getMaxPlayers() > 8 || filter.getMaxPlayers() < 0)
-                throw ExceptionFactory.create(RoomError.INCORRECT_INPUT);
+                throw ExceptionFactory.create(InputError.INCORRECT_FILTER);
 
             predicates.add(cb.greaterThanOrEqualTo(root.get("maxPlayers"), filter.getMinPlayers()));
         }

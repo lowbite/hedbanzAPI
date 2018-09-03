@@ -7,8 +7,8 @@ import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;
 import com.hedbanz.hedbanzAPI.entity.User;
 import com.hedbanz.hedbanzAPI.repository.UserRepository;
-import com.hedbanz.hedbanzAPI.transfer.LoginAnswerDto;
-import com.hedbanz.hedbanzAPI.transfer.LoginDto;
+import com.hedbanz.hedbanzAPI.transfer.LoginAvailabilityResponseDto;
+import com.hedbanz.hedbanzAPI.transfer.LoginAvailabilityDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -26,15 +26,15 @@ public class CheckLoginEventHandler {
         this.socketIONamespace = server.addNamespace("/login");
         this.socketIONamespace.addConnectListener(onConnected());
         this.socketIONamespace.addDisconnectListener(onDisconnected());
-        this.socketIONamespace.addEventListener(CLIENT_CHECK_LOGIN, LoginDto.class, onRecieved());
+        this.socketIONamespace.addEventListener(CLIENT_CHECK_LOGIN, LoginAvailabilityDto.class, onRecieved());
         this.userRepository = userRepository;
     }
 
-    private DataListener<LoginDto> onRecieved() {
+    private DataListener<LoginAvailabilityDto> onRecieved() {
         return (client, data, ackSender) -> {
             User foundUserDTO = userRepository.findUserByLogin(data.getLogin());
             boolean isLoginAvailable = foundUserDTO == null;
-            socketIONamespace.getBroadcastOperations().sendEvent(SERVER_CHECK_LOGIN, new LoginAnswerDto(isLoginAvailable));
+            socketIONamespace.getBroadcastOperations().sendEvent(SERVER_CHECK_LOGIN, new LoginAvailabilityResponseDto(isLoginAvailable));
         };
     }
 

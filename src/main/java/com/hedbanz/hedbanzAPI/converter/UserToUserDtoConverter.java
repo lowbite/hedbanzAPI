@@ -13,9 +13,10 @@ public class UserToUserDtoConverter implements Converter<User, UserDto> {
                     .setId(user.getUserId())
                     .setLogin(user.getLogin())
                     .setEmail(user.getEmail())
-                    .setImagePath(user.getImagePath())
+                    .setIconId(user.getIconId())
                     .setMoney(user.getMoney())
                     .setRegistrationDate(user.getRegistrationDate())
+                    .setGamesNumber(user.getGamesNumber())
                     .build();
     }
 }

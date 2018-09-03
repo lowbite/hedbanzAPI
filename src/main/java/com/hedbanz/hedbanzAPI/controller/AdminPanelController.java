@@ -1,6 +1,6 @@
 package com.hedbanz.hedbanzAPI.controller;
 
-import com.hedbanz.hedbanzAPI.entity.Admin;
+import com.hedbanz.hedbanzAPI.entity.Application;
 import com.hedbanz.hedbanzAPI.service.ApplicationService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,16 +14,17 @@ public class AdminPanelController {
         this.applicationService = applicationService;
     }
 
-    @GetMapping(value = "/admin")
+    @GetMapping(value = "/admin/login")
     public ModelAndView getAdminPage(ModelAndView modelAndView) {
         modelAndView.setViewName("admin_login");
-        modelAndView.addObject("admin", Admin.AdminBuilder().build());
         return modelAndView;
     }
 
-    @GetMapping(value = "/admin_panel")
+    @GetMapping(value = "/admin/panel")
     public ModelAndView getAdminPanel(ModelAndView modelAndView) {
+        Application application = applicationService.getApplication();
         modelAndView.setViewName("admin_panel");
+        modelAndView.addObject("version", application.getVersion());
         return modelAndView;
     }
 }

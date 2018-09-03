@@ -5,7 +5,7 @@ import com.hedbanz.hedbanzAPI.constant.PlayerStatus;
 public class PlayerDto {
     private Long id;
     private String login;
-    private String imagePath;
+    private Integer iconId;
     private String word;
     private Integer attempt;
     private Integer status;
@@ -17,20 +17,20 @@ public class PlayerDto {
 
     public PlayerDto(){}
 
-    public PlayerDto(Long id, String login, String imagePath, String word, Integer attempt, PlayerStatus status){
+    public PlayerDto(Long id, String login, Integer iconId, String word, Integer attempt, PlayerStatus status){
         this.id = id;
         this.login = login;
-        this.imagePath = imagePath;
+        this.iconId = iconId;
         this.word = word;
         this.attempt = attempt;
         this.status = status.getCode();
     }
 
-    private PlayerDto(Long id, String login, String imagePath, String word, Integer attempt, Integer status,
+    private PlayerDto(Long id, String login, Integer iconId, String word, Integer attempt, Integer status,
                       Boolean isFriend, Boolean isPending, Long userId, Long wordSettingUserId, Boolean isWinner){
         this.id = id;
         this.login = login;
-        this.imagePath = imagePath;
+        this.iconId = iconId;
         this.word = word;
         this.attempt = attempt;
         this.status = status;
@@ -58,12 +58,12 @@ public class PlayerDto {
         this.login = login;
     }
 
-    public String getImagePath() {
-        return imagePath;
+    public Integer getIconId() {
+        return iconId;
     }
 
-    public void setImagePath(String imagePath) {
-        this.imagePath = imagePath;
+    public void setIconId(Integer iconId) {
+        this.iconId = iconId;
     }
 
     public String getWord() {
@@ -133,7 +133,7 @@ public class PlayerDto {
     public static class PlayerDTOBuilder {
         private Long id;
         private String login;
-        private String imagePath;
+        private Integer iconId;
         private String word;
         private Integer attempt;
         private Integer status;
@@ -153,8 +153,8 @@ public class PlayerDto {
             return this;
         }
 
-        public PlayerDTOBuilder setImagePath(String imagePath) {
-            this.imagePath = imagePath;
+        public PlayerDTOBuilder setIconId(Integer iconId) {
+            this.iconId = iconId;
             return this;
         }
 
@@ -199,7 +199,7 @@ public class PlayerDto {
         }
 
         public PlayerDto createPlayerDTO() {
-            return new PlayerDto(id, login, imagePath, word, attempt, status, isFriend, isPending, userId, wordSettingUserId, isWinner);
+            return new PlayerDto(id, login, iconId, word, attempt, status, isFriend, isPending, userId, wordSettingUserId, isWinner);
         }
     }
 }

@@ -9,6 +9,26 @@ import java.text.MessageFormat;
 public class ExceptionFactory {
     private static final Logger LOG = LoggerFactory.getLogger(ExceptionFactory.class);
 
+    public static InputException create(final Throwable cause, final InputError error, final Object... messageArguments) {
+        LOG.error(MessageFormat.format(error.getErrorMessage(), messageArguments), cause);
+        return new InputException (error, cause, messageArguments);
+    }
+
+    public static InputException create(final InputError error, final Object... messageArguments) {
+        LOG.error(MessageFormat.format(error.getErrorMessage(), messageArguments));
+        return new InputException(error, messageArguments);
+    }
+
+    public static NotFoundException create(final Throwable cause, final NotFoundError error, final Object... messageArguments) {
+        LOG.error(MessageFormat.format(error.getErrorMessage(), messageArguments), cause);
+        return new NotFoundException (error, cause, messageArguments);
+    }
+
+    public static NotFoundException create(final NotFoundError error, final Object... messageArguments) {
+        LOG.error(MessageFormat.format(error.getErrorMessage(), messageArguments));
+        return new NotFoundException(error, messageArguments);
+    }
+
     public static RoomException create(final Throwable cause, final RoomError error, final Object... messageArguments) {
         LOG.error(MessageFormat.format(error.getErrorMessage(), messageArguments), cause);
         return new RoomException (error, cause, messageArguments);
@@ -57,5 +77,15 @@ public class ExceptionFactory {
     public static MessageException create(final MessageError error, final Object... messageArguments) {
         LOG.error(MessageFormat.format(error.getErrorMessage(), messageArguments));
         return new MessageException(error, messageArguments);
+    }
+
+    public static AuthenticationException create(final Throwable cause, final AuthenticationError error, final Object... messageArguments) {
+        LOG.error(MessageFormat.format(error.getErrorMessage(), messageArguments), cause);
+        return new AuthenticationException (error, cause, messageArguments);
+    }
+
+    public static AuthenticationException create(final AuthenticationError error, final Object... messageArguments) {
+        LOG.error(MessageFormat.format(error.getErrorMessage(), messageArguments));
+        return new AuthenticationException(error, messageArguments);
     }
 }

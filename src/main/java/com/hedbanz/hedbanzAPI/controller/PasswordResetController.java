@@ -1,9 +1,10 @@
 package com.hedbanz.hedbanzAPI.controller;
 
 import com.hedbanz.hedbanzAPI.constant.ResultStatus;
+import com.hedbanz.hedbanzAPI.error.InputError;
 import com.hedbanz.hedbanzAPI.error.PasswordResetError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
-import com.hedbanz.hedbanzAPI.model.CustomResponseBody;
+import com.hedbanz.hedbanzAPI.model.ResponseBody;
 import com.hedbanz.hedbanzAPI.service.PasswordResetService;
 import com.hedbanz.hedbanzAPI.model.PasswordResetData;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,24 +22,27 @@ public class PasswordResetController {
 
     @RequestMapping(method = RequestMethod.POST, value = "/forgot-password")
     @ResponseStatus(HttpStatus.OK)
-    public CustomResponseBody generateResetPasswordKeyWord(@RequestBody PasswordResetData passwordResetData){
+    public ResponseBody generateResetPasswordKeyWord(@RequestBody PasswordResetData passwordResetData) {
         passwordResetService.generatePasswordResetKeyWord(passwordResetData);
-        return new CustomResponseBody<>(ResultStatus.SUCCESS_STATUS, null, null);
+        return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, null);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/check-key")
     @ResponseStatus(HttpStatus.OK)
-    public CustomResponseBody checkUserKeyWord(@RequestBody PasswordResetData passwordResetData){
-        if(passwordResetService.isValidUserKeyWord(passwordResetData))
-            return new CustomResponseBody<>(ResultStatus.SUCCESS_STATUS, null, null);
+    public ResponseBody checkUserKeyWord(@RequestBody PasswordResetData passwordResetData) {
+        if (passwordResetService.isValidUserKeyWord(passwordResetData))
+            return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, null);
         else
-            throw ExceptionFactory.create(PasswordResetError.INCORRECT_KEY_WORD);
+            throw ExceptionFactory.create(InputError.INCORRECT_KEY_WORD);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/reset-password")
     @ResponseStatus(HttpStatus.OK)
-    public CustomResponseBody resetUserPassword(@RequestBody PasswordResetData passwordResetData){
-        passwordResetService.resetUserPassword(passwordResetData);
-        return new CustomResponseBody<>(ResultStatus.SUCCESS_STATUS, null, null);
+    public ResponseBody resetUserPassword(@RequestBody PasswordResetData passwordResetData) {
+        if (passwordResetService.isValidUserKeyWord(passwordResetData)) {
+            passwordResetService.resetUserPassword(passwordResetData);
+            return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, null);
+        } else
+            throw ExceptionFactory.create(InputError.INCORRECT_KEY_WORD);
     }
 }

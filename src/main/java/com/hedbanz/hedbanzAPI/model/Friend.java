@@ -3,7 +3,7 @@ package com.hedbanz.hedbanzAPI.model;
 public class Friend {
     private Long id;
     private String login;
-    private String imagePath;
+    private Integer iconId;
     private Boolean isPending;
     private Boolean isAccepted;
     private Boolean isInRoom;
@@ -11,24 +11,24 @@ public class Friend {
 
     public Friend(){}
 
-    public Friend(Long id, String login, String imagePath){
+    public Friend(Long id, String login, Integer iconId){
         this.id = id;
         this.login = login;
-        this.imagePath = imagePath;
+        this.iconId = iconId;
     }
 
-    public Friend(Long id, String login, String imagePath, int isAccepted, int isPending){
+    public Friend(Long id, String login, Integer iconId, int isAccepted, int isPending){
         this.id = id;
         this.login = login;
-        this.imagePath = imagePath;
+        this.iconId = iconId;
         this.isAccepted = (isAccepted != 0);
         this.isPending = (isPending != 0);
     }
 
-    public Friend(Long id, String login, String imagePath, int isPending, int isAccepted, int isInRoom, int isInvited) {
+    public Friend(Long id, String login, Integer iconId, int isPending, int isAccepted, int isInRoom, int isInvited) {
         this.id = id;
         this.login = login;
-        this.imagePath = imagePath;
+        this.iconId = iconId;
         this.isAccepted = (isAccepted != 0);
         this.isPending = (isPending != 0);
         this.isInRoom = isInRoom != 0;
@@ -51,12 +51,12 @@ public class Friend {
         this.login = login;
     }
 
-    public String getImagePath() {
-        return imagePath;
+    public Integer getIconId() {
+        return iconId;
     }
 
-    public void setImagePath(String imagePath) {
-        this.imagePath = imagePath;
+    public void setIconId(Integer iconId) {
+        this.iconId = iconId;
     }
 
     public Boolean getIsAccepted() {
@@ -88,14 +88,14 @@ public class Friend {
 
         if (id != null ? !id.equals(friend.id) : friend.id != null) return false;
         if (login != null ? !login.equals(friend.login) : friend.login != null) return false;
-        return imagePath != null ? imagePath.equals(friend.imagePath) : friend.imagePath == null;
+        return iconId != null ? iconId.equals(friend.iconId) : friend.iconId == null;
     }
 
     @Override
     public int hashCode() {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (login != null ? login.hashCode() : 0);
-        result = 31 * result + (imagePath != null ? imagePath.hashCode() : 0);
+        result = 31 * result + (iconId != null ? iconId.hashCode() : 0);
         return result;
     }
 }

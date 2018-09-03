@@ -1,132 +1,142 @@
 package com.hedbanz.hedbanzAPI.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
-import org.springframework.security.web.util.matcher.OrRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import java.util.Objects;
-
-import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
-
-
-@Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    private static final RequestMatcher PUBLIC_URLS = new OrRequestMatcher(
-            new AntPathRequestMatcher("/**")
-            /*new AntPathRequestMatcher("/user", HttpMethod.POST.toString()),
-            new AntPathRequestMatcher("/user", HttpMethod.PUT.toString()),
-            new AntPathRequestMatcher("/admin"),
-            new AntPathRequestMatcher("/admin_panel", HttpMethod.GET.toString()),
-            new AntPathRequestMatcher("/css/**"),
-            new AntPathRequestMatcher("/fonts/**"),
-            new AntPathRequestMatcher("/js/**")*/
-    );
-    private static final RequestMatcher PROTECTED_URLS = new NegatedRequestMatcher(PUBLIC_URLS);
-    private static final RequestMatcher ADMIN_PROTECTED_URLS = new OrRequestMatcher(
-            new AntPathRequestMatcher("/admin_panel/app", HttpMethod.POST.toString())
-    );
 
-
-    final private TokenAuthenticationProvider userAuthenticationProvider;
-    final private AdminAuthenticationProvider adminAuthenticationProvider;
-
-    @Autowired
-    SecurityConfig(final TokenAuthenticationProvider userAuthenticationProvider, AdminAuthenticationProvider adminAuthenticationProvider) {
-        super();
-        this.userAuthenticationProvider = Objects.requireNonNull(userAuthenticationProvider);
-        this.adminAuthenticationProvider = adminAuthenticationProvider;
+    @Configuration
+    @Order(3)
+    public static class MainSecurityConfig extends WebSecurityConfigurerAdapter {
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            http
+                    .authorizeRequests()
+                        .anyRequest()
+                        .permitAll()
+                        .and()
+                    .formLogin()
+                        .disable()
+                    .csrf()
+                        .disable();
+        }
     }
 
-    @Override
-    protected void configure(final AuthenticationManagerBuilder auth) {
-        auth.authenticationProvider(userAuthenticationProvider);
-        auth.authenticationProvider(adminAuthenticationProvider);
+    @Configuration
+    @Order(2)
+    public static class GameSecurityConfig extends WebSecurityConfigurerAdapter {
+        private final String[] PROTECTED_URLS = new String[]{
+                "/user/**",
+                "/fcm/**",
+                "/rooms/**",
+                "/game/**",
+                "/socket-messaging/**   "
+        };
+        @Autowired
+        private JwtTokenProvider tokenProvider;
+        @Autowired
+        private CustomUserDetailsService customUserDetailsService;
+
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+            return new BCryptPasswordEncoder();
+        }
+
+        @Override
+        protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+            auth
+                    .userDetailsService(customUserDetailsService)
+                    .passwordEncoder(passwordEncoder());
+        }
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            http.requestMatchers().antMatchers(PROTECTED_URLS)
+                    .and()
+                    .addFilterBefore(new JwtAuthenticationFilter(tokenProvider, customUserDetailsService),
+                            UsernamePasswordAuthenticationFilter.class)
+                    .addFilterBefore(new ExceptionHandlerFilter(),JwtAuthenticationFilter.class)
+                    .cors()
+                    .and()
+                    .csrf()
+                    .disable()
+                    .exceptionHandling()
+                    .authenticationEntryPoint(forbiddenEntryPoint())
+                    .and()
+                    .sessionManagement()
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                    .and()
+                    .authorizeRequests()
+                    .antMatchers(HttpMethod.PUT, "/user").permitAll()
+                    .antMatchers(HttpMethod.POST, "/user").permitAll()
+                    .anyRequest().access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+                    .and()
+                    .formLogin().disable();
+
+        }
+
+        @Override
+        public void configure(WebSecurity web) throws Exception {
+            web.ignoring().antMatchers("/static/**");
+        }
+
+        @Bean
+        AuthenticationEntryPoint forbiddenEntryPoint() {
+            return new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED);
+        }
+
+        @Bean(BeanIds.AUTHENTICATION_MANAGER)
+        @Override
+        public AuthenticationManager authenticationManagerBean() throws Exception {
+            return super.authenticationManagerBean();
+        }
     }
 
-    @Override
-    public void configure(final WebSecurity web) {
-        web.ignoring().requestMatchers(PUBLIC_URLS);
-    }
+    @Configuration
+    @Order(1)
+    public static class AdminSecurityConfig extends WebSecurityConfigurerAdapter {
+        @Autowired
+        CustomUserDetailsService userDetailsService;
+        @Autowired
+        PasswordEncoder passwordEncoder;
 
-    @Override
-    protected void configure(final HttpSecurity http) throws Exception {
-        http
-                .sessionManagement()
-                .sessionCreationPolicy(STATELESS)
-                .and()
-                .exceptionHandling()
-                // this entry point handles when you request a protected page and you are not yet
-                // authenticated
-                .defaultAuthenticationEntryPointFor(forbiddenEntryPoint(), PROTECTED_URLS)
-                .and()
-                .authenticationProvider(userAuthenticationProvider)
-                .authenticationProvider(adminAuthenticationProvider)
-                .addFilterBefore(adminAuthenticationFilter(), AnonymousAuthenticationFilter.class)
-                .addFilterBefore(restAuthenticationFilter(), AnonymousAuthenticationFilter.class)
-                .authorizeRequests()
-                .anyRequest()
-                .authenticated()
-                .and()
-                .csrf().disable()
-                .formLogin().disable()
-                .httpBasic().disable()
-                .logout().disable();
-    }
+        @Override
+        protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+            auth.userDetailsService(userDetailsService)
+                    .passwordEncoder(passwordEncoder);
+        }
 
-    @Bean
-    TokenAuthenticationFilter restAuthenticationFilter() throws Exception {
-        final TokenAuthenticationFilter filter = new TokenAuthenticationFilter(PROTECTED_URLS);
-        filter.setAuthenticationManager(authenticationManager());
-        filter.setAuthenticationSuccessHandler(successHandler());
-        return filter;
-    }
-
-    @Bean
-    AdminAuthenticationFilter adminAuthenticationFilter() throws Exception{
-        final AdminAuthenticationFilter filter = new AdminAuthenticationFilter(ADMIN_PROTECTED_URLS);
-        filter.setAuthenticationManager(authenticationManager());
-        filter.setAuthenticationSuccessHandler(successHandler());
-        return filter;
-    }
-
-    @Bean
-    SimpleUrlAuthenticationSuccessHandler successHandler() {
-        final SimpleUrlAuthenticationSuccessHandler successHandler = new SimpleUrlAuthenticationSuccessHandler();
-        successHandler.setRedirectStrategy(new NoRedirectStrategy());
-        return successHandler;
-    }
-
-    /**
-     * Disable Spring boot automatic filter registration.
-     */
-    @Bean
-    FilterRegistrationBean disableAutoRegistration(final TokenAuthenticationFilter filter) {
-        final FilterRegistrationBean registration = new FilterRegistrationBean(filter);
-        registration.setEnabled(false);
-        return registration;
-    }
-
-    @Bean
-    AuthenticationEntryPoint forbiddenEntryPoint() {
-        return new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED);
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            http.antMatcher("/admin/**")
+                    .authorizeRequests()
+                    .antMatchers("/admin/**").hasRole("ADMIN")
+                    .and()
+                    .formLogin()
+                    .loginPage("/admin/login")
+                    .defaultSuccessUrl("/admin/panel")
+                    .permitAll()
+                    .and()
+                    .logout()
+                    .permitAll();
+        }
     }
 }

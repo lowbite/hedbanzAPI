@@ -26,27 +26,9 @@ public interface RoomService {
 
     void checkRoomPassword(Long roomId, String password);
 
-    Room leaveFromRoom(Long userId, Long roomId);
+    Room leaveUserFromRoom(Long userId, Long roomId);
 
     Room addUserToRoom(Long userId, Long roomId, String password);
 
-    Player setPlayerStatus(Long userId, Long roomId, PlayerStatus status);
-
-    Boolean startGame(Long roomId);
-
-    void setPlayerWord(Word word);
-
-    Player startGuessing(Long roomId);
-
-    Player getNextGuessingPlayer(Long roomId);
-
     void checkPlayerInRoom(Long userId, Long roomId);
-
-    Room setPlayersWordSetters(Long roomId);
-
-    Room setGameOverStatus(Long roomId);
-
-    boolean isGameOver(Long roomId);
-
-    Room restartGame(Long roomId);
 }

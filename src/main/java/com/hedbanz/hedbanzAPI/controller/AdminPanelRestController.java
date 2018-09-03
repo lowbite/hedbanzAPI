@@ -2,10 +2,9 @@ package com.hedbanz.hedbanzAPI.controller;
 
 import com.hedbanz.hedbanzAPI.constant.NotificationMessageType;
 import com.hedbanz.hedbanzAPI.constant.ResultStatus;
-import com.hedbanz.hedbanzAPI.entity.Admin;
 import com.hedbanz.hedbanzAPI.entity.Application;
 import com.hedbanz.hedbanzAPI.entity.User;
-import com.hedbanz.hedbanzAPI.model.CustomResponseBody;
+import com.hedbanz.hedbanzAPI.model.ResponseBody;
 import com.hedbanz.hedbanzAPI.model.FcmPush;
 import com.hedbanz.hedbanzAPI.model.Notification;
 import com.hedbanz.hedbanzAPI.service.AdminService;
@@ -13,9 +12,7 @@ import com.hedbanz.hedbanzAPI.service.ApplicationService;
 import com.hedbanz.hedbanzAPI.service.FcmService;
 import com.hedbanz.hedbanzAPI.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
 
@@ -35,20 +32,14 @@ public class AdminPanelRestController {
         this.userService = userService;
     }
 
-    @PostMapping(value = "/admin")
-    public CustomResponseBody<Admin> authorizeAdmin(@RequestBody Admin admin) {
-        admin = adminService.authorizeAdmin(admin);
-        return new CustomResponseBody<>(ResultStatus.SUCCESS_STATUS, null, admin);
-    }
-
-    @GetMapping(value = "/admin_panel/app")
-    public CustomResponseBody<Application> getApplicationData(){
+    @GetMapping(value = "/admin/panel/app")
+    public ResponseBody<Application> getApplicationData(){
         Application application = applicationService.getApplication();
-        return new CustomResponseBody<>(ResultStatus.SUCCESS_STATUS, null, application);
+        return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, application);
     }
 
-    @PostMapping(value = "/admin_panel/app")
-    public CustomResponseBody<Application> updateApplicationData(@RequestBody Application application) {
+    @PostMapping(value = "/admin/panel/app")
+    public ResponseBody<Application> updateApplicationData(@RequestBody Application application) {
         Application newApplication = applicationService.updateVersion(application);
         List<User> users = userService.getAllUsers();
         new Thread(() -> users.forEach(user -> {
@@ -63,6 +54,6 @@ public class AdminPanelRestController {
                 fcmService.sendPushNotification(fcmPush);
             }
         })).start();
-        return new CustomResponseBody<>(ResultStatus.SUCCESS_STATUS, null, newApplication);
+        return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, newApplication);
     }
 }

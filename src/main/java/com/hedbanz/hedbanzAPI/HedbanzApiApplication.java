@@ -16,6 +16,7 @@ import org.springframework.context.support.ConversionServiceFactoryBean;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
@@ -23,6 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @EnableCaching
+@EnableJpaAuditing
 @SpringBootApplication
 public class HedbanzApiApplication {
 

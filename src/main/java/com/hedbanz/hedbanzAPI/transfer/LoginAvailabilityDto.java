@@ -1,12 +1,12 @@
 package com.hedbanz.hedbanzAPI.transfer;
 
-public class LoginDto {
+public class LoginAvailabilityDto {
     private String login;
 
-    public LoginDto() {
+    public LoginAvailabilityDto() {
     }
 
-    public LoginDto(String login) {
+    public LoginAvailabilityDto(String login) {
         super();
         this.login = login;
     }

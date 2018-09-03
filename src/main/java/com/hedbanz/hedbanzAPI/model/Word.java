@@ -1,15 +1,18 @@
 package com.hedbanz.hedbanzAPI.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.hedbanz.hedbanzAPI.deserializer.WordDTODeserializer;
+import com.hedbanz.hedbanzAPI.deserializer.WordDeserializer;
 
 
-@JsonDeserialize(using = WordDTODeserializer.class)
+@JsonDeserialize(using = WordDeserializer.class)
 public class Word {
     private Long roomId;
     private Long senderId;
     private String word;
     private Long wordReceiverId;
+
+    public Word() {
+    }
 
     private Word(Long roomId, Long senderId, String word, Long wordReceiverId) {
         this.roomId = roomId;

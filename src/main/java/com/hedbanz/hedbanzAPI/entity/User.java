@@ -1,11 +1,15 @@
 package com.hedbanz.hedbanzAPI.entity;
 
+import org.springframework.data.annotation.CreatedDate;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "user")
@@ -15,31 +19,32 @@ public class User implements Serializable {
     @Column(name = "user_id")
     private Long userId;
 
-    @Column(name = "login")
+    @Column(name = "login", nullable = false)
     @NotNull
     private String login;
 
-    @Column(name = "password")
+    @Column(name = "password", nullable = false)
     @NotNull
     private String password;
 
-    @Column(name = "money")
+    @Column(name = "money", nullable = false)
     @NotNull
-    private Integer money;
+    private Integer money = 0;
 
-    @Column(name = "registration_date")
+    @Column(name = "registration_date", nullable = false, updatable = false)
+    @CreatedDate
     private Timestamp registrationDate;
 
-    @Column(name = "image_path")
+    @Column(name = "icon_id", nullable = false)
     @NotNull
-    private String imagePath;
+    private Integer iconId = 0;
 
-    @Column(name = "email")
+    @Column(name = "email", nullable = false)
     @NotNull
     private String email;
 
-    @Column(name = "securityToken")
-    private String securityToken;
+    @Column(name = "games_number", nullable = false)
+    private Long gamesNumber = 0L;
 
     @Column(name = "fcm_token")
     private String fcmToken;
@@ -56,32 +61,40 @@ public class User implements Serializable {
             inverseJoinColumns = @JoinColumn(name = "room_id"))
     private List<Room> invitedToRooms;
 
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles = new HashSet<>();
+
     public User() {
 
     }
 
-    public User(Long userId, String login, Integer money, Date registrationDate, String imagePath, String email) {
+    public User(Long userId, String login, Integer money, Date registrationDate, Integer iconId, String email) {
         this.userId = userId;
         this.login = login;
         this.money = money;
         this.registrationDate = new Timestamp(registrationDate.getTime());
-        this.imagePath = imagePath;
+        this.iconId = iconId;
         this.email = email;
     }
 
-    public User(Long userId, String login, String password, Integer money, Timestamp registrationDate, String imagePath,
-                String email, String securityToken, String fcmToken, List<User> friends, List<Room> invitedToRooms) {
+    public User(Long userId, String login, String password, Integer money, Timestamp registrationDate, Integer iconId,
+                String email, Long gamesNumber, String fcmToken,
+                List<User> friends, List<Room> invitedToRooms, Set<Role> roles) {
         this.userId = userId;
         this.login = login;
         this.password = password;
         this.money = money;
         this.registrationDate = registrationDate;
-        this.imagePath = imagePath;
+        this.iconId = iconId;
         this.email = email;
-        this.securityToken = securityToken;
+        this.gamesNumber = gamesNumber;
         this.fcmToken = fcmToken;
         this.friends = friends;
         this.invitedToRooms = invitedToRooms;
+        this.roles = roles;
     }
 
     public Long getUserId() {
@@ -124,12 +137,12 @@ public class User implements Serializable {
         this.registrationDate = registrationDate;
     }
 
-    public String getImagePath() {
-        return imagePath;
+    public Integer getIconId() {
+        return iconId;
     }
 
-    public void setImagePath(String imagePath) {
-        this.imagePath = imagePath;
+    public void setIconId(Integer iconId) {
+        this.iconId = iconId;
     }
 
     public String getEmail() {
@@ -138,14 +151,6 @@ public class User implements Serializable {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getSecurityToken() {
-        return securityToken;
-    }
-
-    public void setSecurityToken(String securityToken) {
-        this.securityToken = securityToken;
     }
 
     public void setFriends(List<User> friends) {
@@ -166,6 +171,14 @@ public class User implements Serializable {
 
     public List<Room> getInvitedToRooms() {
         return invitedToRooms;
+    }
+
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
     }
 
     public boolean addFriend(User user) {
@@ -222,6 +235,14 @@ public class User implements Serializable {
         return new User().new Builder();
     }
 
+    public Long getGamesNumber() {
+        return gamesNumber;
+    }
+
+    public void setGamesNumber(Long gamesNumber) {
+        this.gamesNumber = gamesNumber;
+    }
+
     public class Builder {
         private Builder() {
 
@@ -252,8 +273,8 @@ public class User implements Serializable {
             return this;
         }
 
-        public Builder setImagePath(String imagePath) {
-            User.this.setImagePath(imagePath);
+        public Builder setIconId(Integer iconId) {
+            User.this.setIconId(iconId);
             return this;
         }
 
@@ -262,13 +283,18 @@ public class User implements Serializable {
             return this;
         }
 
-        public Builder setSecurityToken(String securityToken) {
-            User.this.setSecurityToken(securityToken);
+        public Builder setFcmToken(String fcmToken) {
+            User.this.setFcmToken(fcmToken);
             return this;
         }
 
-        public Builder setFcmToken(String fcmToken) {
-            User.this.setFcmToken(fcmToken);
+        public Builder setRoles(Set<Role> roles){
+            User.this.setRoles(roles);
+            return this;
+        }
+
+        public Builder setGamesNumber(Long gamesNumber){
+            User.this.setGamesNumber(gamesNumber);
             return this;
         }
 

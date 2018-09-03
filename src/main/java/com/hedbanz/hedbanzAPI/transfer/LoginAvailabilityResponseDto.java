@@ -1,12 +1,12 @@
 package com.hedbanz.hedbanzAPI.transfer;
 
-public class LoginAnswerDto {
+public class LoginAvailabilityResponseDto {
     private boolean isLoginAvailable;
 
-    public LoginAnswerDto(){
+    public LoginAvailabilityResponseDto(){
     }
 
-    public LoginAnswerDto(boolean isLoginAvailable){
+    public LoginAvailabilityResponseDto(boolean isLoginAvailable){
         this.isLoginAvailable = isLoginAvailable;
     }
 

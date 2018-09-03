@@ -21,6 +21,7 @@ public class RoomToRoomDtoConverter implements Converter<Room, RoomDto> {
         roomDto.setIsPrivate(room.getIsPrivate());
         roomDto.setStickerId(room.getStickerId());
         roomDto.setIconId(room.getIconId());
+        roomDto.setGameStatus(room.getGameStatus().getCode());
         return roomDto;
     }
 }

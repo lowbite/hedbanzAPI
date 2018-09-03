@@ -14,10 +14,11 @@ public class UserDtoToUserConverter implements Converter<UserDto, User> {
         user.setLogin(userDto.getLogin());
         user.setPassword(userDto.getPassword());
         user.setEmail(userDto.getEmail());
-        user.setImagePath(userDto.getImagePath());
+        user.setIconId(userDto.getIconId());
         user.setMoney(userDto.getMoney());
         user.setRegistrationDate(userDto.getRegistrationDate());
         user.setFcmToken(userDto.getFcmToken());
+        user.setGamesNumber(userDto.getGamesNumber());
         return user;
     }
 }

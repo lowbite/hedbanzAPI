@@ -23,6 +23,5 @@ public interface PlayerRepository extends JpaRepository<Player, Long>, PagingAnd
     @OrderBy("id")
     List<Player> findPlayersByRoomId(@Param("roomId") long roomId);
 
-    @Query("SELECT p FROM Player p JOIN p.user u JOIN p.room r WHERE u.id = :userId AND r.id = :roomId")
-    Player findPlayerByUserIdAndRoomId(@Param("userId") long userId, @Param("roomId") long roomId);
+    Player findPlayerByUser_UserIdAndRoom_Id(@Param("userId") long userId, @Param("roomId") long roomId);
 }

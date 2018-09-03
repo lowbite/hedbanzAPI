@@ -13,28 +13,32 @@ import java.util.List;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
+    User findByEmailOrLogin(String email, String login);
 
     User findUserByLogin(String login);
 
     User findUserByEmail(String email);
 
-    User findUserBySecurityToken(String securityToken);
+    @Query("SELECT COUNT(f) FROM User u INNER JOIN u.friends f INNER JOIN f.friends ff " +
+            "WHERE u.id = :userId AND ff.id = :userId")
+    Long countFriends(@Param("userId") long userId);
 
     List<User> findAllByFcmTokenIsNotNull();
 
-    @Query(value = "SELECT new com.hedbanz.hedbanzAPI.model.Friend(f.id, f.login, f.imagePath, 1, 0) FROM User u " +
+    @Query("SELECT new com.hedbanz.hedbanzAPI.model.Friend(f.id, f.login, f.iconId, 1, 0) FROM User u " +
             "INNER JOIN u.friends f INNER JOIN f.friends ff WHERE u.id = :userId AND ff.id = :userId")
     List<Friend> findAcceptedFriends(@Param("userId") long userId);
 
-    @Query(value = "SELECT new com.hedbanz.hedbanzAPI.model.Friend(f.id, f.login, f.imagePath, 1, 0, 0, 1) FROM User u " +
-            "INNER JOIN u.friends f INNER JOIN f.friends ff JOIN f.invitedToRooms r WHERE u.id = :userId AND ff.id = :userId AND r.id = :roomId")
+    @Query("SELECT new com.hedbanz.hedbanzAPI.model.Friend(f.id, f.login, f.iconId, 1, 0, 0, 1) FROM User u " +
+            "INNER JOIN u.friends f INNER JOIN f.friends ff JOIN f.invitedToRooms r " +
+            "WHERE u.id = :userId AND ff.id = :userId AND r.id = :roomId")
     List<Friend> findAcceptedFriendsWithInvitesToRoom(@Param("userId") long userId, @Param("roomId") long roomId);
 
-    @Query(value = "SELECT new com.hedbanz.hedbanzAPI.model.Friend(f.id, f.login, f.imagePath, 0, 1) FROM User u " +
+    @Query(value = "SELECT new com.hedbanz.hedbanzAPI.model.Friend(f.id, f.login, f.iconId, 0, 1) FROM User u " +
             "INNER JOIN u.friends f WHERE u.id = :userId")
     List<Friend> findPendingAndAcceptedFriends(@Param("userId") long userId);
 
-    @Query("SELECT new com.hedbanz.hedbanzAPI.model.Friend(u.id, u.login, u.imagePath, 0, 0) FROM  User u " +
+    @Query("SELECT new com.hedbanz.hedbanzAPI.model.Friend(u.userId, u.login, u.iconId, 0, 0) FROM  User u " +
             "INNER JOIN u.friends f WHERE f.id = :userId")
     List<Friend> findRequestingFriends(@Param("userId") long userId);
 
@@ -46,13 +50,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("UPDATE User u SET u.fcmToken = null WHERE u.id = :user_id")
     int deleteUserFcmToken(@Param("user_id") long userId);
 
-    @Modifying
-    @Query("UPDATE User u SET u.securityToken = :token WHERE u.id = :user_id")
-    int updateUserToken(@Param("token") String token, @Param("user_id") long userId);
-
-    @Modifying
-    @Query("UPDATE User u SET u.securityToken = null WHERE u.id = :user_id")
-    int deleteUserToken(@Param("user_id") long userId);
 
     @Modifying
     @Query("UPDATE User u SET u.login = :login, u.password = :newPassword WHERE u.id = :userId")

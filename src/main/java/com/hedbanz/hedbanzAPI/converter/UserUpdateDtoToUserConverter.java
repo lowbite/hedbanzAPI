@@ -11,7 +11,7 @@ public class UserUpdateDtoToUserConverter implements Converter<UserUpdateDto, Us
     public User convert(UserUpdateDto userUpdateDto) {
         return User.Builder().setUserId(userUpdateDto.getId())
                                 .setLogin(userUpdateDto.getLogin())
-                                .setPassword(TextUtils.isEmpty(userUpdateDto.getNewPassword()) ? userUpdateDto.getNewPassword() : userUpdateDto.getOldPassword())
+                                .setPassword(!TextUtils.isEmpty(userUpdateDto.getNewPassword()) ? userUpdateDto.getNewPassword() : userUpdateDto.getOldPassword())
                                 .build();
     }
 }

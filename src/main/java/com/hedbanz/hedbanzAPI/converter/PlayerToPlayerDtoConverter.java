@@ -12,7 +12,7 @@ public class PlayerToPlayerDtoConverter implements Converter<Player, PlayerDto> 
                 .setLogin(player.getUser().getLogin())
                 .setWord(player.getWord())
                 .setAttempt(player.getAttempt())
-                .setImagePath(player.getUser().getImagePath())
+                .setIconId(player.getUser().getIconId())
                 .setStatus(player.getStatus().getCode())
                 .setUserId(player.getUser().getUserId())
                 .setIsWinner(player.getIsWinner())
