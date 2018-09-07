@@ -29,7 +29,7 @@ public class PlayerTest {
 
     @Test
     public void checkPlayersTurn() {
-        System.out.println(new BCryptPasswordEncoder().encode("1111"));
+        System.out.println(new BCryptPasswordEncoder().encode("qwerty95"));
     }
 }
 

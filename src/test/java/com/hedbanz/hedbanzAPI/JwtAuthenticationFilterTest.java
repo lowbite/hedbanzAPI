@@ -35,7 +35,7 @@ public class JwtAuthenticationFilterTest {
     private final static String BEARER_TOKEN = "Bearer %s";
     private static String INVALID_TOKEN = "asdasdsa";
     private static String VALID_TOKEN = "";
-    @Test
+   /* @Test
     public void getInvalidJWTTokenError(){
         userDto.setLogin("adasdas");
         userDto.setPassword("asdasdasd");
@@ -58,5 +58,5 @@ public class JwtAuthenticationFilterTest {
         String result  = restTemplate.postForObject(USER_URI, entity, String.class);
         RequestResponse<UserDto> response = ResponseDeserializer.deserialize(result, UserDto.class);
         assertEquals(NotFoundError.NO_SUCH_USER.getErrorCode(), response.getError().getErrorCode());
-    }
+    }*/
 }
