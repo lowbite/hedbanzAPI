@@ -18,5 +18,5 @@ public interface GameService {
 
     Room restartGame(Long roomId);
 
-    void updatePlayersGamesNumber(Long roomId);
+    void incrementPlayerGamesNumber(Long roomId, Long userId);
 }

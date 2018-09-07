@@ -10,8 +10,20 @@ public class FeedbackDto {
     private String deviceModel;
     private String deviceManufacturer;
     private String product;
+    private String createdAt;
 
     public FeedbackDto() {
+    }
+
+    public FeedbackDto(String feedbackText, UserDto user, Integer deviceVersion, String deviceName, String deviceModel, String deviceManufacturer, String product, String createdAt) {
+        this.feedbackText = feedbackText;
+        this.user = user;
+        this.deviceVersion = deviceVersion;
+        this.deviceName = deviceName;
+        this.deviceModel = deviceModel;
+        this.deviceManufacturer = deviceManufacturer;
+        this.product = product;
+        this.createdAt = createdAt;
     }
 
     public String getFeedbackText() {
@@ -36,7 +48,7 @@ public class FeedbackDto {
         return deviceVersion;
     }
 
-    @JsonSetter("feedbackText")
+    @JsonSetter("deviceVersion")
     public void setDeviceVersion(Integer deviceVersion) {
         this.deviceVersion = deviceVersion;
     }
@@ -75,5 +87,67 @@ public class FeedbackDto {
     @JsonSetter("product")
     public void setProduct(String product) {
         this.product = product;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public static class Builder {
+        private String feedbackText;
+        private UserDto user;
+        private Integer deviceVersion;
+        private String deviceName;
+        private String deviceModel;
+        private String deviceManufacturer;
+        private String product;
+        private String createdAt;
+
+        public Builder setFeedbackText(String feedbackText) {
+            this.feedbackText = feedbackText;
+            return this;
+        }
+
+        public Builder setUser(UserDto user) {
+            this.user = user;
+            return this;
+        }
+
+        public Builder setDeviceVersion(Integer deviceVersion) {
+            this.deviceVersion = deviceVersion;
+            return this;
+        }
+
+        public Builder setDeviceName(String deviceName) {
+            this.deviceName = deviceName;
+            return this;
+        }
+
+        public Builder setDeviceModel(String deviceModel) {
+            this.deviceModel = deviceModel;
+            return this;
+        }
+
+        public Builder setDeviceManufacturer(String deviceManufacturer) {
+            this.deviceManufacturer = deviceManufacturer;
+            return this;
+        }
+
+        public Builder setProduct(String product) {
+            this.product = product;
+            return this;
+        }
+
+        public Builder setCreatedAt(String createdAt) {
+            this.createdAt = createdAt;
+            return this;
+        }
+        public FeedbackDto build() {
+            return new FeedbackDto(feedbackText, user, deviceVersion, deviceName, deviceModel, deviceManufacturer, product, createdAt);
+        }
     }
 }

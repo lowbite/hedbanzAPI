@@ -91,7 +91,7 @@ public class MessageDto {
     }
 
     @JsonSetter("createDate")
-    public void setCreateDate(Long   createDate) {
+    public void setCreateDate(Long createDate) {
         this.createDate = createDate;
     }
 

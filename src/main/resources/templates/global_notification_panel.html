@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<body>
+
+<div class="row align-content-center panel-data">
+    <div class="col-2"></div>
+    <div class="col-4">
+        <div class="app-form">
+            <label class="label-font">Notification text</label>
+            <div class="wrap-input100 m-b-30">
+                <textarea class="input100 notification-text" name="notification-text" cols="40" rows="20"></textarea>
+                <span></span>
+            </div>
+            <div class="container-login100-form-btn m-b-20">
+                <button class="login100-form-btn send-notification" onclick="sendNotification()">
+                    Send
+                </button>
+            </div>
+        </div>
+        <div class="success collapse">
+            <span>Notification sent successfully</span>
+        </div>
+        <div class="error collapse">
+            <span>Couldn't send notification. Server error!</span>
+        </div>
+    </div>
+</div>
+</body>
+</html>

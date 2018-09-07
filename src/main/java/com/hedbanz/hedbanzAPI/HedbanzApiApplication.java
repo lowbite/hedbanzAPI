@@ -17,14 +17,16 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 @EnableCaching
 @EnableJpaAuditing
+@EnableAsync
 @SpringBootApplication
 public class HedbanzApiApplication {
 
@@ -77,8 +79,8 @@ public class HedbanzApiApplication {
     }
 
     @Bean
-    public MessageToMessageNotificationDtoConverter messageToMessageNotificationDtoConverter() {
-        return new MessageToMessageNotificationDtoConverter();
+    public MessageToPushMessageDtoConverter messageToMessageNotificationDtoConverter() {
+        return new MessageToPushMessageDtoConverter();
     }
 
     @Bean
@@ -87,8 +89,8 @@ public class HedbanzApiApplication {
     }
 
     @Bean
-    public MessageToWordSettingDtoConverter messageToWordSettingDtoConverter() {
-        return new MessageToWordSettingDtoConverter();
+    public MessageToSetWordDtoConverter messageToWordSettingDtoConverter() {
+        return new MessageToSetWordDtoConverter();
     }
 
     @Bean
@@ -126,6 +128,16 @@ public class HedbanzApiApplication {
         return new QuestionToQuestionDtoConverter();
     }
 
+    @Bean
+    public FeedbackDtoToFeedbackConverter feedbackDtoToFeedbackConverter() {
+        return new FeedbackDtoToFeedbackConverter();
+    }
+
+    @Bean
+    FeedbackToFeedbackDtoConverter feedbackToFeedbackDtoConverter() {
+        return new FeedbackToFeedbackDtoConverter();
+    }
+
     @Bean(name = "APIConversionService")
     public ConversionService getConversionService() {
         ConversionServiceFactoryBean bean = new ConversionServiceFactoryBean();
@@ -147,26 +159,30 @@ public class HedbanzApiApplication {
         converters.add(playerDtoToPlayerConverter());
         converters.add(userUpdateDtoToUserConverter());
         converters.add(questionToQuestionDtoConverter());
+        converters.add(feedbackDtoToFeedbackConverter());
+        converters.add(feedbackToFeedbackDtoConverter());
 
         bean.setConverters(converters);
         bean.afterPropertiesSet();
         return bean.getObject();
     }
 
-    /*@Bean
-    JavaMailSender javaMailSender(){
-        return new JavaMailSenderImpl();
+    @Bean(name = "threadPoolTaskExecutor")
+    public Executor threadPoolTaskExecutor() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setMaxPoolSize(100);
+        return new ThreadPoolTaskExecutor();
     }
-*/
 
     @Bean
     @Qualifier("MyMessageSource")
-    MessageSource messageSource(){
+    MessageSource messageSource() {
         ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
         messageSource.setDefaultEncoding("UTF-8");
         messageSource.setBasename("classpath:messages");
         return messageSource;
     }
+
     public static void main(String[] args) {
         SpringApplication.run(HedbanzApiApplication.class, args);
     }

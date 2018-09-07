@@ -42,6 +42,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "INNER JOIN u.friends f WHERE f.id = :userId")
     List<Friend> findRequestingFriends(@Param("userId") long userId);
 
+    @Query("SELECT u.fcmToken FROM User u WHERE u.fcmToken <> NULL")
+    List<String> findAllFcmTokens();
+
     @Modifying
     @Query("UPDATE User u SET u.fcmToken = :token WHERE u.id = :user_id")
     int updateUserFcmToken(@Param("token") String token, @Param("user_id") long userId);
@@ -50,12 +53,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("UPDATE User u SET u.fcmToken = null WHERE u.id = :user_id")
     int deleteUserFcmToken(@Param("user_id") long userId);
 
-
-    @Modifying
-    @Query("UPDATE User u SET u.login = :login, u.password = :newPassword WHERE u.id = :userId")
-    int updateUserData(@Param("userId") long userId,@Param("login") String login, @Param("newPassword") String newPassword);
-
     @Modifying
     @Query("UPDATE User u SET u.password = :password WHERE u.id = :userId")
     int updateUserPassword(@Param("userId") long userId, @Param("password") String password);
+
+    @Query("SELECT COUNT(u) FROM User u")
+    long findUsersCount();
 }

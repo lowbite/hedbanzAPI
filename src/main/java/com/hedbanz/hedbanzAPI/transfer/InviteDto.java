@@ -1,24 +1,28 @@
 package com.hedbanz.hedbanzAPI.transfer;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
+
 import java.util.List;
 
 public class InviteDto {
     private Long senderId;
     private Long roomId;
-    private List<Long> invitedUserId;
-    private String password;
+    private List<Long> invitedUserIds;
 
-    public InviteDto(Long senderId, Long roomId, List<Long> invitedUserId, String password) {
+    public InviteDto() {
+    }
+
+    public InviteDto(Long senderId, Long roomId, List<Long> invitedUserIds) {
         this.senderId = senderId;
         this.roomId = roomId;
-        this.invitedUserId = invitedUserId;
-        this.password = password;
+        this.invitedUserIds = invitedUserIds;
     }
 
     public Long getSenderId() {
         return senderId;
     }
 
+    @JsonSetter("senderId")
     public void setSenderId(Long senderId) {
         this.senderId = senderId;
     }
@@ -27,23 +31,17 @@ public class InviteDto {
         return roomId;
     }
 
+    @JsonSetter("roomId")
     public void setRoomId(Long roomId) {
         this.roomId = roomId;
     }
 
-    public List<Long> getInvitedUserId() {
-        return invitedUserId;
+    public List<Long> getInvitedUserIds() {
+        return invitedUserIds;
     }
 
-    public void setInvitedUserId(List<Long> invitedUserId) {
-        this.invitedUserId = invitedUserId;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
+    @JsonSetter("invitedUserIds")
+    public void setInvitedUserIds(List<Long> invitedUserIds) {
+        this.invitedUserIds = invitedUserIds;
     }
 }

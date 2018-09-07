@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<body>
+
+<div class="row align-content-center panel-data">
+    <div class="col-1"></div>
+    <div class="col-9">
+        <div class="row align-content-center">
+            <div class="col-4">
+                <label>Number of users:</label>
+                <div class="wrap-input100 m-b-30 stat">
+                        <input class="input100" type="text" th:value="${usersNumber}" readonly="readonly"/>
+                    <span></span>
+                </div>
+            </div>
+            <div class="col-4">
+                <label>Number of rooms for 2 players:</label>
+                <div class="wrap-input100 m-b-30 stat">
+                        <input class="input100" type="text" th:value="${roomsNumberForTwo}" readonly="readonly"/>
+                    <span></span>
+                </div>
+            </div>
+            <div class="col-4">
+                <label>Number of rooms for 3 players:</label>
+                <div class="wrap-input100 m-b-30 stat">
+                        <input class="input100" type="text" th:value="${roomsNumberForThree}" readonly="readonly"/>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+        <div class="row align-content-center">
+            <div class="col-4">
+                <label>Number of rooms for 4 players:</label>
+                <div class="wrap-input100 m-b-30 stat">
+                    <input class="input100" type="text" th:value="${roomsNumberForFour}" readonly="readonly"/>
+                    <span></span>
+                </div>
+            </div>
+            <div class="col-4">
+                <label>Number of rooms for 5 players:</label>
+                <div class="wrap-input100 m-b-30 stat">
+                        <input class="input100" type="text" th:value="${roomsNumberForFive}" readonly="readonly"/>
+                    <span></span>
+                </div>
+            </div>
+            <div class="col-4">
+                <label>Number of rooms for 6 players:</label>
+                <div class="wrap-input100 m-b-30 stat">
+                        <input class="input100" type="text" th:value="${roomsNumberForSix}" readonly="readonly"/>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+        <div class="row align-content-center">
+            <div class="col-4">
+                <label>Number of rooms for 7 players:</label>
+                <div class="wrap-input100 m-b-30 stat">
+                        <input class="input100" type="text" th:value="${roomsNumberForSeven}" readonly="readonly"/>
+                    <span></span>
+                </div>
+            </div>
+            <div class="col-4">
+                <label>Number of rooms for 8 players:</label>
+                <div class="wrap-input100 m-b-30 stat">
+                        <input class="input100" type="text" th:value="${roomsNumberForEight}" readonly="readonly"/>
+                    <span></span>
+                </div>
+            </div>
+            <div class="col-4">
+                <label>Number of rooms with password:</label>
+                <div class="wrap-input100 m-b-30 stat">
+                        <input class="input100" type="text" th:value="${roomsNumberWithPassword}" readonly="readonly"/>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

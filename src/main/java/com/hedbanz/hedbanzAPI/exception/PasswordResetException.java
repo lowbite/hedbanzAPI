@@ -5,7 +5,7 @@ import com.hedbanz.hedbanzAPI.error.PasswordResetError;
 
 import java.text.MessageFormat;
 
-public class PasswordResetException extends RuntimeException{
+public class PasswordResetException extends RuntimeException implements ApiException {
     private final PasswordResetError error;
 
     public PasswordResetException(PasswordResetError error, Object... messageArguments) {

@@ -17,44 +17,52 @@
             <span class="title">Admin Panel</span>
         </div>
     </div>
-    <div class="row">
+    <div class="row panel">
         <div class="col-lg-2 col-3 align-content-center" id="sideBar">
             <div class="list-group list-group-flush">
-                <button type="button" class="list-group-item list-group-item-action align-content-center active">
+                <button type="button" id="version-btn"
+                        class="list-group-item list-group-item-action align-content-center active">
                     Application version
                 </button>
-                <button type="button" class="list-group-item list-group-item-action align-content-center">Dapibus ac
-                    facilisis in
+                <button type="button" id="notification-btn"
+                        class="list-group-item list-group-item-action align-content-center">
+                    Global notification
                 </button>
-                <button type="button" class="list-group-item list-group-item-action align-content-center">Morbi leo
-                    risus
+                <button type="button" id="feedback-btn"
+                        class="list-group-item list-group-item-action align-content-center">
+                    Feedback
                 </button>
-                <button type="button" class="list-group-item list-group-item-action align-content-center">Porta ac
-                    consectetur ac
+                <button type="button" id="game-stats-btn"
+                        class="list-group-item list-group-item-action align-content-center">
+                    Game statistic
                 </button>
-                <button type="button" class="list-group-item list-group-item-action align-content-center">Vestibulum at
-                    eros
+                <button type="button" id="advertise-btn"
+                        class="list-group-item list-group-item-action align-content-center">
+                    Advertise settings
                 </button>
             </div>
         </div>
-        <div class="col-9 ">
-            <div class="row mt-5">
-                <div class="col-md-4 offset-md-2 text-center error-block"></div>
-            </div>
-            <div class="row align-content-center version">
+        <div class="col-9 col-lg-10" id="info-panel">
+            <div class="row align-content-center panel-data">
                 <div class="col-2"></div>
                 <div class="col-4">
-                    <form class="app-form">
+                        <label class="label-font"> Application version</label>
                         <div class="wrap-input100 m-b-30">
-                            <input class="input100 app-version" type="text" name="version" placeholder="Application version"/>
+                            <input class="input100 app-version" type="text" th:value="${version}" name="version"
+                                   placeholder="Application version"/>
                             <span></span>
                         </div>
                         <div class="container-login100-form-btn m-b-20">
-                            <button class="login100-form-btn" type="submit">
+                            <button class="login100-form-btn" type="submit" onclick="updateVersion()">
                                 Update
                             </button>
                         </div>
-                    </form>
+                    <div class="success collapse">
+                        <span>Success</span>
+                    </div>
+                    <div class="error collapse">
+                        <span>Error</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -65,5 +73,6 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
         integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
         crossorigin="anonymous"></script>
+<script type="text/javascript" th:src="@{/js/panel_script.js}"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 package com.hedbanz.hedbanzAPI.error;
 
-public enum InputError {
+public enum InputError implements ApiError  {
     EMPTY_USER_ID(1, ErrorMessages.EMPTY_USER_ID),
     EMPTY_LOGIN(2, ErrorMessages.EMPTY_LOGIN_MESSAGE),
     EMPTY_PASSWORD(3, ErrorMessages.EMPTY_PASSWORD_MESSAGE),
@@ -36,7 +36,10 @@ public enum InputError {
     EMPTY_DEVICE_NAME(33, ErrorMessages.EMPTY_DEVICE_NAME),
     EMPTY_FEEDBACK_TEXT(34, ErrorMessages.EMPTY_FEEDBACK_TEXT),
     EMPTY_PRODUCT(35, ErrorMessages.EMPTY_PRODUCT),
-    EMPTY_DEVICE_VERSION(36, ErrorMessages.EMPTY_DEVICE_VERSION);
+    EMPTY_DEVICE_VERSION(36, ErrorMessages.EMPTY_DEVICE_VERSION),
+    EMPTY_MAX_PLAYERS(37, ErrorMessages.EMPTY_MAX_PLAYERS),
+    EMPTY_ADVERTISE_DELAY(38, ErrorMessages.EMPTY_ADVERTISE_DELAY),
+    EMPTY_ADVERTISE_TYPE(39, ErrorMessages.EMPTY_ADVERTISE_TYPE);
 
     private int errorCode;
     private String errorMessage;

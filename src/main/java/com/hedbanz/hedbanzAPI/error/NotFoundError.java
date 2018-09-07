@@ -1,6 +1,6 @@
 package com.hedbanz.hedbanzAPI.error;
 
-public enum NotFoundError {
+public enum NotFoundError implements ApiError  {
     NO_SUCH_USER_IN_ROOM(101, ErrorMessages.NO_SUCH_USER_IN_ROOM),
     NO_SUCH_QUESTION(102, ErrorMessages.NO_SUCH_QUESTION),
     NO_SUCH_USER(103, ErrorMessages.NO_SUCH_USER_MESSAGE),

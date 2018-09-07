@@ -24,14 +24,14 @@ public class GameServiceImpl implements GameService {
     private final RoomRepository roomRepository;
     private final PlayerRepository playerRepository;
 
-    public GameServiceImpl( RoomRepository roomRepository, PlayerRepository playerRepository) {
+    public GameServiceImpl(RoomRepository roomRepository, PlayerRepository playerRepository) {
         this.roomRepository = roomRepository;
         this.playerRepository = playerRepository;
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public Player startGuessing(Long roomId) {
-        if(roomId == null)
+        if (roomId == null)
             throw ExceptionFactory.create(InputError.INCORRECT_ROOM_ID);
         List<Player> players = playerRepository.findPlayersByRoomId(roomId);
         if (players == null) {
@@ -40,7 +40,7 @@ public class GameServiceImpl implements GameService {
         Player player = playerRepository.findOne(players.get(0).getId());
         player.setAttempt(1);
         Room room = roomRepository.findOne(roomId);
-        if(room.getGameStatus() == GameStatus.GUESSING_WORDS)
+        if (room.getGameStatus() == GameStatus.GUESSING_WORDS)
             throw ExceptionFactory.create(RoomError.GAME_ALREADY_STARTED);
         room.setGameStatus(GameStatus.GUESSING_WORDS);
         roomRepository.saveAndFlush(room);
@@ -50,42 +50,9 @@ public class GameServiceImpl implements GameService {
 
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
     public Player getNextGuessingPlayer(Long roomId) {
-        List<Player> players = playerRepository.findPlayersByRoomId(roomId);
+       /* List<Player> players = playerRepository.findPlayersByRoomId(roomId);
         if (players == null)
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM);
-        /*
-        int attempt;
-        int i = 0;
-
-        while (i < players.size()) {
-            attempt = players.get(i).getAttempt();
-            if (attempt != 0) {
-                resultPlayer = players.get(i);
-                if (attempt < MAX_GUESS_ATTEMPTS) {
-                    if (resultPlayer.getStatus() != PlayerStatus.ACTIVE) {
-                        playerRepository.updatePlayerAttempts(0, resultPlayer.getId());
-                        resultPlayer = getNextGuessingPlayerAfterCurrentPlayer(players, i);
-                    } else {
-                        resultPlayer.setAttempt(resultPlayer.getAttempt() + 1);
-                    }
-                    break;
-                } else {
-                    playerRepository.updatePlayerAttempts(0, resultPlayer.getId());
-                    resultPlayer = getNextGuessingPlayerAfterCurrentPlayer(players, i);
-                    break;
-                }
-            }
-            i++;
-        }
-
-        if (resultPlayer == null) {
-            resultPlayer = players.get(0);
-            resultPlayer.setAttempt(1);
-        }
-
-        if (isLastGuessingPlayer(players, resultPlayer.getId())) {
-            resultPlayer.setAttempt(-1);
-        }*/
 
         Player currentGuessingPlayer = null;
         Player nextGuessingPLayer = null;
@@ -118,7 +85,95 @@ public class GameServiceImpl implements GameService {
             nextGuessingPLayer.setAttempt(-1);
         }
         playerRepository.updatePlayerAttempts(nextGuessingPLayer.getAttempt(), nextGuessingPLayer.getId());
-        return (Player) nextGuessingPLayer.clone();
+        return (Player) nextGuessingPLayer.clone();*/
+
+        List<Player> players = playerRepository.findPlayersByRoomId(roomId);
+        if (players == null)
+            throw ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM);
+
+        Player currentGuessingPlayer = null;
+            Player nextGuessingPLayer = null;
+        int currentGuessingPlayerIndex = 0;
+        for (int i = 0; i < players.size(); i++) {
+            if (players.get(i).getAttempt() != 0) {
+                currentGuessingPlayer = players.get(i);
+                currentGuessingPlayerIndex = i;
+            }
+        }
+        if (currentGuessingPlayer.getAttempt() != -1) {
+            if (currentGuessingPlayer.getIsWinner()) {
+                currentGuessingPlayer.setAttempt(0);
+                nextGuessingPLayer = findNonAfkNextGuessingPlayer(currentGuessingPlayerIndex, players);
+                if (nextGuessingPLayer == null) {
+                    nextGuessingPLayer = findAfkNextGuessingPLayer(currentGuessingPlayerIndex, players);
+                }
+            } else if (currentGuessingPlayer.getAttempt() < MAX_GUESS_ATTEMPTS) {
+                if (currentGuessingPlayer.getStatus() == PlayerStatus.ACTIVE) {
+                    nextGuessingPLayer = currentGuessingPlayer;
+                    nextGuessingPLayer.setAttempt(nextGuessingPLayer.getAttempt() + 1);
+                } else {
+                    currentGuessingPlayer.setAttempt(0);
+                    nextGuessingPLayer = findNonAfkNextGuessingPlayer(currentGuessingPlayerIndex, players);
+                    if (nextGuessingPLayer == null) {
+                        nextGuessingPLayer = findAfkNextGuessingPLayer(currentGuessingPlayerIndex, players);
+                    }
+                }
+            } else if (currentGuessingPlayer.getAttempt() == MAX_GUESS_ATTEMPTS) {
+                currentGuessingPlayer.setAttempt(0);
+                nextGuessingPLayer = findNonAfkNextGuessingPlayer(currentGuessingPlayerIndex, players);
+                if (nextGuessingPLayer == null) {
+                    nextGuessingPLayer = findAfkNextGuessingPLayer(currentGuessingPlayerIndex, players);
+                }
+            }
+
+            if (isLastGuessingPlayer(players, nextGuessingPLayer.getId())) {
+                nextGuessingPLayer.setAttempt(-1);
+            }
+            playerRepository.save(nextGuessingPLayer);
+            playerRepository.save(currentGuessingPlayer);
+            return (Player) nextGuessingPLayer.clone();
+        }
+        return currentGuessingPlayer;
+    }
+
+    private Player findAfkNextGuessingPLayer(int currentGuessingPlayerIndex, List<Player> players) {
+        Player nextPlayer;
+        for (int i = currentGuessingPlayerIndex + 1; i < players.size(); i++) {
+            nextPlayer = players.get(i);
+            if (!nextPlayer.getIsWinner()) {
+                nextPlayer.setAttempt(1);
+                return nextPlayer;
+            }
+        }
+
+        for (int i = 0; i < currentGuessingPlayerIndex; i++) {
+            nextPlayer = players.get(i);
+            if (!nextPlayer.getIsWinner()) {
+                nextPlayer.setAttempt(1);
+                return nextPlayer;
+            }
+        }
+        return players.get(currentGuessingPlayerIndex);
+    }
+
+    private Player findNonAfkNextGuessingPlayer(int currentGuessingPlayerIndex, List<Player> players) {
+        Player nextPlayer;
+        for (int i = currentGuessingPlayerIndex + 1; i < players.size(); i++) {
+            nextPlayer = players.get(i);
+            if (nextPlayer.getStatus() == PlayerStatus.ACTIVE && !nextPlayer.getIsWinner()) {
+                nextPlayer.setAttempt(1);
+                return nextPlayer;
+            }
+        }
+
+        for (int i = 0; i < currentGuessingPlayerIndex; i++) {
+            nextPlayer = players.get(i);
+            if (nextPlayer.getStatus() == PlayerStatus.ACTIVE && !nextPlayer.getIsWinner()) {
+                nextPlayer.setAttempt(1);
+                return nextPlayer;
+            }
+        }
+        return null;
     }
 
     private Player getNextGuessingPlayerAfterCurrentPlayer(List<Player> players, int currentPlayerIndex) {
@@ -158,7 +213,7 @@ public class GameServiceImpl implements GameService {
 
     private boolean isLastGuessingPlayer(List<Player> players, long currentPlayerId) {
         for (Player player : players) {
-            if (!player.getIsWinner() && player.getId() != currentPlayerId)
+            if (!player.getIsWinner() && player.getId() != currentPlayerId && player.getStatus() != PlayerStatus.LEFT)
                 return false;
         }
         return true;
@@ -192,14 +247,18 @@ public class GameServiceImpl implements GameService {
 
         room.setGameStatus(GameStatus.WAITING_FOR_PLAYERS);
 
-        for (Player player : room.getPlayers()) {
-            if (player.getStatus() == PlayerStatus.LEFT)
+        Player player;
+        for (int i = 0; i < room.getPlayers().size(); i++) {
+            player = room.getPlayers().get(i);
+            if (player.getStatus() == PlayerStatus.LEFT) {
                 room.removePlayer(player);
-            else {
+                room.setCurrentPlayersNumber(room.getPlayers().size());
+                i--;
+            } else {
                 player.setIsWinner(false);
                 player.setAttempt(0);
                 player.setWord(null);
-                player.setWordSettingUserId(null);
+                player.setWordReceiverUserId(null);
             }
         }
         return roomRepository.saveAndFlush(room);
@@ -228,9 +287,9 @@ public class GameServiceImpl implements GameService {
         for (int i = 0; i < players.size(); i++) {
             player = players.get(i);
             if (i + 1 < players.size()) {
-                player.setWordSettingUserId(players.get(i + 1).getUser().getUserId());
+                player.setWordReceiverUserId(players.get(i + 1).getUser().getUserId());
             } else {
-                player.setWordSettingUserId(players.get(0).getUser().getUserId());
+                player.setWordReceiverUserId(players.get(0).getUser().getUserId());
             }
         }
         return roomRepository.saveAndFlush(room);
@@ -250,21 +309,17 @@ public class GameServiceImpl implements GameService {
         return roomRepository.saveAndFlush(room);
     }
 
-    @Override
-    public void updatePlayersGamesNumber(Long roomId) {
+    @Transactional
+    public void incrementPlayerGamesNumber(Long roomId, Long userId) {
         if (roomId == null) {
             throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
         }
 
-        List<Player> players = playerRepository.findPlayersByRoomId(roomId);
-        if(players == null)
-            throw ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM);
-
-        User user;
-        for (Player player: players) {
-            user = player.getUser();
-            user.setGamesNumber(user.getGamesNumber() + 1);
-            playerRepository.save(player);
-        }
+        Player player = playerRepository.findPlayerByUser_UserIdAndRoom_Id(userId, roomId);
+        if (player == null)
+            throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER_IN_ROOM);
+        User user = player.getUser();
+        user.setGamesNumber(user.getGamesNumber() + 1);
+        playerRepository.save(player);
     }
 }

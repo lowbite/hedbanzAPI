@@ -5,7 +5,7 @@ import com.hedbanz.hedbanzAPI.error.InputError;
 
 import java.text.MessageFormat;
 
-public class AuthenticationException extends RuntimeException{
+public class AuthenticationException extends RuntimeException implements ApiException {
     private final AuthenticationError error;
 
     public AuthenticationException(AuthenticationError error, Object... messageArguments) {

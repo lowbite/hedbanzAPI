@@ -1,6 +1,6 @@
 package com.hedbanz.hedbanzAPI.error;
 
-public enum PasswordResetError {
+public enum PasswordResetError implements ApiError  {
     KEY_WORD_IS_EXPIRED(251, ErrorMessages.KEY_WORD_IS_EXPIRED);
 
     private int errorCode;

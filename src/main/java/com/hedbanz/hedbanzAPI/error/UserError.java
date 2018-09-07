@@ -1,6 +1,6 @@
 package com.hedbanz.hedbanzAPI.error;
 
-public enum UserError {
+public enum UserError implements ApiError  {
     SUCH_LOGIN_ALREADY_USING(351, ErrorMessages.SUCH_LOGIN_ALREADY_USING_MESSAGE),
     SUCH_EMAIL_ALREADY_USING(352, ErrorMessages.SUCH_EMAIL_ALREADY_USING_MESSAGE),
     CANT_SEND_FRIENDSHIP_REQUEST(353, ErrorMessages.CANT_SEND_FRIENDSHIP_REQUEST),

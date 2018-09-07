@@ -95,7 +95,7 @@ public class PlayerServiceImpl implements PlayerService {
     Player wordSetter = playerRepository.findPlayerByUser_UserIdAndRoom_Id(word.getSenderId(), word.getRoomId());
         if(wordSetter ==null)
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER_IN_ROOM);
-    Player wordReceiver = playerRepository.findPlayerByUser_UserIdAndRoom_Id(wordSetter.getWordSettingUserId(), word.getRoomId());
+    Player wordReceiver = playerRepository.findPlayerByUser_UserIdAndRoom_Id(wordSetter.getWordReceiverUserId(), word.getRoomId());
         if(wordReceiver ==null)
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER_IN_ROOM);
         wordReceiver.setWord(word.getWord());
@@ -137,7 +137,7 @@ public class PlayerServiceImpl implements PlayerService {
         if (player == null)
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER_IN_ROOM);
         player.setIsWinner(true);
-        player.setAttempt(0);
+        //player.setAttempt(0);
         return playerRepository.saveAndFlush(player);
     }
 
@@ -162,5 +162,15 @@ public class PlayerServiceImpl implements PlayerService {
         timerTask.setTimeLeft(60000);
         Timer timer = new Timer();
         timer.schedule(timerTask, 0, period);
+    }
+
+    @Override
+    public Integer getActivePlayersNumber(List<Player> players) {
+        int activePlayersNumber = 0;
+        for (Player player: players) {
+            if(player.getStatus() == PlayerStatus.ACTIVE)
+                activePlayersNumber++;
+        }
+        return activePlayersNumber;
     }
 }

@@ -28,6 +28,9 @@ public interface ErrorMessages {
     String EMPTY_FEEDBACK_TEXT =  "Empty feedback text";
     String EMPTY_PRODUCT = "Empty product";
     String EMPTY_DEVICE_VERSION = "Empty device version";
+    String EMPTY_MAX_PLAYERS = "Empty max players";
+    String EMPTY_ADVERTISE_DELAY = "Empty advertise delay";
+    String EMPTY_ADVERTISE_TYPE = "Empty advertise type";
 
     String SUCH_LOGIN_ALREADY_USING_MESSAGE = "Such login already exist!";
     String SUCH_EMAIL_ALREADY_USING_MESSAGE = "Such email already using!";

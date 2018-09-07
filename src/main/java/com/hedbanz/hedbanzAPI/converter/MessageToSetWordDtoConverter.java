@@ -4,7 +4,7 @@ import com.hedbanz.hedbanzAPI.entity.Message;
 import com.hedbanz.hedbanzAPI.transfer.SetWordDto;
 import org.springframework.core.convert.converter.Converter;
 
-public class MessageToWordSettingDtoConverter implements Converter<Message, SetWordDto> {
+public class MessageToSetWordDtoConverter implements Converter<Message, SetWordDto> {
     @Override
     public SetWordDto convert(Message message) {
         UserToUserDtoConverter toUserDtoConverter = new UserToUserDtoConverter();

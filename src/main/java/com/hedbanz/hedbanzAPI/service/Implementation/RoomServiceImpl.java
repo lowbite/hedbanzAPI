@@ -12,6 +12,7 @@ import com.hedbanz.hedbanzAPI.error.InputError;
 import com.hedbanz.hedbanzAPI.error.NotFoundError;
 import com.hedbanz.hedbanzAPI.error.RoomError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
+import com.hedbanz.hedbanzAPI.model.AdminRoomFilterSpecification;
 import com.hedbanz.hedbanzAPI.model.RoomFilterSpecification;
 import com.hedbanz.hedbanzAPI.repository.*;
 import com.hedbanz.hedbanzAPI.service.RoomService;
@@ -99,8 +100,16 @@ public class RoomServiceImpl implements RoomService {
         return room;
     }
 
+    @Transactional
     public void deleteRoom(Long roomId) {
-        roomRepository.delete(roomId);
+        if (roomId == null)
+            throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
+        Room room = roomRepository.findOne(roomId);
+        if (room == null) {
+            throw ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM);
+        }
+        room.clearInvites();
+        roomRepository.delete(room);
     }
 
     @Transactional(readOnly = true, isolation = Isolation.READ_COMMITTED)
@@ -128,10 +137,14 @@ public class RoomServiceImpl implements RoomService {
         }
     }
 
-    @Cacheable("rooms")
+    @Transactional
+    public Long getRoomsCountByAdminFilter(RoomFilter roomFilter) {
+        return roomRepository.count(new AdminRoomFilterSpecification(roomFilter));
+    }
+
     @Transactional(readOnly = true)
     public List<Room> getAllRooms(Integer pageNumber) {
-        Pageable pageable = new PageRequest(pageNumber, Constants.PAGE_SIZE, Sort.Direction.DESC, "id");
+        Pageable pageable = new PageRequest(pageNumber, Constants.ROOM_PAGE_SIZE, Sort.Direction.DESC, "id");
         Page<Room> page = roomRepository.findAllRooms(pageable);
         return page.getContent();
     }
@@ -146,7 +159,7 @@ public class RoomServiceImpl implements RoomService {
 
     @Transactional(readOnly = true)
     public List<Room> getRoomsByFilter(RoomFilter roomFilter, Integer pageNumber) {
-        Pageable pageable = new PageRequest(pageNumber, Constants.PAGE_SIZE, Sort.Direction.DESC, "id");
+        Pageable pageable = new PageRequest(pageNumber, Constants.ROOM_PAGE_SIZE, Sort.Direction.DESC, "id");
         Page<Room> rooms = roomRepository.findAll(new RoomFilterSpecification(roomFilter), pageable);
         return rooms.getContent();
     }
@@ -159,7 +172,6 @@ public class RoomServiceImpl implements RoomService {
         return roomRepository.findAll(new RoomFilterSpecification(roomFilter, userId));
     }
 
-    @CacheEvict(value = "rooms", allEntries = true)
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public Room leaveUserFromRoom(Long userId, Long roomId) {
         if (userId == null) {
@@ -174,24 +186,27 @@ public class RoomServiceImpl implements RoomService {
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER);
 
         Room foundRoom = roomRepository.findOne(roomId);
-        Player player = foundRoom.getPlayerByLogin(user.getLogin());
-        if (player == null)
+        Player leavingPlayer = foundRoom.getPlayerByLogin(user.getLogin());
+        if (leavingPlayer == null)
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER_IN_ROOM);
 
         if (foundRoom.getGameStatus() == GameStatus.GUESSING_WORDS || foundRoom.getGameStatus() == GameStatus.GAME_OVER) {
-            player.setStatus(PlayerStatus.LEFT);
-            playerRepository.saveAndFlush(player);
+            leavingPlayer.setStatus(PlayerStatus.LEFT);
+            playerRepository.saveAndFlush(leavingPlayer);
         } else if (foundRoom.getGameStatus() == GameStatus.SETTING_WORDS) {
-            for (Player roomPlayer : foundRoom.getPlayers()) {
-                if (roomPlayer.getWordSettingUserId().equals(player.getUser().getUserId())) {
-                    roomPlayer.setWordSettingUserId(player.getWordSettingUserId());
+            for (Player player : foundRoom.getPlayers()) {
+                if (player.getWordReceiverUserId().equals(leavingPlayer.getUser().getUserId())) {
+                    player.setWordReceiverUserId(leavingPlayer.getWordReceiverUserId());
+                }
+                if(leavingPlayer.getWord() != null && player.getUser().getUserId().equals(leavingPlayer.getWordReceiverUserId())){
+                    player.setWord(leavingPlayer.getWord());
                 }
             }
-            foundRoom.removePlayer(player);
+            foundRoom.removePlayer(leavingPlayer);
             foundRoom.setCurrentPlayersNumber(foundRoom.getPlayers().size());
             foundRoom = roomRepository.saveAndFlush(foundRoom);
         } else if (foundRoom.getGameStatus() == GameStatus.WAITING_FOR_PLAYERS) {
-            foundRoom.removePlayer(player);
+            foundRoom.removePlayer(leavingPlayer);
             foundRoom.setCurrentPlayersNumber(foundRoom.getPlayers().size());
             foundRoom = roomRepository.saveAndFlush(foundRoom);
         }
@@ -199,7 +214,6 @@ public class RoomServiceImpl implements RoomService {
     }
 
 
-    @CacheEvict(value = "rooms", allEntries = true)
     @Transactional(isolation = Isolation.READ_COMMITTED, timeout = 5)
     public Room addUserToRoom(Long userId, Long roomId, String password) {
         if (userId == null) {
@@ -231,6 +245,10 @@ public class RoomServiceImpl implements RoomService {
             if (!TextUtils.isEmpty(foundRoom.getPassword()) && !TextUtils.isEmpty(password))
                 if (!foundRoom.getPassword().equals(password))
                     throw ExceptionFactory.create(RoomError.WRONG_PASSWORD);
+            if(TextUtils.isEmpty(password) && !TextUtils.isEmpty(foundRoom.getPassword()) ) {
+                if(!user.isInvitedToRoom(foundRoom))
+                    throw ExceptionFactory.create(RoomError.WRONG_PASSWORD);
+            }
             player = conversionService.convert(user, Player.class);
             player.setStatus(PlayerStatus.ACTIVE);
             player.setAttempt(0);

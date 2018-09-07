@@ -11,7 +11,8 @@ public enum  NotificationMessageType {
     GAME_OVER(8),
     NEW_ROOM_CREATED(9),
     LAST_PLAYER(10),
-    APP_NEW_VERSION(20);
+    APP_NEW_VERSION(20),
+    GLOBAL_NOTIFICATION(21);
 
     private int code;
 

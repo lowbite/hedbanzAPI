@@ -9,7 +9,7 @@ import static javax.persistence.FetchType.EAGER;
 
 @Entity(name = "Message")
 @Table(name = "message")
-public class Message implements Cloneable {
+public class Message extends AuditModel implements Cloneable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "message_id")
@@ -24,9 +24,6 @@ public class Message implements Cloneable {
     @Column(name = "type")
     @Enumerated(EnumType.STRING)
     private MessageType type;
-
-    @Column(name = "create_date")
-    private Timestamp createDate;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = EAGER)
     private Question question;
@@ -57,14 +54,6 @@ public class Message implements Cloneable {
 
     public void setType(MessageType type) {
         this.type = type;
-    }
-
-    public Timestamp getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(Timestamp createDate) {
-        this.createDate = createDate;
     }
 
     public User getSenderUser() {
@@ -105,8 +94,7 @@ public class Message implements Cloneable {
         if (id != null ? !id.equals(message.id) : message.id != null) return false;
         if (senderUser != null ? !senderUser.equals(message.senderUser) : message.senderUser != null) return false;
         if (text != null ? !text.equals(message.text) : message.text != null) return false;
-        if (type != null ? !type.equals(message.type) : message.type != null) return false;
-        return createDate != null ? createDate.equals(message.createDate) : message.createDate == null;
+        return type != null ? !type.equals(message.type) : message.type != null;
     }
 
     @Override
@@ -114,7 +102,6 @@ public class Message implements Cloneable {
         int result = senderUser != null ? senderUser.hashCode() : 0;
         result = 31 * result + (text != null ? text.hashCode() : 0);
         result = 31 * result + (type != null ? type.hashCode() : 0);
-        result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
         return result;
     }
 
@@ -140,7 +127,7 @@ public class Message implements Cloneable {
                 .setRoom(room)
                 .setSenderUser(senderUser)
                 .setType(type)
-                .setCreateDate(createDate)
+                .setCreateDate(new Timestamp(getCreatedAt().getTime()))
                 .setId(id)
                 .build();
     }
@@ -175,7 +162,7 @@ public class Message implements Cloneable {
         }
 
         public Builder setCreateDate(Timestamp createDate) {
-            Message.this.setCreateDate(createDate);
+            Message.this.setCreatedAt(createDate);
             return this;
         }
 

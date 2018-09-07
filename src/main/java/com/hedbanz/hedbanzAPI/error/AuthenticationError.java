@@ -1,6 +1,6 @@
 package com.hedbanz.hedbanzAPI.error;
 
-public enum  AuthenticationError {
+public enum  AuthenticationError implements ApiError {
     INVALID_JWT_TOKEN(401, ErrorMessages.INVALID_JWT_TOKEN),
     EXPIRED_JWT_TOKEN(402, ErrorMessages.EXPIRED_JWT_TOKEN),
     UNSUPPORTED_JWT_TOKEN(403, ErrorMessages.UNSUPPORTED_JWT_TOKEN),
@@ -9,6 +9,7 @@ public enum  AuthenticationError {
 
     private int errorCode;
     private String errorMessage;
+
     AuthenticationError(int errorCode, String errorMessage){
         this.errorCode = errorCode;
         this.errorMessage = errorMessage;

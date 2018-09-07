@@ -1,6 +1,6 @@
 package com.hedbanz.hedbanzAPI.error;
 
-public enum RoomError {
+public enum RoomError implements ApiError {
     WRONG_PASSWORD(301, ErrorMessages.INCORRECT_PASSWORD),
     ROOM_FULL(302, ErrorMessages.ROOM_IS_FULL),
     CANT_START_GAME(303, ErrorMessages.CANT_START_GAME),

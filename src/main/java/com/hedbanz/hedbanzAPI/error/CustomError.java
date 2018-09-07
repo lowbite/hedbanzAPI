@@ -1,6 +1,6 @@
 package com.hedbanz.hedbanzAPI.error;
 
-public class CustomError {
+public class CustomError implements ApiError{
     private int errorCode;
     private String errorMessage;
 

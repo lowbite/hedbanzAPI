@@ -4,6 +4,7 @@ import com.corundumstudio.socketio.BroadcastOperations;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.hedbanz.hedbanzAPI.constant.PlayerStatus;
 import com.hedbanz.hedbanzAPI.entity.Player;
+import com.hedbanz.hedbanzAPI.entity.Room;
 import com.hedbanz.hedbanzAPI.model.Word;
 
 import java.util.List;
@@ -20,4 +21,6 @@ public interface PlayerService {
     Player setPlayerWinner(Long userId, Long roomId);
 
     void startAfkCountdown(Long userId, Long roomId, BroadcastOperations operations);
+
+    Integer getActivePlayersNumber(List<Player> players);
 }

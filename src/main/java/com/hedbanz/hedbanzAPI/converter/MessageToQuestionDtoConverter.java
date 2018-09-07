@@ -4,6 +4,7 @@ import com.hedbanz.hedbanzAPI.entity.Message;
 import com.hedbanz.hedbanzAPI.transfer.QuestionDto;
 import org.springframework.core.convert.converter.Converter;
 
+import java.sql.Timestamp;
 import java.util.stream.Collectors;
 
 public class MessageToQuestionDtoConverter implements Converter<Message, QuestionDto> {
@@ -16,7 +17,7 @@ public class MessageToQuestionDtoConverter implements Converter<Message, Questio
                 .setSenderUser(toUserDtoConverter.convert(message.getSenderUser()))
                 .setRoomId(message.getRoom().getId())
                 .setQuestionId(message.getQuestion().getId())
-                .setCreateDate(message.getCreateDate())
+                .setCreateDate(new Timestamp(message.getCreatedAt().getTime()))
                 .setText(message.getText())
                 .setType(message.getType())
                 .setNoVoters(message.getQuestion().getNoVoters() != null ?

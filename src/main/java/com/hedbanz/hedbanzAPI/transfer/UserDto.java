@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import java.sql.Timestamp;
 
 public class UserDto {
-
     private Long id;
     private String login;
     private String password;

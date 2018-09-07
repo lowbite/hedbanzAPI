@@ -25,15 +25,15 @@ public class Player implements Cloneable{
     @NotNull
     private PlayerStatus status;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "room_id")
     private Room room;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "user_id")
     private User user;
 
-    private Long wordSettingUserId;
+    private Long wordReceiverUserId;
 
     @Column(columnDefinition = "tinyint(1) default 0")
     private boolean isWinner;
@@ -89,12 +89,12 @@ public class Player implements Cloneable{
         this.user = user;
     }
 
-    public Long getWordSettingUserId() {
-        return wordSettingUserId;
+    public Long getWordReceiverUserId() {
+        return wordReceiverUserId;
     }
 
-    public void setWordSettingUserId(Long wordSettingUserId) {
-        this.wordSettingUserId = wordSettingUserId;
+    public void setWordReceiverUserId(Long wordReceiverUserId) {
+        this.wordReceiverUserId = wordReceiverUserId;
     }
 
     public boolean getIsWinner() {
@@ -138,7 +138,7 @@ public class Player implements Cloneable{
                 .setIsWinner(isWinner)
                 .setStatus(status)
                 .setWord(word)
-                .setWordSettingUserId(wordSettingUserId)
+                .setWordSettingUserId(wordReceiverUserId)
                 .build();
     }
 
@@ -177,7 +177,7 @@ public class Player implements Cloneable{
         }
 
         public PlayerBuilder setWordSettingUserId(Long userId){
-            Player.this.setWordSettingUserId(userId);
+            Player.this.setWordReceiverUserId(userId);
             return this;
         }
 

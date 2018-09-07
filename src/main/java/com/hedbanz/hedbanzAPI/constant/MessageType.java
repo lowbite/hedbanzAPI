@@ -9,7 +9,8 @@ public enum MessageType {
     USER_RETURNED(14),
     USER_QUESTION(15),
     USER_WIN(22),
-    GAME_OVER(24);
+    GAME_OVER(24),
+    WAITING_FOR_PLAYERS(25);
 
 
     private int code;

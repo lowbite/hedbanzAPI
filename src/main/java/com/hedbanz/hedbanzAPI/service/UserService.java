@@ -28,6 +28,8 @@ public interface UserService {
 
     Long getFriendsNumber(Long userId);
 
+    List<String> getAllFcmTokens();
+
     void setUserFcmToken(Long userId, String fcmToken);
 
     void releaseUserFcmToken(Long userId);
@@ -44,5 +46,5 @@ public interface UserService {
 
     User updateUserInfo(User user);
 
-    void saveFeedback(Feedback feedback);
+    Long getUserNumber();
 }

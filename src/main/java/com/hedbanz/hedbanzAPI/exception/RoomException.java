@@ -4,7 +4,7 @@ import com.hedbanz.hedbanzAPI.error.RoomError;
 
 import java.text.MessageFormat;
 
-public class RoomException extends RuntimeException {
+public class RoomException extends RuntimeException implements ApiException {
     private final RoomError error;
 
     public RoomException(RoomError error, Object... messageArguments) {

@@ -13,7 +13,6 @@ import com.hedbanz.hedbanzAPI.constant.NotificationMessageType;
 import com.hedbanz.hedbanzAPI.constant.PlayerStatus;
 import com.hedbanz.hedbanzAPI.entity.*;
 import com.hedbanz.hedbanzAPI.error.NotFoundError;
-import com.hedbanz.hedbanzAPI.error.RoomError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
 import com.hedbanz.hedbanzAPI.model.*;
 import com.hedbanz.hedbanzAPI.service.*;
@@ -335,7 +334,7 @@ public class RoomEventHandler {
             Message message = messageService.getSettingWordMessage(data.getRoomId(), data.getSenderId());
             SetWordDto setWordDto = conversionService.convert(message, SetWordDto.class);
             Player wordSetter = playerService.getPlayer(setWordDto.getSenderUser().getId(), setWordDto.getRoomId());
-            Player wordReceiver = playerService.getPlayer(wordSetter.getWordSettingUserId(), setWordDto.getRoomId());
+            Player wordReceiver = playerService.getPlayer(wordSetter.getWordReceiverUserId(), setWordDto.getRoomId());
             setWordDto.setWordReceiverUser(conversionService.convert(wordReceiver.getUser(), UserDto.class));
             setWordDto.setWord(wordReceiver.getWord());
             socketIONamespace.getRoomOperations(String.valueOf(data.getRoomId())).sendEvent(SERVER_THOUGHT_PLAYER_WORD_EVENT, setWordDto);
@@ -430,7 +429,7 @@ public class RoomEventHandler {
         Message message = messageService.getSettingWordMessage(room.getId(), player.getUser().getUserId());
         SetWordDto setWordDto = conversionService.convert(message, SetWordDto.class);
         Player wordSetter = playerService.getPlayer(setWordDto.getSenderUser().getId(), setWordDto.getRoomId());
-        Player wordReceiver = playerService.getPlayer(wordSetter.getWordSettingUserId(), setWordDto.getRoomId());
+        Player wordReceiver = playerService.getPlayer(wordSetter.getWordReceiverUserId(), setWordDto.getRoomId());
         setWordDto.setWordReceiverUser(conversionService.convert(wordReceiver.getUser(), UserDto.class));
         client.sendEvent(SERVER_SET_PLAYER_WORD_EVENT, setWordDto);
     }

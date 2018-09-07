@@ -30,13 +30,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         protected void configure(HttpSecurity http) throws Exception {
             http
                     .authorizeRequests()
-                        .anyRequest()
-                        .permitAll()
-                        .and()
+                    .anyRequest()
+                    .permitAll()
+                    .and()
                     .formLogin()
-                        .disable()
+                    .disable()
                     .csrf()
-                        .disable();
+                    .disable();
         }
     }
 
@@ -73,7 +73,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .and()
                     .addFilterBefore(new JwtAuthenticationFilter(tokenProvider, customUserDetailsService),
                             UsernamePasswordAuthenticationFilter.class)
-                    .addFilterBefore(new ExceptionHandlerFilter(),JwtAuthenticationFilter.class)
+                    .addFilterBefore(new ExceptionHandlerFilter(), JwtAuthenticationFilter.class)
                     .cors()
                     .and()
                     .csrf()
@@ -128,15 +128,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         protected void configure(HttpSecurity http) throws Exception {
             http.antMatcher("/admin/**")
                     .authorizeRequests()
-                    .antMatchers("/admin/**").hasRole("ADMIN")
-                    .and()
+                        .antMatchers("/admin/**").hasRole("ADMIN")
+                        .and()
                     .formLogin()
-                    .loginPage("/admin/login")
-                    .defaultSuccessUrl("/admin/panel")
-                    .permitAll()
-                    .and()
+                        .loginPage("/admin/login")
+                        .defaultSuccessUrl("/admin/panel")
+                        .permitAll()
+                        .and()
                     .logout()
-                    .permitAll();
+                        .permitAll()
+                        .and()
+                    .csrf()
+                        .disable();
         }
     }
 }

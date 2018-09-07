@@ -7,7 +7,7 @@ import java.sql.Timestamp;
 
 @Entity
 @Table(name = "feedback")
-public class Feedback {
+public class Feedback extends AuditModel{
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -34,14 +34,10 @@ public class Feedback {
     @Column(name = "product")
     private String product;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    @CreatedDate
-    private Timestamp createdAt;
-
     public Feedback() {
     }
 
-    public Feedback(String feedbackText, User user, Integer deviceVersion, String deviceName, String deviceModel, String deviceManufacturer, String product, Timestamp createdAt) {
+    public Feedback(String feedbackText, User user, Integer deviceVersion, String deviceName, String deviceModel, String deviceManufacturer, String product) {
         this.feedbackText = feedbackText;
         this.user = user;
         this.deviceVersion = deviceVersion;
@@ -49,7 +45,6 @@ public class Feedback {
         this.deviceModel = deviceModel;
         this.deviceManufacturer = deviceManufacturer;
         this.product = product;
-        this.createdAt = createdAt;
     }
 
     public Long getId() {
@@ -116,14 +111,6 @@ public class Feedback {
         this.product = product;
     }
 
-    public Timestamp getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Timestamp createdAt) {
-        this.createdAt = createdAt;
-    }
-
     public static class Builder {
         private String feedbackText;
         private User user;
@@ -175,7 +162,7 @@ public class Feedback {
         }
 
         public Feedback build() {
-            return new Feedback(feedbackText, user, deviceVersion, deviceName, deviceModel, deviceManufacturer, product, createdAt);
+            return new Feedback(feedbackText, user, deviceVersion, deviceName, deviceModel, deviceManufacturer, product);
         }
     }
 }

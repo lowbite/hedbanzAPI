@@ -20,7 +20,7 @@ public class Room implements Serializable{
     @NotNull
     private String name;
 
-    @Column(name = "password", nullable = false)
+    @Column(name = "password")
     private String password;
 
     @Column(name = "max_players", nullable = false)
@@ -44,6 +44,12 @@ public class Room implements Serializable{
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "room")
     private List<Message> messages = new ArrayList<>();
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinTable(name = "invite",
+            joinColumns = @JoinColumn(name = "room_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id"))
+    private Set<User> invitedUsers = new HashSet<>();
 
     @Column(name = "admin")
     @NotNull
@@ -181,22 +187,22 @@ public class Room implements Serializable{
         return players.contains(player);
     }
 
-    public boolean addPlayer(Player player){
+    public void addPlayer(Player player){
         if(this.players != null && !this.players.contains(player)) {
             player.setRoom(this);
             this.players.add(player);
-            return true;
         }
-        return false;
     }
 
-    public boolean removePlayer(Player player){
+    public void removePlayer(Player player){
         if(this.players != null && this.players.contains(player)){
             player.setRoom(null);
             this.players.remove(player);
-            return true;
         }
-        return false;
+    }
+
+    public void clearPlayers(){
+        players.clear();
     }
 
     public Player getPlayerByLogin(String login){
@@ -226,6 +232,26 @@ public class Room implements Serializable{
 
     public void setIconId(Long iconId) {
         this.iconId = iconId;
+    }
+
+    public Set<User> getInvitedUsers() {
+        return invitedUsers;
+    }
+
+    public void setInvitedUsers(Set<User> invitedUsers) {
+        this.invitedUsers = invitedUsers;
+    }
+
+    public void addInvitedUser(User user){
+        this.invitedUsers.add(user);
+    }
+
+    public void removeInvitedUser(User user){
+        this.invitedUsers.remove(user);
+    }
+
+    public void clearInvites(){
+        invitedUsers = null;
     }
 
     public static class Builder {

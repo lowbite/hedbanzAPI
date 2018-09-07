@@ -4,7 +4,7 @@ import com.hedbanz.hedbanzAPI.error.MessageError;
 
 import java.text.MessageFormat;
 
-public class MessageException extends RuntimeException{
+public class MessageException extends RuntimeException  implements ApiException {
     private final MessageError error;
 
     public MessageException(MessageError error, Object... messageArguments) {

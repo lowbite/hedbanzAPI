@@ -1,4 +1,5 @@
 package com.hedbanz.hedbanzAPI.transfer;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.hedbanz.hedbanzAPI.constant.MessageType;
 import com.hedbanz.hedbanzAPI.deserializer.QuestionDtoDeserializer;
@@ -6,7 +7,6 @@ import com.hedbanz.hedbanzAPI.deserializer.QuestionDtoDeserializer;
 import java.util.Date;
 import java.util.List;
 
-@JsonDeserialize(using = QuestionDtoDeserializer.class)
 public class QuestionDto extends MessageDto{
     private Long questionId;
     private List<PlayerDto> yesVoters;
@@ -14,6 +14,9 @@ public class QuestionDto extends MessageDto{
     private List<PlayerDto> winVoters;
     private Integer attempt;
     private Integer vote;
+
+    public QuestionDto() {
+    }
 
     private QuestionDto(Long questionId, Long clientMessageId, UserDto senderUser, Long roomId, String text,
                         Integer type, Date createDate, List<PlayerDto> yesVoters, List<PlayerDto> noVoters, List<PlayerDto> winVoters, Integer attempt, Integer vote) {
@@ -39,6 +42,7 @@ public class QuestionDto extends MessageDto{
         return questionId;
     }
 
+    @JsonSetter("questionId")
     public void setQuestionId(Long questionId) {
         this.questionId = questionId;
     }
@@ -47,6 +51,7 @@ public class QuestionDto extends MessageDto{
         return yesVoters;
     }
 
+    @JsonSetter("yesVoters")
     public void setYesVoters(List<PlayerDto> yesVoters) {
         this.yesVoters = yesVoters;
     }
@@ -55,6 +60,7 @@ public class QuestionDto extends MessageDto{
         return noVoters;
     }
 
+    @JsonSetter("noVoters")
     public void setNoVoters(List<PlayerDto> noVoters) {
         this.noVoters = noVoters;
     }
@@ -63,6 +69,7 @@ public class QuestionDto extends MessageDto{
         return vote;
     }
 
+    @JsonSetter("vote")
     public void setVote(Integer vote) {
         this.vote = vote;
     }
@@ -71,6 +78,7 @@ public class QuestionDto extends MessageDto{
         return attempt;
     }
 
+    @JsonSetter("attempt")
     public void setAttempt(Integer attempt) {
         this.attempt = attempt;
     }
@@ -79,6 +87,7 @@ public class QuestionDto extends MessageDto{
         return winVoters;
     }
 
+    @JsonSetter("winVoters")
     public void setWinVoters(List<PlayerDto> winVoters) {
         this.winVoters = winVoters;
     }

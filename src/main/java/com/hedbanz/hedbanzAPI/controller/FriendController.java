@@ -2,6 +2,7 @@ package com.hedbanz.hedbanzAPI.controller;
 
 import com.hedbanz.hedbanzAPI.constant.NotificationMessageType;
 import com.hedbanz.hedbanzAPI.constant.ResultStatus;
+import com.hedbanz.hedbanzAPI.entity.Room;
 import com.hedbanz.hedbanzAPI.entity.User;
 import com.hedbanz.hedbanzAPI.error.UserError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
@@ -11,7 +12,8 @@ import com.hedbanz.hedbanzAPI.service.FcmService;
 import com.hedbanz.hedbanzAPI.service.RoomService;
 import com.hedbanz.hedbanzAPI.service.UserService;
 import com.hedbanz.hedbanzAPI.transfer.InviteDto;
-import com.hedbanz.hedbanzAPI.transfer.UserToRoomDto;
+import com.hedbanz.hedbanzAPI.transfer.InvitePushDto;
+import com.hedbanz.hedbanzAPI.transfer.PushMessageDto;
 import org.apache.http.util.TextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -42,7 +44,7 @@ public class FriendController {
                         .setNotification(new Notification("New friend request!",
                                 "Player " + friend.getLogin() + " wants to add to his friend list."))
                         .setData(new FcmPush.FcmPushData<>(NotificationMessageType.FRIEND.getCode(),
-                                MessageNotification.Builder().setSenderName(user.getLogin()).build()))
+                                new PushMessageDto.Builder().setSenderName(user.getLogin()).build()))
                         .setPriority("normal")
                         .build();
                 fcmService.sendPushNotification(fcmPush);
@@ -87,16 +89,17 @@ public class FriendController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseBody<InviteDto> inviteFriendIntoRoom(@RequestBody InviteDto inviteDto) {
         roomService.checkPlayerInRoom(inviteDto.getSenderId(), inviteDto.getRoomId());
-        for (Long userId : inviteDto.getInvitedUserId()) {
+        for (Long userId : inviteDto.getInvitedUserIds()) {
             User user = userService.getUser(userId);
             if (!TextUtils.isEmpty(user.getFcmToken())) {
                 userService.addInvite(userId, inviteDto.getRoomId());
-                UserToRoomDto userToRoomDto = new UserToRoomDto.Builder()
-                        .setUserId(userId)
+                Room room = roomService.getRoom(inviteDto.getRoomId());
+                PushMessageDto pushMessageDto = new PushMessageDto.Builder()
+                        .setSenderName(user.getLogin())
+                        .setRoomName(room.getName())
                         .setRoomId(inviteDto.getRoomId())
-                        .setPassword(inviteDto.getPassword())
                         .build();
-                FcmPush.FcmPushData<UserToRoomDto> fcmPushData = new FcmPush.FcmPushData<>(NotificationMessageType.INVITE.getCode(), userToRoomDto);
+                FcmPush.FcmPushData<PushMessageDto> fcmPushData = new FcmPush.FcmPushData<>(NotificationMessageType.INVITE.getCode(), pushMessageDto);
                 FcmPush fcmPush = new FcmPush.Builder()
                         .setTo(user.getFcmToken())
                         .setNotification(new Notification("Invite to room", "Friend inviting you to room"))

@@ -1,19 +1,15 @@
 package com.hedbanz.hedbanzAPI.entity;
 
-import org.springframework.data.annotation.CreatedDate;
-
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.sql.Timestamp;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 @Entity
 @Table(name = "user")
-public class User implements Serializable {
+public class User extends AuditModel implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "user_id")
@@ -31,10 +27,6 @@ public class User implements Serializable {
     @NotNull
     private Integer money = 0;
 
-    @Column(name = "registration_date", nullable = false, updatable = false)
-    @CreatedDate
-    private Timestamp registrationDate;
-
     @Column(name = "icon_id", nullable = false)
     @NotNull
     private Integer iconId = 0;
@@ -49,19 +41,16 @@ public class User implements Serializable {
     @Column(name = "fcm_token")
     private String fcmToken;
 
-    @ManyToMany(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "friendship",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "friend_id"))
     private List<User> friends;
 
-    @ManyToMany(cascade = CascadeType.PERSIST)
-    @JoinTable(name = "invite",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "room_id"))
-    private List<Room> invitedToRooms;
+    @ManyToMany(mappedBy = "invitedUsers", cascade = CascadeType.PERSIST)
+    private Set<Room> invitedToRooms = new HashSet<>();
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
@@ -71,23 +60,21 @@ public class User implements Serializable {
 
     }
 
-    public User(Long userId, String login, Integer money, Date registrationDate, Integer iconId, String email) {
+    public User(Long userId, String login, Integer money, Integer iconId, String email) {
         this.userId = userId;
         this.login = login;
         this.money = money;
-        this.registrationDate = new Timestamp(registrationDate.getTime());
         this.iconId = iconId;
         this.email = email;
     }
 
-    public User(Long userId, String login, String password, Integer money, Timestamp registrationDate, Integer iconId,
+    public User(Long userId, String login, String password, Integer money, Integer iconId,
                 String email, Long gamesNumber, String fcmToken,
-                List<User> friends, List<Room> invitedToRooms, Set<Role> roles) {
+                List<User> friends, Set<Room> invitedToRooms, Set<Role> roles) {
         this.userId = userId;
         this.login = login;
         this.password = password;
         this.money = money;
-        this.registrationDate = registrationDate;
         this.iconId = iconId;
         this.email = email;
         this.gamesNumber = gamesNumber;
@@ -129,14 +116,6 @@ public class User implements Serializable {
         this.money = money;
     }
 
-    public Timestamp getRegistrationDate() {
-        return registrationDate;
-    }
-
-    public void setRegistrationDate(Timestamp registrationDate) {
-        this.registrationDate = registrationDate;
-    }
-
     public Integer getIconId() {
         return iconId;
     }
@@ -169,7 +148,7 @@ public class User implements Serializable {
         return friends;
     }
 
-    public List<Room> getInvitedToRooms() {
+    public Set<Room> getInvitedToRooms() {
         return invitedToRooms;
     }
 
@@ -197,18 +176,18 @@ public class User implements Serializable {
         return false;
     }
 
-    public boolean addInvite(Room room) {
-        if (!invitedToRooms.contains(room)) {
-            invitedToRooms.add(room);
-            return true;
-        }
-        return false;
+    public void addInvite(Room room) {
+        invitedToRooms.add(room);
     }
 
-    public boolean removeInvite(Room room) {
-        if (invitedToRooms.contains(room)) {
-            invitedToRooms.remove(room);
-            return true;
+    public void removeInvite(Room room) {
+        invitedToRooms.remove(room);
+    }
+
+    public boolean isInvitedToRoom(Room room) {
+        for (Room roomInvited : invitedToRooms) {
+            if (roomInvited.getId().equals(room.getId()))
+                return true;
         }
         return false;
     }
@@ -268,11 +247,6 @@ public class User implements Serializable {
             return this;
         }
 
-        public Builder setRegistrationDate(Timestamp registrationDate) {
-            User.this.setRegistrationDate(registrationDate);
-            return this;
-        }
-
         public Builder setIconId(Integer iconId) {
             User.this.setIconId(iconId);
             return this;
@@ -288,12 +262,12 @@ public class User implements Serializable {
             return this;
         }
 
-        public Builder setRoles(Set<Role> roles){
+        public Builder setRoles(Set<Role> roles) {
             User.this.setRoles(roles);
             return this;
         }
 
-        public Builder setGamesNumber(Long gamesNumber){
+        public Builder setGamesNumber(Long gamesNumber) {
             User.this.setGamesNumber(gamesNumber);
             return this;
         }

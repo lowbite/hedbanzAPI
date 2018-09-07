@@ -1,6 +1,6 @@
 package com.hedbanz.hedbanzAPI.error;
 
-public enum FcmError {
+public enum FcmError implements ApiError  {
     CANT_SEND_MESSAGE_NOTIFICATION(151, ErrorMessages.CANT_SEND_MESSAGE_NOTIFICATION);
     private int errorCode;
     private String errorMessage;

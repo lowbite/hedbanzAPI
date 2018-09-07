@@ -7,6 +7,7 @@ import com.hedbanz.hedbanzAPI.error.InputError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
 import com.hedbanz.hedbanzAPI.model.ResponseBody;
 import com.hedbanz.hedbanzAPI.security.JwtTokenProvider;
+import com.hedbanz.hedbanzAPI.service.FeedbackService;
 import com.hedbanz.hedbanzAPI.transfer.*;
 import com.hedbanz.hedbanzAPI.entity.User;
 import com.hedbanz.hedbanzAPI.service.UserService;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping(value = "/user")
 public class UserController {
+    private final FeedbackService feedbackService;
     private final UserService userService;
     private final ConversionService conversionService;
     private final AuthenticationManager authenticationManager;
@@ -31,8 +33,9 @@ public class UserController {
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserController(UserService userService, @Qualifier("APIConversionService") ConversionService conversionService,
+    public UserController(FeedbackService feedbackService, UserService userService, @Qualifier("APIConversionService") ConversionService conversionService,
                           AuthenticationManager authenticationManager, JwtTokenProvider tokenProvider, PasswordEncoder passwordEncoder) {
+        this.feedbackService = feedbackService;
         this.userService = userService;
         this.conversionService = conversionService;
         this.authenticationManager = authenticationManager;
@@ -125,7 +128,7 @@ public class UserController {
     @RequestMapping(method = RequestMethod.PUT, value = "/feedback", consumes = "application/json")
     @ResponseStatus(HttpStatus.OK)
     public ResponseBody<?> saveFeedback(@RequestBody FeedbackDto feedbackDto){
-        userService.saveFeedback(conversionService.convert(feedbackDto, Feedback.class));
-        return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, null);
+        feedbackService.saveFeedback(conversionService.convert(feedbackDto, Feedback.class));
+        return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, true);
     }
 }

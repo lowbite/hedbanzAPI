@@ -5,7 +5,7 @@ import com.hedbanz.hedbanzAPI.error.MessageError;
 
 import java.text.MessageFormat;
 
-public class InputException extends RuntimeException{
+public class InputException extends RuntimeException  implements ApiException {
     private final InputError error;
 
     public InputException(InputError error, Object... messageArguments) {

@@ -5,6 +5,8 @@ import com.hedbanz.hedbanzAPI.transfer.UserDto;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
+import java.sql.Timestamp;
+
 @Component
 public class UserToUserDtoConverter implements Converter<User, UserDto> {
     @Override
@@ -15,7 +17,7 @@ public class UserToUserDtoConverter implements Converter<User, UserDto> {
                     .setEmail(user.getEmail())
                     .setIconId(user.getIconId())
                     .setMoney(user.getMoney())
-                    .setRegistrationDate(user.getRegistrationDate())
+                    .setRegistrationDate(new Timestamp(user.getCreatedAt().getTime()))
                     .setGamesNumber(user.getGamesNumber())
                     .build();
     }

@@ -16,7 +16,6 @@ public class UserDtoToUserConverter implements Converter<UserDto, User> {
         user.setEmail(userDto.getEmail());
         user.setIconId(userDto.getIconId());
         user.setMoney(userDto.getMoney());
-        user.setRegistrationDate(userDto.getRegistrationDate());
         user.setFcmToken(userDto.getFcmToken());
         user.setGamesNumber(userDto.getGamesNumber());
         return user;

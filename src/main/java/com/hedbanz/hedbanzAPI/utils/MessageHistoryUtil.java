@@ -9,7 +9,7 @@ public class MessageHistoryUtil {
                 SetWordDto wordSettingDto = conversionService.convert(message, SetWordDto.class);
                 Player player = getPlayerByUserId(players, message.getSenderUser().getUserId());
                 if(player != null){
-                    wordSettingDto.setWordReceiverUser(player.getWordSettingUserId());
+                    wordSettingDto.setWordReceiverUser(player.getWordReceiverUserId());
                     player = getPlayerByUserId( players, wordSettingDto.getWordReceiverUser());
                     if(player != null)
                         wordSettingDto.setWord(player.getWord());

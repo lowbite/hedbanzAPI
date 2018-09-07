@@ -26,7 +26,7 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(InputException.class)
     @ResponseStatus(HttpStatus.OK)
     public ResponseBody<?> inputError(InputException e) {
-        log.error("Input error", e);
+        log.error("Input error", e.getMessage());
         return new ResponseBody<>(ResultStatus.ERROR_STATUS,
                 new CustomError(e.getCode(), e.getMessage()), null);
     }
@@ -34,7 +34,7 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.OK)
     public ResponseBody<?> notFoundError(NotFoundException e) {
-        log.error("Not found error", e);
+        log.error("Not found error", e.getMessage());
         return new ResponseBody<>(ResultStatus.ERROR_STATUS,
                 new CustomError(e.getCode(), e.getMessage()), null);
     }
@@ -42,7 +42,7 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(RoomException.class)
     @ResponseStatus(HttpStatus.OK)
     public ResponseBody<?> roomError(RoomException e) {
-        log.error("Room error", e);
+        log.error("Room error", e.getMessage());
         return new ResponseBody<>(ResultStatus.ERROR_STATUS,
                 new CustomError(e.getCode(), e.getMessage()), null);
     }
@@ -50,7 +50,7 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(UserException.class)
     @ResponseStatus(HttpStatus.OK)
     public ResponseBody<?> userError(UserException e) {
-        log.error("User error", e);
+        log.error("User error", e.getMessage());
         return new ResponseBody<>(ResultStatus.ERROR_STATUS,
                 new CustomError(e.getCode(), e.getMessage()), null);
     }
@@ -58,7 +58,7 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(FcmException.class)
     @ResponseStatus(HttpStatus.OK)
     public ResponseBody<?> fcmError(FcmException e) {
-        log.error("Fcm error", e);
+        log.error("Fcm error", e.getMessage());
         return new ResponseBody<>(ResultStatus.ERROR_STATUS,
                 new CustomError(e.getCode(), e.getMessage()), null);
     }
@@ -66,7 +66,7 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(PasswordResetException.class)
     @ResponseStatus(HttpStatus.OK)
     public ResponseBody<?> passwordResetError(PasswordResetException e) {
-        log.error("Password reset error", e);
+        log.error("Password reset error", e.getMessage());
         return new ResponseBody<>(ResultStatus.ERROR_STATUS,
                 new CustomError(e.getCode(), e.getMessage()), null);
     }

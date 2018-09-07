@@ -19,14 +19,13 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/game")
 public class GameController {
-    private static final double MIN_WIN_PERCENTAGE = 0.5;
+    private static final double MIN_WIN_PERCENTAGE = 0.8;
     private static final double MIN_NEXT_GUESS_PERCENTAGE = 0.8;
     @Autowired
     private RoomService roomService;
@@ -44,14 +43,26 @@ public class GameController {
 
     @PostMapping(value = "/start/room/{roomId}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseBody<RoomDto> startGame(@PathVariable("roomId") long roomId){
+    public ResponseBody<RoomDto> startGame(@PathVariable("roomId") long roomId) {
         Room room = gameService.setPlayersWordSetters(roomId);
-        for  (Player player: room.getPlayers()) {
+        String wordReceiverName = null;
+        for (Player player : room.getPlayers()) {
             messageService.addEmptyWordSetMessage(room.getId(), player.getUser().getUserId());
 
             if (player.getStatus() == PlayerStatus.AFK && !TextUtils.isEmpty(player.getUser().getFcmToken())) {
-                FcmPush.FcmPushData<SetWordNotification> fcmPushData = new FcmPush.FcmPushData<>(NotificationMessageType.SET_WORD.getCode(),
-                        new SetWordNotification(room.getId(), room.getName()));
+                for (Player wordReceiver: room.getPlayers()) {
+                    if(wordReceiver.getUser().getUserId().equals(player.getWordReceiverUserId())){
+                        wordReceiverName = wordReceiver.getUser().getLogin();
+                        break;
+                    }
+                }
+                FcmPush.FcmPushData<PushMessageDto> fcmPushData = new FcmPush.FcmPushData<>(
+                        NotificationMessageType.SET_WORD.getCode(),
+                        new PushMessageDto.Builder()
+                                .setSenderName(wordReceiverName)
+                                .setRoomId(room.getId())
+                                .setRoomName(room.getName())
+                                .build());
                 FcmPush fcmPush = new FcmPush.Builder()
                         .setTo(player.getUser().getFcmToken())
                         .setData(fcmPushData)
@@ -68,15 +79,20 @@ public class GameController {
         return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, resultRoomDto);
     }
 
-    @PostMapping(value = "/restart/room/{roomId}")
+    @PostMapping(value = "/restart/room/{roomId}/user/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseBody<RoomDto> restartGame(@PathVariable("roomId") long roomId){
-        Room room = null;
+    public ResponseBody<RoomDto> restartGame(@PathVariable("roomId") long roomId, @PathVariable("userId") long userId) {
+        roomService.checkPlayerInRoom(userId, roomId);
+        RoomDto resultRoomDto = null;
         if (gameService.isGameOver(roomId)) {
             messageService.deleteAllMessagesByRoom(roomId);
-            room = gameService.restartGame(roomId);
+            Room room  = gameService.restartGame(roomId);
+            resultRoomDto = conversionService.convert(room, RoomDto.class);
+            resultRoomDto.setPlayers(
+                    room.getPlayers().stream().map(player -> conversionService.convert(player, PlayerDto.class)).collect(Collectors.toList())
+            );
         }
-        return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, conversionService.convert(room, RoomDto.class));
+        return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, resultRoomDto);
     }
 
     @RequestMapping(method = RequestMethod.PATCH, value = "/player/set-word", consumes = "application/json")
@@ -86,7 +102,7 @@ public class GameController {
         Message message = messageService.getSettingWordMessage(word.getRoomId(), word.getSenderId());
         SetWordDto setWordDto = conversionService.convert(message, SetWordDto.class);
         Player wordSetter = playerService.getPlayer(setWordDto.getSenderUser().getId(), setWordDto.getRoomId());
-        Player wordReceiver = playerService.getPlayer(wordSetter.getWordSettingUserId(), setWordDto.getRoomId());
+        Player wordReceiver = playerService.getPlayer(wordSetter.getWordReceiverUserId(), setWordDto.getRoomId());
         setWordDto.setWordReceiverUser(conversionService.convert(wordReceiver.getUser(), UserDto.class));
         setWordDto.setWord(wordReceiver.getWord());
         return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, setWordDto);
@@ -94,19 +110,22 @@ public class GameController {
 
     @PostMapping(value = "/start-guessing/room/{roomId}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseBody<PlayerGuessingDto> startGuessing(@PathVariable("roomId") long roomId){
+    public ResponseBody<PlayerGuessingDto> startGuessing(@PathVariable("roomId") long roomId) {
         List<Player> players = playerService.getPlayersFromRoom(roomId);
         boolean gameIsReady = true;
         for (Player player : players) {
-            if (TextUtils.isEmpty(player.getWord()))
+            if (TextUtils.isEmpty(player.getWord()) && player.getStatus() != PlayerStatus.LEFT)
                 gameIsReady = false;
         }
         PlayerGuessingDto playerGuessingDto = null;
         if (gameIsReady) {
             Player player = gameService.startGuessing(roomId);
             if (player.getStatus() == PlayerStatus.AFK && !TextUtils.isEmpty(player.getUser().getFcmToken())) {
-                FcmPush.FcmPushData<SetWordNotification> fcmPushData = new FcmPush.FcmPushData<>(NotificationMessageType.GUESS_WORD.getCode(),
-                        new SetWordNotification(player.getRoom().getId(), player.getRoom().getName()));
+                FcmPush.FcmPushData<PushMessageDto> fcmPushData = new FcmPush.FcmPushData<>(NotificationMessageType.GUESS_WORD.getCode(),
+                        new PushMessageDto.Builder()
+                                .setRoomId(player.getRoom().getId())
+                                .setRoomName(player.getRoom().getName())
+                                .build());
                 FcmPush fcmPush = new FcmPush.Builder()
                         .setTo(player.getUser().getFcmToken())
                         .setData(fcmPushData)
@@ -116,7 +135,7 @@ public class GameController {
                 fcmService.sendPushNotification(fcmPush);
             }
             Question newQuestion = messageService.addSettingQuestionMessage(roomId, player.getUser().getUserId());
-             playerGuessingDto = PlayerGuessingDto.PlayerGuessingDtoBuilder()
+            playerGuessingDto = PlayerGuessingDto.PlayerGuessingDtoBuilder()
                     .setPlayer(conversionService.convert(player, PlayerDto.class))
                     .setAttempt(player.getAttempt())
                     .setQuestionId(newQuestion.getId())
@@ -127,43 +146,48 @@ public class GameController {
 
     @PostMapping(value = "/player/add-question")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseBody<QuestionDto> addPlayerQuestion(@RequestBody QuestionDto questionDto){
+    public ResponseBody<QuestionDto> addPlayerQuestion(@RequestBody QuestionDto questionDto) {
         Message message = messageService.addQuestionText(questionDto.getQuestionId(), questionDto.getText());
         return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, conversionService.convert(message, QuestionDto.class));
     }
 
     @PostMapping(value = "/player/add-vote")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseBody<QuestionDto> addPlayerVote(@RequestBody QuestionDto questionDto){
+    public ResponseBody<QuestionDto> addPlayerVote(@RequestBody QuestionDto questionDto) {
         Question question = messageService.addVote(
                 Vote.VoteBuilder()
-                .setSenderId(questionDto.getSenderUser().getId())
-                .setRoomId(questionDto.getRoomId())
-                .setQuestionId(questionDto.getQuestionId())
-                .setVoteType(questionDto.getVote())
-                .build()
+                        .setSenderId(questionDto.getSenderUser().getId())
+                        .setRoomId(questionDto.getRoomId())
+                        .setQuestionId(questionDto.getQuestionId())
+                        .setVoteType(questionDto.getVote())
+                        .build()
         );
-        return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, conversionService.convert(question, QuestionDto.class));
+        QuestionDto resultQuestionDto = conversionService.convert(question, QuestionDto.class);
+        resultQuestionDto.setRoomId(questionDto.getRoomId());
+        return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, conversionService.convert(resultQuestionDto, QuestionDto.class));
     }
 
     @PostMapping(value = "/room/{roomId}/check-questioner-win")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseBody<PlayerGuessingDto> checkQuestioner(@RequestBody QuestionDto questionDto, @PathVariable("roomId") long roomId){
+    public ResponseBody<PlayerGuessingDto> checkQuestioner(@RequestBody QuestionDto questionDto, @PathVariable("roomId") long roomId) {
         Room room = roomService.getRoom(roomId);
         Message message = messageService.getMessageByQuestionId(questionDto.getQuestionId());
         Question lastQuestion = messageService.getLastQuestionInRoom(room.getId());
         Player player = null;
-        if ((double) questionDto.getWinVoters().size() / (room.getCurrentPlayersNumber() - 1) >= MIN_WIN_PERCENTAGE) {
+        if ((double) questionDto.getWinVoters().size() / (playerService.getActivePlayersNumber(room.getPlayers()) - 1) >= MIN_WIN_PERCENTAGE) {
             player = playerService.getPlayer(message.getSenderUser().getUserId(), room.getId());
             if (!player.getIsWinner()) {
                 player = playerService.setPlayerWinner(message.getSenderUser().getUserId(), room.getId());
                 messageService.addPlayerEventMessage(MessageType.USER_WIN, player.getUser().getUserId(), room.getId());
+                gameService.incrementPlayerGamesNumber(player.getRoom().getId(), player.getUser().getUserId());
             }
         } else if (lastQuestion.getId().equals(questionDto.getQuestionId())) {
-            double votersPercentage = (double) (questionDto.getNoVoters().size() + questionDto.getYesVoters().size())
-                    / (room.getCurrentPlayersNumber() - 1);
-            if (votersPercentage >= MIN_NEXT_GUESS_PERCENTAGE) {
-                return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, getNextGuessingPlayer(room.getId()));
+            double yesNoVotersPercentage = (double) (questionDto.getNoVoters().size() + questionDto.getYesVoters().size())
+                    / (playerService.getActivePlayersNumber(room.getPlayers()) - 1);
+            double allVotersPercentage = (double) (questionDto.getNoVoters().size() + questionDto.getYesVoters().size()
+                    + questionDto.getWinVoters().size()) / (playerService.getActivePlayersNumber(room.getPlayers()) - 1);
+            if (yesNoVotersPercentage >= MIN_NEXT_GUESS_PERCENTAGE || allVotersPercentage == 1) {
+                return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, receiveNextGuessingPlayer(room.getId()));
             }
         }
         PlayerGuessingDto playerGuessingDto = PlayerGuessingDto.PlayerGuessingDtoBuilder()
@@ -171,7 +195,6 @@ public class GameController {
                 .build();
         return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, playerGuessingDto);
     }
-
 
     @PostMapping(value = "/room/{roomId}/is-game-over")
     @ResponseStatus(HttpStatus.OK)
@@ -181,9 +204,13 @@ public class GameController {
             gameService.setGameOverStatus(roomId);
             for (Player roomPlayer : room.getPlayers()) {
                 if (roomPlayer.getStatus() == com.hedbanz.hedbanzAPI.constant.PlayerStatus.AFK && !TextUtils.isEmpty(roomPlayer.getUser().getFcmToken())) {
-                    FcmPush.FcmPushData<SetWordNotification> fcmPushData =
-                            new FcmPush.FcmPushData<>(com.hedbanz.hedbanzAPI.constant.NotificationMessageType.GAME_OVER.getCode(),
-                                    new SetWordNotification(room.getId(), room.getName()));
+                    FcmPush.FcmPushData<PushMessageDto> fcmPushData = new FcmPush.FcmPushData<>(
+                            NotificationMessageType.GAME_OVER.getCode(),
+                            new PushMessageDto.Builder()
+                                    .setRoomId(room.getId())
+                                    .setRoomName(room.getName())
+                                    .build()
+                    );
                     FcmPush fcmPush = new FcmPush.Builder()
                             .setTo(roomPlayer.getUser().getFcmToken())
                             .setData(fcmPushData)
@@ -197,15 +224,25 @@ public class GameController {
             messageService.addRoomEventMessage(MessageType.GAME_OVER, room.getId());
             return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, null);
         } else
-            return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, getNextGuessingPlayer(roomId));
+            return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, receiveNextGuessingPlayer(roomId));
     }
 
-    private PlayerGuessingDto getNextGuessingPlayer(Long roomId) {
+    @RequestMapping(value = "/room/{roomId}/next-player", method = RequestMethod.GET)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseBody<PlayerGuessingDto> getNextGuessingPlayer(@PathVariable("roomId") long roomId){
+        return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, receiveNextGuessingPlayer(roomId));
+    }
+
+    private PlayerGuessingDto receiveNextGuessingPlayer(Long roomId) {
         Player player = gameService.getNextGuessingPlayer(roomId);
         Room room = roomService.getRoom(roomId);
         if (player.getStatus() == PlayerStatus.AFK && !TextUtils.isEmpty(player.getUser().getFcmToken())) {
-            FcmPush.FcmPushData<SetWordNotification> fcmPushData = new FcmPush.FcmPushData<>(NotificationMessageType.GUESS_WORD.getCode(),
-                    new SetWordNotification(room.getId(), room.getName()));
+            FcmPush.FcmPushData<PushMessageDto> fcmPushData = new FcmPush.FcmPushData<>(
+                    NotificationMessageType.GUESS_WORD.getCode(),
+                    new PushMessageDto.Builder()
+                            .setRoomId(room.getId())
+                            .setRoomName(room.getName())
+                            .build());
             FcmPush fcmPush = new FcmPush.Builder()
                     .setTo(player.getUser().getFcmToken())
                     .setData(fcmPushData)

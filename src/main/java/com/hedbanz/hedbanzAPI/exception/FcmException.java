@@ -3,7 +3,7 @@ package com.hedbanz.hedbanzAPI.exception;
 import com.hedbanz.hedbanzAPI.error.FcmError;
 import java.text.MessageFormat;
 
-public class FcmException extends RuntimeException{
+public class FcmException extends RuntimeException implements ApiException {
     private final FcmError error;
 
     public FcmException(FcmError error, Object... messageArguments) {

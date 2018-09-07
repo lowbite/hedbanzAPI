@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.springframework.http.HttpStatus.OK;
+
 @RestController
 @RequestMapping(value = "/rooms")
 public class RoomController {
@@ -42,7 +44,7 @@ public class RoomController {
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{roomId}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public ResponseBody<RoomDto> getRoom(@PathVariable("roomId") long roomId) {
         Room room = roomService.getRoom(roomId);
         List<Player> players = playerService.getPlayersFromRoom(roomId);
@@ -55,39 +57,35 @@ public class RoomController {
     }
 
     @RequestMapping(method = RequestMethod.PUT, consumes = "application/json")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public ResponseBody<RoomDto> addRoom(@RequestBody RoomDto roomDto) {
         Room createdRoom = roomService.addRoom(conversionService.convert(roomDto, Room.class), roomDto.getUserId());
-        List<User> users = userService.getAllUsers();
-        new Thread(() -> users.forEach(user -> {
-            if (!TextUtils.isEmpty(user.getFcmToken())) {
-                Notification notification = new Notification(
-                        "New room!", "Room " + createdRoom.getName() + " is available to join"
-                );
-                FcmPush.FcmPushData<RoomDto> fcmPushData = new FcmPush.FcmPushData<>(
-                        NotificationMessageType.NEW_ROOM_CREATED.getCode(),
-                        conversionService.convert(createdRoom, RoomDto.class)
-                );
-                FcmPush fcmPush = new FcmPush.Builder().setNotification(notification)
-                        .setTo(user.getFcmToken())
-                        .setPriority("normal")
-                        .setData(fcmPushData)
-                        .build();
-                fcmService.sendPushNotification(fcmPush);
-            }
-        })).start();
+        List<String> fcmTokens = userService.getAllFcmTokens();
+        Notification notification = new Notification(
+                "New room!", "Room " + createdRoom.getName() + " is available to join"
+        );
+        FcmPush.FcmPushData<RoomDto> fcmPushData = new FcmPush.FcmPushData<>(
+                NotificationMessageType.NEW_ROOM_CREATED.getCode(),
+                conversionService.convert(createdRoom, RoomDto.class)
+        );
+        FcmPush fcmPush = new FcmPush.Builder().setNotification(notification)
+                .setPriority("normal")
+                .setData(fcmPushData)
+                .build();
+        fcmService.sendPushNotificationsToUsers(fcmPush, fcmTokens);
+        messageService.addRoomEventMessage(MessageType.WAITING_FOR_PLAYERS, createdRoom.getId());
         return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, conversionService.convert(createdRoom, RoomDto.class));
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/{roomId}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public ResponseBody<List<Message>> deleteRoom(@PathVariable("roomId") long roomId) {
         roomService.deleteRoom(roomId);
         return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, null);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{pageNumber}/user/{userId}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public ResponseBody<Map<String, List<RoomDto>>> getAllRooms(@PathVariable("pageNumber") int page,
                                                                 @PathVariable("userId") Long userId) {
         Map<String, List<RoomDto>> rooms = new HashMap<>();
@@ -104,7 +102,7 @@ public class RoomController {
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/{pageNumber}/user/{userId}", consumes = "application/json")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public ResponseBody<Map<String, List<RoomDto>>> getRoomsByFilter(@RequestBody RoomFilter roomFilter,
                                                                      @PathVariable("pageNumber") int page,
                                                                      @PathVariable("userId") Long userId) {
@@ -123,7 +121,7 @@ public class RoomController {
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{roomId}/messages/{pageNumber}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public ResponseBody<List<MessageDto>> findAllMessages(@PathVariable("roomId") long roomId,
                                                           @PathVariable("pageNumber") int pageNumber) {
         List<Message> messages = messageService.getAllMessages(roomId, pageNumber);
@@ -133,7 +131,7 @@ public class RoomController {
             } else if (message.getType() == MessageType.WORD_SETTING) {
                 SetWordDto setWordDto = conversionService.convert(message, SetWordDto.class);
                 Player wordSetter = playerService.getPlayer(setWordDto.getSenderUser().getId(), setWordDto.getRoomId());
-                Player wordReceiver = playerService.getPlayer(wordSetter.getWordSettingUserId(), setWordDto.getRoomId());
+                Player wordReceiver = playerService.getPlayer(wordSetter.getWordReceiverUserId(), setWordDto.getRoomId());
                 setWordDto.setWordReceiverUser(conversionService.convert(wordReceiver.getUser(), UserDto.class));
                 setWordDto.setWord(wordReceiver.getWord());
                 return setWordDto;
@@ -145,14 +143,14 @@ public class RoomController {
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/password")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public ResponseBody<UserToRoomDto> checkPassword(@RequestBody UserToRoomDto userToRoomDto) {
         roomService.checkRoomPassword(userToRoomDto.getRoomId(), userToRoomDto.getPassword());
         return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, null);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/join-user")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public ResponseBody<RoomDto> joinUserToRoom(@RequestBody UserToRoomDto userToRoomDto) {
         Room room = roomService.addUserToRoom(userToRoomDto.getUserId(),
                 userToRoomDto.getRoomId(), userToRoomDto.getPassword());
@@ -178,20 +176,21 @@ public class RoomController {
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/leave")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public ResponseBody<UserDto> leaveFromRoom(@RequestBody UserToRoomDto userToRoomDto) {
         messageService.addPlayerEventMessage(MessageType.LEFT_USER, userToRoomDto.getUserId(), userToRoomDto.getRoomId());
         Room room = roomService.leaveUserFromRoom(userToRoomDto.getUserId(), userToRoomDto.getRoomId());
         User user = userService.getUser(userToRoomDto.getUserId());
-        if (room.getGameStatus() == GameStatus.SETTING_WORDS) {
+        if (room.getGameStatus() != GameStatus.WAITING_FOR_PLAYERS) {
             Player player = getLastPlayer(room);
             if (player != null && !TextUtils.isEmpty(player.getUser().getFcmToken())) {
                 Notification notification = new Notification("Last player in room!",
                         "You are the last player in room");
-                FcmPush.FcmPushData<UserToRoomDto> fcmPushData =
-                        new FcmPush.FcmPushData<>(com.hedbanz.hedbanzAPI.constant.NotificationMessageType.LAST_PLAYER.getCode(),
-                                new UserToRoomDto.Builder()
+                FcmPush.FcmPushData<PushMessageDto> fcmPushData = new FcmPush.FcmPushData<>(
+                        NotificationMessageType.LAST_PLAYER.getCode(),
+                                new PushMessageDto.Builder()
                                         .setRoomId(room.getId())
+                                        .setRoomName(room.getName())
                                         .build());
                 FcmPush fcmPush = new FcmPush.Builder().setNotification(notification)
                         .setTo(player.getUser().getFcmToken())
@@ -202,7 +201,7 @@ public class RoomController {
             }
             messageService.deleteSettingWordMessage(room.getId(), user.getUserId());
         }
-        if (room.getCurrentPlayersNumber() == 0 || playersAbsent(room)) {
+        if (room.getCurrentPlayersNumber() == 0 || isPlayersAbsent(room)) {
             roomService.deleteRoom(room.getId());
         }
 
@@ -223,7 +222,7 @@ public class RoomController {
         return onlyOnePlayer;
     }
 
-    private boolean playersAbsent(Room room) {
+    private boolean isPlayersAbsent(Room room) {
         for (Player player : room.getPlayers()) {
             if (player.getStatus() != PlayerStatus.LEFT) {
                 return false;
@@ -233,14 +232,14 @@ public class RoomController {
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "{roomId}/player/{userId}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public ResponseBody<PlayerDto> getPlayer(@PathVariable("roomId") long roomId, @PathVariable("userId") long userId) {
         Player player = playerService.getPlayer(userId, roomId);
         return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, conversionService.convert(player, PlayerDto.class));
     }
 
     @PostMapping(value = "{roomId}/events/set-word-entity")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public ResponseBody<List<SetWordDto>> getSetWordMessages(@RequestBody List<PlayerDto> playerDtos,
                                                              @PathVariable("roomId") long roomId) {
         List<SetWordDto> result = new ArrayList<>();
@@ -248,7 +247,7 @@ public class RoomController {
             Message message = messageService.getSettingWordMessage(roomId, playerDto.getUserId());
             SetWordDto setWordDto = conversionService.convert(message, SetWordDto.class);
             Player wordSetter = playerService.getPlayer(setWordDto.getSenderUser().getId(), setWordDto.getRoomId());
-            Player wordReceiver = playerService.getPlayer(wordSetter.getWordSettingUserId(), setWordDto.getRoomId());
+            Player wordReceiver = playerService.getPlayer(wordSetter.getWordReceiverUserId(), setWordDto.getRoomId());
             setWordDto.setWordReceiverUser(conversionService.convert(wordReceiver.getUser(), UserDto.class));
             result.add(setWordDto);
         }
@@ -256,7 +255,7 @@ public class RoomController {
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{roomId}/players")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(OK)
     public ResponseBody<List<PlayerDto>> getPlayers(@PathVariable("roomId") long roomId) {
         List<Player> players = playerService.getPlayersFromRoom(roomId);
         List<PlayerDto> playerDtos = players.stream()
@@ -264,18 +263,18 @@ public class RoomController {
         return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, playerDtos);
     }
 
-    @RequestMapping(method = RequestMethod.POST, value = "/messages/add", consumes = "application/json")
-    @ResponseStatus(HttpStatus.OK)
+    @RequestMapping(method = RequestMethod.PUT, value = "/messages/add", consumes = "application/json")
+    @ResponseStatus(OK)
     public ResponseBody<MessageDto> addUserMessage(@RequestBody MessageDto messageDto) {
         Message message = messageService.addMessage(conversionService.convert(messageDto, Message.class));
         Room room = roomService.getRoom(messageDto.getRoomId());
         for (Player player : room.getPlayers()) {
             if (player.getStatus() == PlayerStatus.AFK && !TextUtils.isEmpty(player.getUser().getFcmToken())) {
-                MessageNotification messageNotification = conversionService.convert(message, MessageNotification.class);
+                PushMessageDto pushMessageDto = conversionService.convert(message, PushMessageDto.class);
                 Notification notification = new Notification("New message!",
-                        "User " + messageNotification.getSenderName() + " sent a new message.");
-                FcmPush.FcmPushData<MessageNotification> fcmPushData =
-                        new FcmPush.FcmPushData<>(NotificationMessageType.MESSAGE.getCode(), messageNotification);
+                        "User " + pushMessageDto.getSenderName() + " sent a new message.");
+                FcmPush.FcmPushData<PushMessageDto> fcmPushData =
+                        new FcmPush.FcmPushData<>(NotificationMessageType.MESSAGE.getCode(), pushMessageDto);
                 FcmPush fcmPush = new FcmPush.Builder().setNotification(notification)
                         .setTo(player.getUser().getFcmToken())
                         .setPriority("normal")
@@ -286,4 +285,19 @@ public class RoomController {
         }
         return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, conversionService.convert(message, MessageDto.class));
     }
+
+    @RequestMapping(method = RequestMethod.PUT, value = "/{roomId}/messages/waiting-players")
+    @ResponseStatus(OK)
+    public ResponseBody<?> addWaitingForPlayersMessage(@PathVariable("roomId") long roomId){
+        messageService.addRoomEventMessage(MessageType.WAITING_FOR_PLAYERS, roomId);
+        return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, null);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/{roomId}/messages/last-question")
+    @ResponseStatus(OK)
+    public ResponseBody<QuestionDto> getLastQuestion(@PathVariable("roomId") long roomId){
+        Question lastQuestion = messageService.getLastQuestionInRoom(roomId);
+        return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, conversionService.convert(lastQuestion, QuestionDto.class));
+    }
+
 }

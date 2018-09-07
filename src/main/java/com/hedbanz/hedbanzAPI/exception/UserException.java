@@ -4,7 +4,7 @@ import com.hedbanz.hedbanzAPI.error.UserError;
 
 import java.text.MessageFormat;
 
-public class UserException extends RuntimeException {
+public class UserException extends RuntimeException implements ApiException {
     private final UserError error;
 
     public UserException(UserError error, Object... messageArguments) {

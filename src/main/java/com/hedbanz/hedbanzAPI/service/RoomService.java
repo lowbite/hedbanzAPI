@@ -31,4 +31,6 @@ public interface RoomService {
     Room addUserToRoom(Long userId, Long roomId, String password);
 
     void checkPlayerInRoom(Long userId, Long roomId);
+
+    Long getRoomsCountByAdminFilter(RoomFilter roomFilter);
 }

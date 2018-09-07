@@ -1,10 +1,15 @@
 package com.hedbanz.hedbanzAPI.model;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
+
 public class FcmPush {
     private String to;
     private Notification notification;
     private FcmPushData data;
     private String priority;
+
+    public FcmPush() {
+    }
 
     private FcmPush(String to, Notification notification, FcmPushData data, String priority) {
         this.to = to;
@@ -17,6 +22,7 @@ public class FcmPush {
         return to;
     }
 
+    @JsonSetter("to")
     public void setTo(String to) {
         this.to = to;
     }
@@ -25,6 +31,7 @@ public class FcmPush {
         return notification;
     }
 
+    @JsonSetter("notification")
     public void setNotification(Notification notification) {
         this.notification = notification;
     }
@@ -33,6 +40,7 @@ public class FcmPush {
         return data;
     }
 
+    @JsonSetter("data")
     public void setData(FcmPushData data) {
         this.data = data;
     }
@@ -41,6 +49,7 @@ public class FcmPush {
         return priority;
     }
 
+    @JsonSetter("priority")
     public void setPriority(String priority) {
         this.priority = priority;
     }
@@ -80,6 +89,9 @@ public class FcmPush {
         private Integer type;
         private T data;
 
+        public FcmPushData() {
+        }
+
         public FcmPushData(Integer type, T data) {
             this.type = type;
             this.data = data;
@@ -89,6 +101,7 @@ public class FcmPush {
             return type;
         }
 
+        @JsonSetter("type")
         public void setType(Integer type) {
             this.type = type;
         }
@@ -97,6 +110,7 @@ public class FcmPush {
             return data;
         }
 
+        @JsonSetter("data")
         public void setData(T data) {
             this.data = data;
         }

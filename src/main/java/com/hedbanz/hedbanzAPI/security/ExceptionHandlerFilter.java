@@ -6,7 +6,10 @@ import com.hedbanz.hedbanzAPI.constant.ResultStatus;
 import com.hedbanz.hedbanzAPI.error.CustomError;
 import com.hedbanz.hedbanzAPI.exception.AuthenticationException;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
+import com.hedbanz.hedbanzAPI.exception.NotFoundException;
 import com.hedbanz.hedbanzAPI.model.ResponseBody;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
 import javax.servlet.*;
@@ -15,6 +18,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class ExceptionHandlerFilter implements Filter {
+
+    private static final Logger logger = LoggerFactory.getLogger(ExceptionHandlerFilter.class);
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
 
@@ -26,7 +31,7 @@ public class ExceptionHandlerFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         try {
             filterChain.doFilter(request, response);
-        } catch (AuthenticationException e) {
+        } catch (AuthenticationException | NotFoundException e) {
             ResponseBody<CustomError> responseBody = new ResponseBody<>(
                     ResultStatus.ERROR_STATUS,
                     new CustomError(e.getCode(), e.getMessage()), null
@@ -34,6 +39,7 @@ public class ExceptionHandlerFilter implements Filter {
             response.getWriter().write(convertObjectToJson(responseBody));
             response.setContentType("application/json");
             response.setStatus(HttpStatus.OK.value());
+            logger.error(e.getCode() + " : " + e.getMessage());
         }
     }
 

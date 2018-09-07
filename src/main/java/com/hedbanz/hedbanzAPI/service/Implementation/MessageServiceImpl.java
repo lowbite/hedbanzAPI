@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 
-import java.sql.Timestamp;
 import java.util.*;
 
 import static com.hedbanz.hedbanzAPI.constant.VoteType.NO;
@@ -50,9 +49,10 @@ public class MessageServiceImpl implements MessageService {
             throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
         if (inputMessage.getText() == null)
             throw ExceptionFactory.create(InputError.EMPTY_MESSAGE_TEXT);
-        if (inputMessage.getType() == null)
-            throw ExceptionFactory.create(InputError.EMPTY_MESSAGE_TYPE);
         if (inputMessage.getSenderUser() == null) {
+            throw ExceptionFactory.create(InputError.EMPTY_MESSAGE_SENDER);
+        }
+        if (inputMessage.getSenderUser().getUserId() == null) {
             throw ExceptionFactory.create(InputError.EMPTY_MESSAGE_SENDER);
         }
         User sender = userRepository.findOne(inputMessage.getSenderUser().getUserId());
@@ -63,7 +63,6 @@ public class MessageServiceImpl implements MessageService {
         Message message = Message.Builder().setSenderUser(sender)
                 .setText(inputMessage.getText())
                 .setType(MessageType.SIMPLE_MESSAGE)
-                .setCreateDate(new Timestamp(new Date().getTime()))
                 .setQuestion(null)
                 .setRoom(player.getRoom())
                 .build();
@@ -121,7 +120,6 @@ public class MessageServiceImpl implements MessageService {
         Message message = messageRepository.findMessageByQuestionId(questionId);
         if (message == null)
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_QUESTION);
-        message.setCreateDate(new Timestamp(new Date().getTime()));
         message.setText(text);
         message = messageRepository.saveAndFlush(message);
         return (Message) message.clone();
@@ -219,7 +217,6 @@ public class MessageServiceImpl implements MessageService {
                 .setSenderUser(user)
                 .setText(null)
                 .setType(MessageType.USER_QUESTION)
-                .setCreateDate(null)
                 .setQuestion(question)
                 .setRoom(room)
                 .build();
@@ -288,7 +285,7 @@ public class MessageServiceImpl implements MessageService {
     public List<Message> getAllMessages(Long roomId, Integer pageNumber) {
         if (roomRepository.findOne(roomId) == null)
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM);
-        Pageable pageable = new PageRequest(pageNumber, Constants.PAGE_SIZE);
+        Pageable pageable = new PageRequest(pageNumber, Constants.ROOM_PAGE_SIZE);
         Page<Message> page = messageRepository.findAllMessages(pageable, roomId);
         ArrayList<Message> messages = new ArrayList<>(page.getContent());
         Collections.reverse(messages);

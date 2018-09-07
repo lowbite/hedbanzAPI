@@ -1,6 +1,6 @@
 package com.hedbanz.hedbanzAPI.error;
 
-public enum MessageError {
+public enum MessageError implements ApiError  {
     SUCH_PLAYER_ALREADY_VOTED(201, ErrorMessages.SUCH_PLAYER_ALREADY_VOTED);
 
     private int errorCode;

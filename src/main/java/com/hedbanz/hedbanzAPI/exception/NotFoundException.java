@@ -4,7 +4,7 @@ import com.hedbanz.hedbanzAPI.error.NotFoundError;
 
 import java.text.MessageFormat;
 
-public class NotFoundException extends RuntimeException {
+public class NotFoundException extends RuntimeException implements ApiException {
     private final NotFoundError error;
 
     public NotFoundException(NotFoundError error, Object... messageArguments) {

@@ -77,6 +77,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Transactional
+    public Long getUserNumber() {
+        return userRepository.findUsersCount();
+    }
+
+    @Transactional
     public User updateUserData(User user) {
         if (user.getUserId() == null)
             throw ExceptionFactory.create(InputError.INCORRECT_USER_ID);
@@ -188,6 +193,11 @@ public class UserServiceImpl implements UserService {
         return userRepository.countFriends(userId);
     }
 
+    @Override
+    public List<String> getAllFcmTokens() {
+        return userRepository.findAllFcmTokens();
+    }
+
     @Transactional
     public void setUserFcmToken(Long userId, String fcmToken) {
         if (userId == null) {
@@ -264,9 +274,8 @@ public class UserServiceImpl implements UserService {
         Room room = roomRepository.findOne(roomId);
         if(room == null)
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM);
-
-        user.addInvite(room);
-        userRepository.saveAndFlush(user);
+        room.addInvitedUser(user);
+        roomRepository.save(room);
     }
 
     @Transactional
@@ -284,29 +293,5 @@ public class UserServiceImpl implements UserService {
         allFriends.addAll(invitedFriends);
         allFriends.addAll(friendsInRoom);
         return allFriends.stream().distinct().collect(Collectors.toList());
-    }
-
-    @Transactional
-    public void saveFeedback(Feedback feedback) {
-        if(TextUtils.isEmpty(feedback.getDeviceManufacturer()))
-            throw ExceptionFactory.create(InputError.EMPTY_DEVICE_MANUFACTURER);
-        if(TextUtils.isEmpty(feedback.getDeviceModel()))
-            throw ExceptionFactory.create(InputError.EMPTY_DEVICE_MODEL);
-        if(TextUtils.isEmpty(feedback.getDeviceName()))
-            throw ExceptionFactory.create(InputError.EMPTY_DEVICE_NAME);
-        if(TextUtils.isEmpty(feedback.getFeedbackText()))
-            throw ExceptionFactory.create(InputError.EMPTY_FEEDBACK_TEXT);
-        if(TextUtils.isEmpty(feedback.getProduct()))
-            throw ExceptionFactory.create(InputError.EMPTY_PRODUCT);
-        if(feedback.getDeviceVersion() == null)
-            throw ExceptionFactory.create(InputError.EMPTY_DEVICE_VERSION);
-        if(feedback.getUser() == null)
-            throw ExceptionFactory.create(InputError.EMPTY_USER_ID);
-        if(feedback.getUser().getUserId() == null)
-            throw ExceptionFactory.create(InputError.EMPTY_USER_ID);
-
-        User user = userRepository.findOne(feedback.getUser().getUserId());
-        feedback.setUser(user);
-        feedbackRepository.save(feedback);
     }
 }
