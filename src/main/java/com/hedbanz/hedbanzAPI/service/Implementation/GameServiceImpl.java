@@ -229,7 +229,7 @@ public class GameServiceImpl implements GameService {
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM);
 
         for (Player player : room.getPlayers()) {
-            if (!player.getIsWinner()) {
+            if (!player.getIsWinner() && player.getStatus() != PlayerStatus.LEFT) {
                 return false;
             }
         }
