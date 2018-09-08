@@ -200,6 +200,10 @@ public class RoomController {
                 fcmService.sendPushNotification(fcmPush);
             }
             messageService.deleteSettingWordMessage(room.getId(), user.getUserId());
+
+            if(room.getGameStatus() == GameStatus.SETTING_WORDS){
+                messageService.addRoomEventMessage(MessageType.UPDATE_USERS_INFO, room.getId());
+            }
         }
         if (room.getCurrentPlayersNumber() == 0 || isPlayersAbsent(room)) {
             roomService.deleteRoom(room.getId());

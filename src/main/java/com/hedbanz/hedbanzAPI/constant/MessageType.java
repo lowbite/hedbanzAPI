@@ -8,9 +8,12 @@ public enum MessageType {
     USER_AFK(13),
     USER_RETURNED(14),
     USER_QUESTION(15),
+    USER_KICK_WARNING(20),
+    USER_KICKED(21),
     USER_WIN(22),
     GAME_OVER(24),
-    WAITING_FOR_PLAYERS(25);
+    WAITING_FOR_PLAYERS(25),
+    UPDATE_USERS_INFO(26);
 
 
     private int code;
