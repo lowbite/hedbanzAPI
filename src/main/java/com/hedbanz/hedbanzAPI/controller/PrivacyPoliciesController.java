@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class PrivacyPoliciesController {
-    @RequestMapping(value = "/privacy_policies", method = RequestMethod.GET)
+    @RequestMapping(value = "/privacy-policies", method = RequestMethod.GET)
     public String getPrivacyPoliciesPage(@RequestParam("lang") String lang){
         if(lang.equals("ru"))
             return "privacy_policies_ru";
-        return "";
+        return "privacy_policies_ru";
     }
 }

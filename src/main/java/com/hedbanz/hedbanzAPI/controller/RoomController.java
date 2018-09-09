@@ -13,6 +13,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import javax.xml.soap.Text;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -182,26 +183,29 @@ public class RoomController {
         Room room = roomService.leaveUserFromRoom(userToRoomDto.getUserId(), userToRoomDto.getRoomId());
         User user = userService.getUser(userToRoomDto.getUserId());
         if (room.getGameStatus() != GameStatus.WAITING_FOR_PLAYERS) {
-            Player player = getLastPlayer(room);
-            if (player != null && !TextUtils.isEmpty(player.getUser().getFcmToken())) {
+            Player lastPlayer = getLastPlayer(room);
+            if (lastPlayer != null && !TextUtils.isEmpty(lastPlayer.getUser().getFcmToken())) {
                 Notification notification = new Notification("Last player in room!",
                         "You are the last player in room");
                 FcmPush.FcmPushData<PushMessageDto> fcmPushData = new FcmPush.FcmPushData<>(
                         NotificationMessageType.LAST_PLAYER.getCode(),
-                                new PushMessageDto.Builder()
-                                        .setRoomId(room.getId())
-                                        .setRoomName(room.getName())
-                                        .build());
+                        new PushMessageDto.Builder()
+                                .setRoomId(room.getId())
+                                .setRoomName(room.getName())
+                                .build());
                 FcmPush fcmPush = new FcmPush.Builder().setNotification(notification)
-                        .setTo(player.getUser().getFcmToken())
+                        .setTo(lastPlayer.getUser().getFcmToken())
                         .setPriority("normal")
                         .setData(fcmPushData)
                         .build();
                 fcmService.sendPushNotification(fcmPush);
             }
-            messageService.deleteSettingWordMessage(room.getId(), user.getUserId());
+            Player player = playerService.getPlayer(user.getUserId(), room.getId());
+            if (TextUtils.isEmpty(playerService.getPlayer(player.getWordReceiverUserId(), room.getId()).getWord())) {
+                messageService.deleteSettingWordMessage(room.getId(), user.getUserId());
+            }
 
-            if(room.getGameStatus() == GameStatus.SETTING_WORDS){
+            if (room.getGameStatus() == GameStatus.SETTING_WORDS) {
                 messageService.addRoomEventMessage(MessageType.UPDATE_USERS_INFO, room.getId());
             }
         }
@@ -292,16 +296,18 @@ public class RoomController {
 
     @RequestMapping(method = RequestMethod.PUT, value = "/{roomId}/messages/waiting-players")
     @ResponseStatus(OK)
-    public ResponseBody<?> addWaitingForPlayersMessage(@PathVariable("roomId") long roomId){
+    public ResponseBody<?> addWaitingForPlayersMessage(@PathVariable("roomId") long roomId) {
         messageService.addRoomEventMessage(MessageType.WAITING_FOR_PLAYERS, roomId);
         return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, null);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{roomId}/messages/last-question")
     @ResponseStatus(OK)
-    public ResponseBody<QuestionDto> getLastQuestion(@PathVariable("roomId") long roomId){
+    public ResponseBody<QuestionDto> getLastQuestion(@PathVariable("roomId") long roomId) {
         Question lastQuestion = messageService.getLastQuestionInRoom(roomId);
-        return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, conversionService.convert(lastQuestion, QuestionDto.class));
+        QuestionDto questionDto = conversionService.convert(lastQuestion, QuestionDto.class);
+        questionDto.setRoomId(roomId);
+        return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, questionDto);
     }
 
 }

@@ -257,9 +257,8 @@ public class MessageServiceImpl implements MessageService {
         if (senderId == null)
             throw ExceptionFactory.create(InputError.EMPTY_USER_ID);
         Message message = messageRepository.findMessageByWordSettingType(senderId, roomId);
-        if (message == null)
-            throw ExceptionFactory.create(NotFoundError.NO_SUCH_MESSAGE);
-        messageRepository.delete(message);
+        if (message != null)
+            messageRepository.delete(message);
     }
 
     @Transactional

@@ -50,7 +50,7 @@ public class GameServiceImpl implements GameService {
 
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
     public Player getNextGuessingPlayer(Long roomId) {
-       /* List<Player> players = playerRepository.findPlayersByRoomId(roomId);
+        List<Player> players = playerRepository.findPlayersByRoomId(roomId);
         if (players == null)
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM);
 
@@ -58,82 +58,49 @@ public class GameServiceImpl implements GameService {
         Player nextGuessingPLayer = null;
         int currentGuessingPlayerIndex = 0;
         for (int i = 0; i < players.size(); i++) {
-            if(players.get(i).getAttempt() != 0){
-                currentGuessingPlayer = players.get(i);
-                currentGuessingPlayerIndex = i;
-            }
-        }
-        if (currentGuessingPlayer == null) {
-            nextGuessingPLayer = players.get(0);
-            nextGuessingPLayer.setAttempt(1);
-            if(nextGuessingPLayer.getIsWinner()){
-                nextGuessingPLayer = getNextGuessingPlayerAfterCurrentPlayer(players, 0);
-            }
-        }else if (currentGuessingPlayer.getAttempt() < MAX_GUESS_ATTEMPTS){
-            if (currentGuessingPlayer.getStatus() != PlayerStatus.ACTIVE) {
-                playerRepository.updatePlayerAttempts(0, currentGuessingPlayer.getId());
-                nextGuessingPLayer = getNextGuessingPlayerAfterCurrentPlayer(players, currentGuessingPlayerIndex);
-            } else {
-                nextGuessingPLayer = currentGuessingPlayer;
-                nextGuessingPLayer.setAttempt(nextGuessingPLayer.getAttempt() + 1);
-            }
-        } else {
-            playerRepository.updatePlayerAttempts(0, currentGuessingPlayer.getId());
-            nextGuessingPLayer = getNextGuessingPlayerAfterCurrentPlayer(players, currentGuessingPlayerIndex);
-        }
-        if (isLastGuessingPlayer(players, nextGuessingPLayer.getId())) {
-            nextGuessingPLayer.setAttempt(-1);
-        }
-        playerRepository.updatePlayerAttempts(nextGuessingPLayer.getAttempt(), nextGuessingPLayer.getId());
-        return (Player) nextGuessingPLayer.clone();*/
-
-        List<Player> players = playerRepository.findPlayersByRoomId(roomId);
-        if (players == null)
-            throw ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM);
-
-        Player currentGuessingPlayer = null;
-            Player nextGuessingPLayer = null;
-        int currentGuessingPlayerIndex = 0;
-        for (int i = 0; i < players.size(); i++) {
             if (players.get(i).getAttempt() != 0) {
                 currentGuessingPlayer = players.get(i);
                 currentGuessingPlayerIndex = i;
             }
         }
-        if (currentGuessingPlayer.getAttempt() != -1) {
-            if (currentGuessingPlayer.getIsWinner()) {
+        if (currentGuessingPlayer.getAttempt() == -1) {
+            if (isLastGuessingPlayer(players, currentGuessingPlayer.getId()))
+                return currentGuessingPlayer;
+            else
                 currentGuessingPlayer.setAttempt(0);
-                nextGuessingPLayer = findNonAfkNextGuessingPlayer(currentGuessingPlayerIndex, players);
-                if (nextGuessingPLayer == null) {
-                    nextGuessingPLayer = findAfkNextGuessingPLayer(currentGuessingPlayerIndex, players);
-                }
-            } else if (currentGuessingPlayer.getAttempt() < MAX_GUESS_ATTEMPTS) {
-                if (currentGuessingPlayer.getStatus() == PlayerStatus.ACTIVE) {
-                    nextGuessingPLayer = currentGuessingPlayer;
-                    nextGuessingPLayer.setAttempt(nextGuessingPLayer.getAttempt() + 1);
-                } else {
-                    currentGuessingPlayer.setAttempt(0);
-                    nextGuessingPLayer = findNonAfkNextGuessingPlayer(currentGuessingPlayerIndex, players);
-                    if (nextGuessingPLayer == null) {
-                        nextGuessingPLayer = findAfkNextGuessingPLayer(currentGuessingPlayerIndex, players);
-                    }
-                }
-            } else if (currentGuessingPlayer.getAttempt() == MAX_GUESS_ATTEMPTS) {
-                currentGuessingPlayer.setAttempt(0);
-                nextGuessingPLayer = findNonAfkNextGuessingPlayer(currentGuessingPlayerIndex, players);
-                if (nextGuessingPLayer == null) {
-                    nextGuessingPLayer = findAfkNextGuessingPLayer(currentGuessingPlayerIndex, players);
-                }
-            }
-
-            if (isLastGuessingPlayer(players, nextGuessingPLayer.getId())) {
-                nextGuessingPLayer.setAttempt(-1);
-            }
-            playerRepository.save(nextGuessingPLayer);
-            playerRepository.save(currentGuessingPlayer);
-            return (Player) nextGuessingPLayer.clone();
         }
-        return currentGuessingPlayer;
+        if (currentGuessingPlayer.getIsWinner()) {
+            currentGuessingPlayer.setAttempt(0);
+            nextGuessingPLayer = findNonAfkNextGuessingPlayer(currentGuessingPlayerIndex, players);
+            if (nextGuessingPLayer == null) {
+                nextGuessingPLayer = findAfkNextGuessingPLayer(currentGuessingPlayerIndex, players);
+            }
+        } else if (currentGuessingPlayer.getAttempt() < MAX_GUESS_ATTEMPTS) {
+            if (currentGuessingPlayer.getStatus() == PlayerStatus.ACTIVE) {
+                nextGuessingPLayer = currentGuessingPlayer;
+                nextGuessingPLayer.setAttempt(nextGuessingPLayer.getAttempt() + 1);
+            } else {
+                currentGuessingPlayer.setAttempt(0);
+                nextGuessingPLayer = findNonAfkNextGuessingPlayer(currentGuessingPlayerIndex, players);
+                if (nextGuessingPLayer == null) {
+                    nextGuessingPLayer = findAfkNextGuessingPLayer(currentGuessingPlayerIndex, players);
+                }
+            }
+        } else if (currentGuessingPlayer.getAttempt() == MAX_GUESS_ATTEMPTS) {
+            currentGuessingPlayer.setAttempt(0);
+            nextGuessingPLayer = findNonAfkNextGuessingPlayer(currentGuessingPlayerIndex, players);
+            if (nextGuessingPLayer == null) {
+                nextGuessingPLayer = findAfkNextGuessingPLayer(currentGuessingPlayerIndex, players);
+            }
+        }
+
+        if (isLastGuessingPlayer(players, nextGuessingPLayer.getId())) {
+            nextGuessingPLayer.setAttempt(-1);
+        }
+        playerRepository.save(nextGuessingPLayer);
+        playerRepository.save(currentGuessingPlayer);
+        return (Player) nextGuessingPLayer.clone();
+
     }
 
     private Player findAfkNextGuessingPLayer(int currentGuessingPlayerIndex, List<Player> players) {
@@ -174,41 +141,6 @@ public class GameServiceImpl implements GameService {
             }
         }
         return null;
-    }
-
-    private Player getNextGuessingPlayerAfterCurrentPlayer(List<Player> players, int currentPlayerIndex) {
-        Player nextPlayer;
-        for (int i = currentPlayerIndex + 1; i < players.size(); i++) {
-            nextPlayer = players.get(i);
-            if (nextPlayer.getStatus() == PlayerStatus.ACTIVE && !nextPlayer.getIsWinner()) {
-                nextPlayer.setAttempt(1);
-                return nextPlayer;
-            }
-        }
-
-        for (int i = 0; i < currentPlayerIndex; i++) {
-            nextPlayer = players.get(i);
-            if (nextPlayer.getStatus() == PlayerStatus.ACTIVE && !nextPlayer.getIsWinner()) {
-                nextPlayer.setAttempt(1);
-                return nextPlayer;
-            }
-        }
-        for (int i = currentPlayerIndex + 1; i < players.size(); i++) {
-            nextPlayer = players.get(i);
-            if (!nextPlayer.getIsWinner()) {
-                nextPlayer.setAttempt(1);
-                return nextPlayer;
-            }
-        }
-
-        for (int i = 0; i < currentPlayerIndex; i++) {
-            nextPlayer = players.get(i);
-            if (!nextPlayer.getIsWinner()) {
-                nextPlayer.setAttempt(1);
-                return nextPlayer;
-            }
-        }
-        return players.get(currentPlayerIndex);
     }
 
     private boolean isLastGuessingPlayer(List<Player> players, long currentPlayerId) {
