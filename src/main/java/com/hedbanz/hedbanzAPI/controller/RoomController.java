@@ -180,8 +180,9 @@ public class RoomController {
     @ResponseStatus(OK)
     public ResponseBody<UserDto> leaveFromRoom(@RequestBody UserToRoomDto userToRoomDto) {
         messageService.addPlayerEventMessage(MessageType.LEFT_USER, userToRoomDto.getUserId(), userToRoomDto.getRoomId());
-        Room room = roomService.leaveUserFromRoom(userToRoomDto.getUserId(), userToRoomDto.getRoomId());
         User user = userService.getUser(userToRoomDto.getUserId());
+        Player player = playerService.getPlayer(user.getUserId(), userToRoomDto.getRoomId());
+        Room room = roomService.leaveUserFromRoom(userToRoomDto.getUserId(), userToRoomDto.getRoomId());
         if (room.getGameStatus() != GameStatus.WAITING_FOR_PLAYERS) {
             Player lastPlayer = getLastPlayer(room);
             if (lastPlayer != null && !TextUtils.isEmpty(lastPlayer.getUser().getFcmToken())) {
@@ -200,7 +201,6 @@ public class RoomController {
                         .build();
                 fcmService.sendPushNotification(fcmPush);
             }
-            Player player = playerService.getPlayer(user.getUserId(), room.getId());
             if (TextUtils.isEmpty(playerService.getPlayer(player.getWordReceiverUserId(), room.getId()).getWord())) {
                 messageService.deleteSettingWordMessage(room.getId(), user.getUserId());
             }
