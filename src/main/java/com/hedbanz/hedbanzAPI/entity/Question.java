@@ -1,7 +1,9 @@
 package com.hedbanz.hedbanzAPI.entity;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "question")
@@ -12,19 +14,19 @@ public class Question {
     private Long id;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH})
-    private List<Player> yesVoters;
+    private Set<Player> yesVoters = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH})
-    private List<Player> noVoters;
+    private Set<Player> noVoters = new HashSet<>();;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH})
-    private List<Player> winVoters;
+    private Set<Player> winVoters = new HashSet<>();;
 
     private Integer attempt;
 
     public Question(){}
 
-    private Question(List<Player> yesVoters, List<Player> noVoters, List<Player> winVoters, Integer attempt) {
+    private Question(Set<Player> yesVoters, Set<Player> noVoters, Set<Player> winVoters, Integer attempt) {
         this.yesVoters = yesVoters;
         this.noVoters = noVoters;
         this.winVoters = winVoters;
@@ -39,27 +41,27 @@ public class Question {
         this.id = id;
     }
 
-    public List<Player> getYesVoters() {
+    public Set<Player> getYesVoters() {
         return yesVoters;
     }
 
-    public void setYesVoters(List<Player> yesVoters) {
+    public void setYesVoters(Set<Player> yesVoters) {
         this.yesVoters = yesVoters;
     }
 
-    public List<Player> getNoVoters() {
+    public Set<Player> getNoVoters() {
         return noVoters;
     }
 
-    public void setNoVoters(List<Player> noVoters) {
+    public void setNoVoters(Set<Player> noVoters) {
         this.noVoters = noVoters;
     }
 
-    public List<Player> getWinVoters() {
+    public Set<Player> getWinVoters() {
         return winVoters;
     }
 
-    public void setWinVoters(List<Player> winVoters) {
+    public void setWinVoters(Set<Player> winVoters) {
         this.winVoters = winVoters;
     }
 
@@ -138,22 +140,22 @@ public class Question {
     }
 
     public static class Builder {
-        private List<Player> yesVoters;
-        private List<Player> noVoters;
-        private List<Player> winVoters;
+        private Set<Player> yesVoters = new HashSet<>();
+        private Set<Player> noVoters = new HashSet<>();
+        private Set<Player> winVoters = new HashSet<>();
         private Integer attempt;
 
-        public Builder setYesVoters(List<Player> yesVoters) {
+        public Builder setYesVoters(Set<Player> yesVoters) {
             this.yesVoters = yesVoters;
             return this;
         }
 
-        public Builder setNoVoters(List<Player> noVoters) {
+        public Builder setNoVoters(Set<Player> noVoters) {
             this.noVoters = noVoters;
             return this;
         }
 
-        public Builder setWinVoters(List<Player> winVoters) {
+        public Builder setWinVoters(Set<Player> winVoters) {
             this.winVoters = winVoters;
             return this;
         }
