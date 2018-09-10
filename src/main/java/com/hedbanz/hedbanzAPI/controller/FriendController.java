@@ -89,13 +89,14 @@ public class FriendController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseBody<InviteDto> inviteFriendIntoRoom(@RequestBody InviteDto inviteDto) {
         roomService.checkPlayerInRoom(inviteDto.getSenderId(), inviteDto.getRoomId());
+        User senderUser = userService.getUser(inviteDto.getSenderId());
         for (Long userId : inviteDto.getInvitedUserIds()) {
             User user = userService.getUser(userId);
             if (!TextUtils.isEmpty(user.getFcmToken())) {
                 userService.addInvite(userId, inviteDto.getRoomId());
                 Room room = roomService.getRoom(inviteDto.getRoomId());
                 PushMessageDto pushMessageDto = new PushMessageDto.Builder()
-                        .setSenderName(user.getLogin())
+                        .setSenderName(senderUser.getLogin())
                         .setRoomName(room.getName())
                         .setRoomId(inviteDto.getRoomId())
                         .build();
