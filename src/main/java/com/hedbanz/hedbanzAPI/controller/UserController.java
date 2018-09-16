@@ -2,12 +2,15 @@ package com.hedbanz.hedbanzAPI.controller;
 
 import com.hedbanz.hedbanzAPI.constant.ResultStatus;
 import com.hedbanz.hedbanzAPI.entity.Feedback;
+import com.hedbanz.hedbanzAPI.entity.Player;
 import com.hedbanz.hedbanzAPI.error.AuthenticationError;
 import com.hedbanz.hedbanzAPI.error.InputError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
+import com.hedbanz.hedbanzAPI.model.Friend;
 import com.hedbanz.hedbanzAPI.model.ResponseBody;
 import com.hedbanz.hedbanzAPI.security.JwtTokenProvider;
 import com.hedbanz.hedbanzAPI.service.FeedbackService;
+import com.hedbanz.hedbanzAPI.service.PlayerService;
 import com.hedbanz.hedbanzAPI.transfer.*;
 import com.hedbanz.hedbanzAPI.entity.User;
 import com.hedbanz.hedbanzAPI.service.UserService;
@@ -22,21 +25,25 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping(value = "/user")
 public class UserController {
     private final FeedbackService feedbackService;
     private final UserService userService;
+    private final PlayerService playerService;
     private final ConversionService conversionService;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserController(FeedbackService feedbackService, UserService userService, @Qualifier("APIConversionService") ConversionService conversionService,
+    public UserController(FeedbackService feedbackService, UserService userService, PlayerService playerService, @Qualifier("APIConversionService") ConversionService conversionService,
                           AuthenticationManager authenticationManager, JwtTokenProvider tokenProvider, PasswordEncoder passwordEncoder) {
         this.feedbackService = feedbackService;
         this.userService = userService;
+        this.playerService = playerService;
         this.conversionService = conversionService;
         this.authenticationManager = authenticationManager;
         this.tokenProvider = tokenProvider;
@@ -83,8 +90,8 @@ public class UserController {
 
     @RequestMapping(method = RequestMethod.PATCH, value = "update-info", consumes = "application/json")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseBody<UserDto> updateUserInfo(@RequestBody UserDto userDto, Authentication authentication){
-        if(!userDto.getLogin().equals(authentication.getName()))
+    public ResponseBody<UserDto> updateUserInfo(@RequestBody UserDto userDto, Authentication authentication) {
+        if (!userDto.getLogin().equals(authentication.getName()))
             throw ExceptionFactory.create(AuthenticationError.ACCESS_DENIED);
         User user = userService.updateUserInfo(conversionService.convert(userDto, User.class));
         return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, conversionService.convert(user, UserDto.class));
@@ -94,7 +101,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseBody<UserDto> updateUserData(@RequestBody UserUpdateDto userData) {
         User user = userService.getUser(userData.getId());
-        if(userData.getOldPassword() != null && !passwordEncoder.matches(userData.getOldPassword(),user.getPassword())){
+        if (userData.getOldPassword() != null && !passwordEncoder.matches(userData.getOldPassword(), user.getPassword())) {
             throw ExceptionFactory.create(InputError.INCORRECT_CREDENTIALS);
         }
         User updatedUser = userService.updateUserData(conversionService.convert(userData, User.class));
@@ -109,6 +116,19 @@ public class UserController {
         UserDto resultUserDto = conversionService.convert(foundUser, UserDto.class);
         resultUserDto.setFriendsNumber(userService.getFriendsNumber(userId));
         return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, resultUserDto);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/{userId}/for-user/{forUserId}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseBody<Friend> getUserOrFriend(@PathVariable("userId") long userId, @PathVariable("forUserId") long forUserId) {
+        List<Friend> friends = userService.getUserFriends(forUserId);
+        User user = userService.getUser(userId);
+        for (Friend friend : friends) {
+            if (friend.getId().equals(user.getUserId())) {
+                return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, friend);
+            }
+        }
+        return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, conversionService.convert(user, Friend.class));
     }
 
     @RequestMapping(method = RequestMethod.PUT, value = "/{userId}/token")
@@ -127,7 +147,7 @@ public class UserController {
 
     @RequestMapping(method = RequestMethod.PUT, value = "/feedback", consumes = "application/json")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseBody<?> saveFeedback(@RequestBody FeedbackDto feedbackDto){
+    public ResponseBody<?> saveFeedback(@RequestBody FeedbackDto feedbackDto) {
         feedbackService.saveFeedback(conversionService.convert(feedbackDto, Feedback.class));
         return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, true);
     }

@@ -34,6 +34,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "WHERE u.id = :userId AND ff.id = :userId AND r.id = :roomId")
     List<Friend> findAcceptedFriendsWithInvitesToRoom(@Param("userId") long userId, @Param("roomId") long roomId);
 
+    @Query("SELECT new com.hedbanz.hedbanzAPI.model.Friend(u.id, u.login, u.iconId, 1, 0, 1, 0) FROM Room r INNER JOIN r.players p INNER JOIN p.user u " +
+            "INNER JOIN u.friends f INNER JOIN f.friends ff WHERE f.id = :userId AND ff.id = u.id AND r.id = :roomId")
+    List<Friend> findFriendsInRoom(@Param("userId") long userId, @Param("roomId") long roomId);
+
+    @Query("SELECT new com.hedbanz.hedbanzAPI.model.Friend(u.id, u.login, u.iconId, 1, 0, 1, 1) FROM Room r INNER JOIN r.players p INNER JOIN p.user u " +
+                  "INNER JOIN u.friends f INNER JOIN f.friends ff JOIN u.invitedToRooms ir WHERE f.id = :userId AND ff.id = u.id AND r.id = :roomId AND ir.id = :roomId")
+    List<Friend> findFriendsWithInvitesInRoom(@Param("userId") long userId, @Param("roomId") long roomId);
+
     @Query(value = "SELECT new com.hedbanz.hedbanzAPI.model.Friend(f.id, f.login, f.iconId, 0, 1) FROM User u " +
             "INNER JOIN u.friends f WHERE u.id = :userId")
     List<Friend> findPendingAndAcceptedFriends(@Param("userId") long userId);

@@ -18,11 +18,13 @@ public interface MessageService {
 
     Message addQuestionText(Long questionId, String text);
 
-    Question addVote(Vote vote);
+    void addVote(Vote vote);
 
     Question getLastQuestionInRoom(Long roomId);
 
     Message getMessageByQuestionId(Long questionId);
+
+    Question getQuestionByQuestionId(Long questionId);
 
     Question addSettingQuestionMessage(Long roomId, Long senderId);
 
@@ -33,4 +35,6 @@ public interface MessageService {
     Message getSettingWordMessage(Long roomId, Long senderId);
 
     void deleteAllMessagesByRoom(Long roomId);
+
+    void deleteEmptyQuestions(Long roomId, Long userId);
 }

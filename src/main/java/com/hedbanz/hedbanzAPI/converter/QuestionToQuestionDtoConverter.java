@@ -7,16 +7,22 @@ import org.springframework.core.convert.converter.Converter;
 import java.util.stream.Collectors;
 
 public class QuestionToQuestionDtoConverter implements Converter<Question, QuestionDto> {
+    private final PlayerToPlayerDtoConverter playerToPlayerDtoConverter;
+
+    public QuestionToQuestionDtoConverter(PlayerToPlayerDtoConverter playerToPlayerDtoConverter) {
+        this.playerToPlayerDtoConverter = playerToPlayerDtoConverter;
+    }
+
     @Override
     public QuestionDto convert(Question question) {
-        PlayerToPlayerDtoConverter converter = new PlayerToPlayerDtoConverter();
         return new QuestionDto.QuestionDTOBuilder().setQuestionId(question.getId())
                 .setYesVoters(question.getYesVoters() != null ?
-                        question.getYesVoters().stream().map(converter::convert).collect(Collectors.toList()) : null)
+                        question.getYesVoters().stream().map(playerToPlayerDtoConverter::convert).collect(Collectors.toList()) : null)
                 .setNoVoters(question.getNoVoters() != null ?
-                        question.getNoVoters().stream().map(converter::convert).collect(Collectors.toList()) : null)
+                        question.getNoVoters().stream().map(playerToPlayerDtoConverter::convert).collect(Collectors.toList()) : null)
                 .setWinVoters(question.getWinVoters() != null ?
-                        question.getWinVoters().stream().map(converter::convert).collect(Collectors.toList()) : null)
+                        question.getWinVoters().stream().map(playerToPlayerDtoConverter::convert).collect(Collectors.toList()) : null)
+                .setAttempt(question.getAttempt())
                 .build();
     }
 }

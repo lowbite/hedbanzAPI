@@ -153,19 +153,20 @@ public class RoomController {
     @RequestMapping(method = RequestMethod.POST, value = "/join-user")
     @ResponseStatus(OK)
     public ResponseBody<RoomDto> joinUserToRoom(@RequestBody UserToRoomDto userToRoomDto) {
-        Room room = roomService.addUserToRoom(userToRoomDto.getUserId(),
+        roomService.addUserToRoom(userToRoomDto.getUserId(),
                 userToRoomDto.getRoomId(), userToRoomDto.getPassword());
         messageService.addPlayerEventMessage(
                 MessageType.JOINED_USER, userToRoomDto.getUserId(), userToRoomDto.getRoomId()
         );
         List<Friend> friends = userService.getUserFriends(userToRoomDto.getUserId());
+        Room room = roomService.getRoom(userToRoomDto.getRoomId());
         RoomDto resultRoom = conversionService.convert(room, RoomDto.class);
         resultRoom.setPlayers(room.getPlayers().stream()
                 .map(player -> conversionService.convert(player, PlayerDto.class))
                 .collect(Collectors.toList()));
         for (Friend friend : friends) {
             for (PlayerDto player : resultRoom.getPlayers()) {
-                if (friend.getId().equals(player.getId())) {
+                if (friend.getId().equals(player.getUserId())) {
                     if (friend.getIsAccepted())
                         player.setIsFriend(true);
                     else if (friend.getIsPending())
@@ -182,7 +183,8 @@ public class RoomController {
         messageService.addPlayerEventMessage(MessageType.LEFT_USER, userToRoomDto.getUserId(), userToRoomDto.getRoomId());
         User user = userService.getUser(userToRoomDto.getUserId());
         Player player = playerService.getPlayer(user.getUserId(), userToRoomDto.getRoomId());
-        Room room = roomService.leaveUserFromRoom(userToRoomDto.getUserId(), userToRoomDto.getRoomId());
+        roomService.leaveUserFromRoom(userToRoomDto.getUserId(), userToRoomDto.getRoomId());
+        Room room = roomService.getRoom(userToRoomDto.getRoomId());
         if (room.getGameStatus() != GameStatus.WAITING_FOR_PLAYERS) {
             Player lastPlayer = getLastPlayer(room);
             if (lastPlayer != null && !TextUtils.isEmpty(lastPlayer.getUser().getFcmToken())) {
@@ -208,6 +210,10 @@ public class RoomController {
             if (room.getGameStatus() == GameStatus.SETTING_WORDS) {
                 messageService.addRoomEventMessage(MessageType.UPDATE_USERS_INFO, room.getId());
             }
+
+            /*if(room.getGameStatus() == GameStatus.GUESSING_WORDS) {
+                messageService.deleteEmptyQuestions(room.getId(), user.getUserId());
+            }*/
         }
         if (room.getCurrentPlayersNumber() == 0 || isPlayersAbsent(room)) {
             roomService.deleteRoom(room.getId());
@@ -310,4 +316,18 @@ public class RoomController {
         return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, questionDto);
     }
 
+    @RequestMapping(method = RequestMethod.GET, value = "/{roomId}/messages/question/{questionId}/questioner")
+    @ResponseStatus(OK)
+    public ResponseBody<PlayerDto> getQuestioner(@PathVariable("roomId") long roomId, @PathVariable("questionId") long questionId) {
+        Message message = messageService.getMessageByQuestionId(questionId);
+        Player player = playerService.getPlayer(message.getSenderUser().getUserId(), message.getRoom().getId());
+        return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, conversionService.convert(player, PlayerDto.class));
+    }
+
+    @RequestMapping(method = RequestMethod.DELETE, value = "/{roomId}/messages/user/{userId}/empty-question")
+    @ResponseStatus(OK)
+    public ResponseBody<PlayerDto> deletePlayerEmptyQuestion(@PathVariable("roomId") long roomId, @PathVariable("userId") long userId){
+        messageService.deleteEmptyQuestions(roomId, userId);
+        return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, null);
+    }
 }

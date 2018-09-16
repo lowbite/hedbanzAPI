@@ -130,6 +130,13 @@ public class PlayerDto {
         isWinner = winner;
     }
 
+    @Override
+    public String toString() {
+        return "PlayerDto{" +
+                "login='" + login + '\'' +
+                '}';
+    }
+
     public static class PlayerDTOBuilder {
         private Long id;
         private String login;

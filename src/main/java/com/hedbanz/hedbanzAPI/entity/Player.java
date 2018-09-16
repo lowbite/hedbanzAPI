@@ -38,6 +38,9 @@ public class Player implements Cloneable{
     @Column(columnDefinition = "tinyint(1) default 0")
     private boolean isWinner;
 
+    @Version
+    private long version;
+
     public Player() {
     }
 
@@ -121,6 +124,19 @@ public class Player implements Cloneable{
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (user != null ? user.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Player{" +
+                "id=" + id +
+                ", word='" + word + '\'' +
+                ", attempt=" + attempt +
+                ", status=" + status +
+                ", login=" + user.getLogin() +
+                ", wordReceiverUserId=" + wordReceiverUserId +
+                ", isWinner=" + isWinner +
+                '}';
     }
 
     @Override

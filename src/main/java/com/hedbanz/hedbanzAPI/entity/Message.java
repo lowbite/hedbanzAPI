@@ -106,6 +106,18 @@ public class Message extends AuditModel implements Cloneable {
     }
 
     @Override
+    public String toString() {
+        return "Message{" +
+                "id=" + id +
+                ", senderUser=" + senderUser +
+                ", text='" + text + '\'' +
+                ", type=" + type +
+                ", question=" + question +
+                ", room=" + room.getName() +
+                '}';
+    }
+
+    @Override
     public Object clone() {
         try {
             super.clone();

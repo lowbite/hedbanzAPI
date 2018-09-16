@@ -8,6 +8,8 @@ import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
 import com.hedbanz.hedbanzAPI.model.Vote;
 import com.hedbanz.hedbanzAPI.repository.*;
 import com.hedbanz.hedbanzAPI.service.MessageService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +33,8 @@ public class MessageServiceImpl implements MessageService {
     private final MessageRepository messageRepository;
     private final QuestionRepository questionRepository;
     private final PlayerRepository playerRepository;
+
+    private final Logger log = LoggerFactory.getLogger("Message service");
 
     @Autowired
     public MessageServiceImpl(RoomRepository roomRepository, UserRepository userRepository,
@@ -126,7 +130,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public Question addVote(Vote vote) {
+    public void addVote(Vote vote) {
         if (vote.getQuestionId() == null)
             throw ExceptionFactory.create(InputError.EMPTY_QUESTION_ID);
         if (vote.getSenderId() == null)
@@ -144,7 +148,7 @@ public class MessageServiceImpl implements MessageService {
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER_IN_ROOM);
         }
 
-        Question question = questionRepository.findOne(vote.getQuestionId());
+        Question question = questionRepository.findQuestionById(vote.getQuestionId());
         if (question == null)
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_QUESTION);
 
@@ -170,10 +174,10 @@ public class MessageServiceImpl implements MessageService {
             else if (question.yesVotersContainPlayer(player))
                 question.removeYesVoter(player);
         }
-        return questionRepository.saveAndFlush(question);
+        questionRepository.saveAndFlush(question);
     }
 
-    @Override
+    @Transactional(readOnly = true)
     public Question getLastQuestionInRoom(Long roomId) {
         if (roomId == null)
             throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
@@ -184,7 +188,7 @@ public class MessageServiceImpl implements MessageService {
         return questions.get(0);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, isolation = Isolation.READ_COMMITTED)
     public Message getMessageByQuestionId(Long questionId) {
         if (questionId == null)
             throw ExceptionFactory.create(InputError.EMPTY_QUESTION_ID);
@@ -193,6 +197,16 @@ public class MessageServiceImpl implements MessageService {
         if (message == null)
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_QUESTION);
         return message;
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
+    public Question getQuestionByQuestionId(Long questionId) {
+        if (questionId == null)
+            throw ExceptionFactory.create(InputError.EMPTY_QUESTION_ID);
+        Question question = questionRepository.findOne(questionId);
+        if (question == null)
+            throw ExceptionFactory.create(NotFoundError.NO_SUCH_QUESTION);
+        return question;
     }
 
     @Transactional
@@ -261,7 +275,7 @@ public class MessageServiceImpl implements MessageService {
             messageRepository.delete(message);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Message getSettingWordMessage(Long roomId, Long senderId) {
         if (roomId == null)
             throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
@@ -278,6 +292,15 @@ public class MessageServiceImpl implements MessageService {
         if (roomId == null)
             throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
         messageRepository.deleteAllByRoom_Id(roomId);
+    }
+
+    @Transactional
+    public void deleteEmptyQuestions(Long roomId, Long userId) {
+        if (roomId == null)
+            throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
+        if (userId == null)
+            throw ExceptionFactory.create(InputError.EMPTY_USER_ID);
+        messageRepository.deleteMessageWithEmptyQuestion(userId, roomId);
     }
 
     @Transactional(readOnly = true)

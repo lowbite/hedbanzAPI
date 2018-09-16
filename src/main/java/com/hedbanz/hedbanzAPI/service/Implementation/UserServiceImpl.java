@@ -3,7 +3,6 @@ package com.hedbanz.hedbanzAPI.service.Implementation;
 import static com.hedbanz.hedbanzAPI.constant.Constants.*;
 
 import com.hedbanz.hedbanzAPI.constant.RoleName;
-import com.hedbanz.hedbanzAPI.entity.Feedback;
 import com.hedbanz.hedbanzAPI.entity.Role;
 import com.hedbanz.hedbanzAPI.entity.Room;
 import com.hedbanz.hedbanzAPI.error.InputError;
@@ -287,10 +286,10 @@ public class UserServiceImpl implements UserService {
 
         List<Friend> allFriends = new LinkedList<>(userRepository.findAcceptedFriends(userId));
         List<Friend> invitedFriends = new ArrayList<>(userRepository.findAcceptedFriendsWithInvitesToRoom(userId, roomId));
-        List<Friend> friendsInRoom = new ArrayList<>(roomRepository.findAcceptedFriendsInRoom(userId, roomId));
+        List<Friend> friendsInRoom = new ArrayList<>(userRepository.findFriendsInRoom(userId, roomId));
         allFriends.removeAll(invitedFriends);
-        allFriends.removeAll(friendsInRoom);
         allFriends.addAll(invitedFriends);
+        allFriends.removeAll(friendsInRoom);
         allFriends.addAll(friendsInRoom);
         return allFriends.stream().distinct().collect(Collectors.toList());
     }

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<body>
+<div class="row align-content-center panel-data">
+    <div class="col-2"></div>
+    <div class="col-4">
+            <label class="label-font"> Application version</label>
+            <div class="wrap-input100 m-b-30">
+                <input class="input100 app-version" type="text" th:value="${version}" name="version"
+                       placeholder="Application version"/>
+                <span></span>
+            </div>
+            <div class="container-login100-form-btn m-b-20">
+                <button class="login100-form-btn" type="submit" onclick="updateVersion()">
+                    Update
+                </button>
+            </div>
+        <div class="success collapse">
+            <span>Success</span>
+        </div>
+        <div class="error collapse">
+            <span>Error</span>
+        </div>
+    </div>
+</div>
+</body>
+</html>

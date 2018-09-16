@@ -42,6 +42,15 @@ public class PlayerGuessingDto {
         return new PlayerGuessingDto(). new PlayerGuessingDtoBuilder();
     }
 
+    @Override
+    public String toString() {
+        return "PlayerGuessingDto{" +
+                "player=" + player +
+                ", attempt=" + attempt +
+                ", questionId=" + questionId +
+                '}';
+    }
+
     public class PlayerGuessingDtoBuilder{
         private PlayerGuessingDtoBuilder(){}
 

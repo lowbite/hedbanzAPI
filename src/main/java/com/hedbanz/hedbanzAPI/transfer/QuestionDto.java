@@ -92,6 +92,18 @@ public class QuestionDto extends MessageDto{
         this.winVoters = winVoters;
     }
 
+    @Override
+    public String toString() {
+        return "QuestionDto{" +
+                "questionId=" + questionId +
+                ", yesVoters=" + yesVoters +
+                ", noVoters=" + noVoters +
+                ", winVoters=" + winVoters +
+                ", attempt=" + attempt +
+                ", vote=" + vote +
+                '}';
+    }
+
     public static class QuestionDTOBuilder {
         private Long id;
         private UserDto senderUser;

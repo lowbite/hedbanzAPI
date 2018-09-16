@@ -20,7 +20,5 @@ public interface PlayerService {
 
     Player setPlayerWinner(Long userId, Long roomId);
 
-    void startAfkCountdown(Long userId, Long roomId, BroadcastOperations operations);
-
     Integer getActivePlayersNumber(List<Player> players);
 }

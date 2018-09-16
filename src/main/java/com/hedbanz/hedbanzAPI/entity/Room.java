@@ -254,6 +254,23 @@ public class Room implements Serializable{
         invitedUsers = null;
     }
 
+    @Override
+    public String toString() {
+        return "Room{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", password='" + password + '\'' +
+                ", maxPlayers=" + maxPlayers +
+                ", currentPlayersNumber=" + currentPlayersNumber +
+                ", isPrivate=" + isPrivate +
+                ", gameStatus=" + gameStatus +
+                ", invitedUsers=" + invitedUsers +
+                ", roomAdmin=" + roomAdmin +
+                ", stickerId=" + stickerId +
+                ", iconId=" + iconId +
+                '}';
+    }
+
     public static class Builder {
         private Long id;
         private String name;

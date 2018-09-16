@@ -53,6 +53,16 @@ public final class Vote{
         return new Vote().new VoteBuilder();
     }
 
+    @Override
+    public String toString() {
+        return "Vote{" +
+                "senderId=" + senderId +
+                ", roomId=" + roomId +
+                ", questionId=" + questionId +
+                ", voteType=" + voteType +
+                '}';
+    }
+
     public class VoteBuilder{
         private VoteBuilder() {
         }

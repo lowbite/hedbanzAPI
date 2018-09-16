@@ -2,7 +2,6 @@ package com.hedbanz.hedbanzAPI.entity;
 
 import javax.persistence.*;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -13,24 +12,28 @@ public class Question {
     @Column(name = "question_id")
     private Long id;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH})
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST})
     private Set<Player> yesVoters = new HashSet<>();
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH})
-    private Set<Player> noVoters = new HashSet<>();;
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST})
+    private Set<Player> noVoters = new HashSet<>();
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH})
-    private Set<Player> winVoters = new HashSet<>();;
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST})
+    private Set<Player> winVoters = new HashSet<>();
 
     private Integer attempt;
 
+    @OneToOne(mappedBy = "question")
+    private Message message;
+
     public Question(){}
 
-    private Question(Set<Player> yesVoters, Set<Player> noVoters, Set<Player> winVoters, Integer attempt) {
+    private Question(Set<Player> yesVoters, Set<Player> noVoters, Set<Player> winVoters, Integer attempt, Message message) {
         this.yesVoters = yesVoters;
         this.noVoters = noVoters;
         this.winVoters = winVoters;
         this.attempt = attempt;
+        this.message = message;
     }
 
     public Long getId() {
@@ -139,11 +142,31 @@ public class Question {
         return id != null ? id.hashCode() : 0;
     }
 
+    @Override
+    public String toString() {
+        return "Question{" +
+                "id=" + id +
+                ", yesVoters=" + yesVoters +
+                ", noVoters=" + noVoters +
+                ", winVoters=" + winVoters +
+                ", attempt=" + attempt +
+                '}';
+    }
+
+    public Message getMessage() {
+        return message;
+    }
+
+    public void setMessage(Message message) {
+        this.message = message;
+    }
+
     public static class Builder {
         private Set<Player> yesVoters = new HashSet<>();
         private Set<Player> noVoters = new HashSet<>();
         private Set<Player> winVoters = new HashSet<>();
         private Integer attempt;
+        private Message message;
 
         public Builder setYesVoters(Set<Player> yesVoters) {
             this.yesVoters = yesVoters;
@@ -165,8 +188,13 @@ public class Question {
             return this;
         }
 
+        public Builder setMessage(Message message){
+            this.message = message;
+            return this;
+        }
+
         public Question build() {
-            return new Question(yesVoters, noVoters, winVoters, attempt);
+            return new Question(yesVoters, noVoters, winVoters, attempt, message);
         }
     }
 }

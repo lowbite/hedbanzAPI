@@ -57,13 +57,17 @@ public interface ErrorMessages {
     String INCORRECT_FILTER = "Incorrect filter";
 
     String ALREADY_FRIENDS = "You are already friends!";
+    String ALREADY_WIN = "This player already win";
     String NOT_FRIENDS = "You are not friends!";
     String CANT_SEND_FRIENDSHIP_REQUEST = "Can't send friendship request to this user at this time";
+    String NOT_ENOUGH_VOTES_TO_WIN = "This question received not enough votes to set player win";
 
     String ROOM_IS_FULL = "Room is full!";
     String CANT_START_GAME = "Impossible to start game!";
     String GAME_HAS_BEEN_ALREADY_STARTED = "Game has been started!";
     String MAX_ACTIVE_ROOMS_NUMBER = "Player already plays maximal number of allowed games!";
+    String ALREADY_SENT_NEXT_PLAYER = "Next guessing player have been already sent";
+
     String KEY_WORD_IS_EXPIRED = "Key word is expired";
 
     String CANT_SEND_MESSAGE_NOTIFICATION = "Can't send message push notification!";

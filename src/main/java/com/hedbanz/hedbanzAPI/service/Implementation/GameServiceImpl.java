@@ -12,6 +12,8 @@ import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
 import com.hedbanz.hedbanzAPI.repository.PlayerRepository;
 import com.hedbanz.hedbanzAPI.repository.RoomRepository;
 import com.hedbanz.hedbanzAPI.service.GameService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +25,7 @@ public class GameServiceImpl implements GameService {
     private static final int MAX_GUESS_ATTEMPTS = 3;
     private final RoomRepository roomRepository;
     private final PlayerRepository playerRepository;
+    private final Logger log = LoggerFactory.getLogger(GameServiceImpl.class);
 
     public GameServiceImpl(RoomRepository roomRepository, PlayerRepository playerRepository) {
         this.roomRepository = roomRepository;
@@ -49,8 +52,8 @@ public class GameServiceImpl implements GameService {
     }
 
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
-    public Player getNextGuessingPlayer(Long roomId) {
-        List<Player> players = playerRepository.findPlayersByRoomId(roomId);
+    public Player getNextGuessingPlayer(Long roomId, Integer currentAttempt) {
+        List<Player> players = playerRepository.findPlayersByRoomIdWithLock(roomId);
         if (players == null)
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM);
 
@@ -63,6 +66,10 @@ public class GameServiceImpl implements GameService {
                 currentGuessingPlayerIndex = i;
             }
         }
+        log.info("Current guessing player: " + currentGuessingPlayer);
+        if(!currentGuessingPlayer.getAttempt().equals(currentAttempt))
+            throw ExceptionFactory.create(RoomError.ALREADY_SENT_NEXT_PLAYER);
+
         if (currentGuessingPlayer.getAttempt() == -1) {
             if (isLastGuessingPlayer(players, currentGuessingPlayer.getId()))
                 return currentGuessingPlayer;
@@ -97,6 +104,7 @@ public class GameServiceImpl implements GameService {
         if (isLastGuessingPlayer(players, nextGuessingPLayer.getId())) {
             nextGuessingPLayer.setAttempt(-1);
         }
+        log.info("Next guessing player: " + nextGuessingPLayer);
         playerRepository.save(nextGuessingPLayer);
         playerRepository.save(currentGuessingPlayer);
         return (Player) nextGuessingPLayer.clone();
@@ -228,7 +236,7 @@ public class GameServiceImpl implements GameService {
     }
 
     @Transactional
-    public Room setGameOverStatus(Long roomId) {
+    public void setGameOverStatus(Long roomId) {
         if (roomId == null) {
             throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
         }
@@ -238,11 +246,11 @@ public class GameServiceImpl implements GameService {
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM);
 
         room.setGameStatus(GameStatus.GAME_OVER);
-        return roomRepository.saveAndFlush(room);
+        roomRepository.saveAndFlush(room);
     }
 
     @Transactional
-    public void incrementPlayerGamesNumber(Long roomId, Long userId) {
+    public void incrementUserGamesNumber(Long roomId, Long userId) {
         if (roomId == null) {
             throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
         }

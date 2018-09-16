@@ -30,4 +30,8 @@ public interface MessageRepository extends JpaRepository<Message, Long>, PagingA
 
     @Modifying
     int deleteAllByRoom_Id(long roomId);
+
+    @Modifying
+    @Query("DELETE FROM Message m WHERE m.senderUser.userId = :senderId AND m.room.id = :roomId AND m.text = NULL AND m.question IS NOT NULL")
+    int deleteMessageWithEmptyQuestion(@Param("senderId") long senderId,@Param("roomId") long roomId);
 }

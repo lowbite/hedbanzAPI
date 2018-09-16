@@ -7,16 +7,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class RoomToRoomDtoConverter implements Converter<Room, RoomDto> {
-    public RoomToRoomDtoConverter(){
-
-    }
 
     @Override
     public RoomDto convert(Room room) {
         RoomDto roomDto = new RoomDto();
         roomDto.setId(room.getId());
         roomDto.setName(room.getName());
-        roomDto.setCurrentPlayersNumber(room.getPlayers().size());
+        roomDto.setCurrentPlayersNumber(room.getCurrentPlayersNumber());
         roomDto.setMaxPlayers(room.getMaxPlayers());
         roomDto.setIsPrivate(room.getIsPrivate());
         roomDto.setStickerId(room.getStickerId());

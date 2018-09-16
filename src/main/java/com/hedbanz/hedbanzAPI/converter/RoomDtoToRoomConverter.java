@@ -7,10 +7,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class RoomDtoToRoomConverter implements Converter<RoomDto, Room> {
-    public RoomDtoToRoomConverter(){
-
-    }
-
     @Override
     public Room convert(RoomDto roomDto) {
         return new Room.Builder()

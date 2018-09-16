@@ -1,10 +1,7 @@
 package com.hedbanz.hedbanzAPI.service;
 
-import com.hedbanz.hedbanzAPI.constant.PlayerStatus;
-import com.hedbanz.hedbanzAPI.entity.Player;
 import com.hedbanz.hedbanzAPI.entity.Room;
 import com.hedbanz.hedbanzAPI.model.RoomFilter;
-import com.hedbanz.hedbanzAPI.model.Word;
 
 import java.util.List;
 
@@ -26,9 +23,9 @@ public interface RoomService {
 
     void checkRoomPassword(Long roomId, String password);
 
-    Room leaveUserFromRoom(Long userId, Long roomId);
+    void leaveUserFromRoom(Long userId, Long roomId);
 
-    Room addUserToRoom(Long userId, Long roomId, String password);
+    void addUserToRoom(Long userId, Long roomId, String password);
 
     void checkPlayerInRoom(Long userId, Long roomId);
 

@@ -18,10 +18,11 @@ import com.hedbanz.hedbanzAPI.repository.*;
 import com.hedbanz.hedbanzAPI.service.RoomService;
 import com.hedbanz.hedbanzAPI.model.RoomFilter;
 import org.apache.http.util.TextUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.xml.soap.Text;
 import java.util.List;
 
 @Service
@@ -55,8 +57,8 @@ public class RoomServiceImpl implements RoomService {
 
     @CacheEvict(value = "rooms", allEntries = true)
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
-    public Room addRoom(Room room, Long creatorId) {
-        if (creatorId == null)
+    public Room addRoom(Room room, Long creatorUserId) {
+        if (creatorUserId == null)
             throw ExceptionFactory.create(InputError.EMPTY_USER_ID);
         if (room.getName() == null)
             throw ExceptionFactory.create(InputError.EMPTY_ROOM_NAME);
@@ -64,18 +66,20 @@ public class RoomServiceImpl implements RoomService {
             throw ExceptionFactory.create(InputError.EMPTY_ICON_ID);
         if (room.getStickerId() == null)
             throw ExceptionFactory.create(InputError.EMPTY_STICKER_ID);
+        if (room.getMaxPlayers() == null)
+            throw ExceptionFactory.create(InputError.EMPTY_MAX_PLAYERS);
 
         Room repositoryRoomByName = roomRepository.findRoomByName(room.getName());
         if (repositoryRoomByName != null)
             throw ExceptionFactory.create(RoomError.ROOM_WITH_SUCH_NAME_ALREADY_EXIST);
 
-        User user = userRepository.findOne(creatorId);
+        User user = userRepository.findOne(creatorUserId);
         if (user == null)
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER);
-        List<Room> activeRooms = roomRepository.findActiveRooms(creatorId);
+        List<Room> activeRooms = roomRepository.findActiveRooms(creatorUserId);
         if (activeRooms.size() >= MAX_ACTIVE_ROOMS)
             throw ExceptionFactory.create(RoomError.MAX_ACTIVE_ROOMS_NUMBER);
-        if (room.getPassword().equals("")) {
+        if (TextUtils.isEmpty(room.getPassword())) {
             room.setPassword(null);
             room.setIsPrivate(false);
         } else
@@ -173,7 +177,7 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public Room leaveUserFromRoom(Long userId, Long roomId) {
+    public void leaveUserFromRoom(Long userId, Long roomId) {
         if (userId == null) {
             throw ExceptionFactory.create(InputError.EMPTY_USER_ID);
         }
@@ -185,16 +189,18 @@ public class RoomServiceImpl implements RoomService {
         if (user == null)
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER);
 
-        Room foundRoom = roomRepository.findOne(roomId);
-        Player leavingPlayer = foundRoom.getPlayerByLogin(user.getLogin());
+        Room room = roomRepository.findById(roomId);
+        Player leavingPlayer = room.getPlayerByLogin(user.getLogin());
         if (leavingPlayer == null)
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER_IN_ROOM);
 
-        if (foundRoom.getGameStatus() == GameStatus.GUESSING_WORDS || foundRoom.getGameStatus() == GameStatus.GAME_OVER) {
+        if (room.getGameStatus() == GameStatus.GUESSING_WORDS || room.getGameStatus() == GameStatus.GAME_OVER) {
             leavingPlayer.setStatus(PlayerStatus.LEFT);
-            playerRepository.saveAndFlush(leavingPlayer);
-        } else if (foundRoom.getGameStatus() == GameStatus.SETTING_WORDS) {
-            for (Player player : foundRoom.getPlayers()) {
+            room.setCurrentPlayersNumber(getActivePlayersNumber(room.getPlayers()));
+            playerRepository.save(leavingPlayer);
+            roomRepository.save(room);
+        } else if (room.getGameStatus() == GameStatus.SETTING_WORDS) {
+            for (Player player : room.getPlayers()) {
                 if (player.getWordReceiverUserId().equals(leavingPlayer.getUser().getUserId())) {
                     player.setWordReceiverUserId(leavingPlayer.getWordReceiverUserId());
                 }
@@ -202,67 +208,72 @@ public class RoomServiceImpl implements RoomService {
                     player.setWord(leavingPlayer.getWord());
                 }
             }
-            foundRoom.removePlayer(leavingPlayer);
-            foundRoom.setCurrentPlayersNumber(foundRoom.getPlayers().size());
-            foundRoom = roomRepository.saveAndFlush(foundRoom);
-        } else if (foundRoom.getGameStatus() == GameStatus.WAITING_FOR_PLAYERS) {
-            foundRoom.removePlayer(leavingPlayer);
-            foundRoom.setCurrentPlayersNumber(foundRoom.getPlayers().size());
-            foundRoom = roomRepository.saveAndFlush(foundRoom);
+            room.removePlayer(leavingPlayer);
+            room.setCurrentPlayersNumber(room.getPlayers().size());
+            roomRepository.save(room);
+        } else if (room.getGameStatus() == GameStatus.WAITING_FOR_PLAYERS) {
+            room.removePlayer(leavingPlayer);
+            room.setCurrentPlayersNumber(room.getPlayers().size());
+            roomRepository.save(room);
         }
-        return foundRoom;
     }
 
 
     @Transactional(isolation = Isolation.READ_COMMITTED, timeout = 5)
-    public Room addUserToRoom(Long userId, Long roomId, String password) {
+    public void addUserToRoom(Long userId, Long roomId, String password) {
         if (userId == null) {
             throw ExceptionFactory.create(InputError.EMPTY_USER_ID);
         }
         if (roomId == null) {
             throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
         }
-        Player player = playerRepository.findPlayerByUser_UserIdAndRoom_Id(userId, roomId);
-        if (player != null)
-            throw ExceptionFactory.create(RoomError.PLAYER_ALREADY_IN_ROOM);
         List<Room> activeRooms = roomRepository.findActiveRooms(userId);
         if (activeRooms.size() >= MAX_ACTIVE_ROOMS)
             throw ExceptionFactory.create(RoomError.MAX_ACTIVE_ROOMS_NUMBER);
 
-        Room foundRoom = roomRepository.findOne(roomId);
-        if (foundRoom == null)
+        Room room = roomRepository.findById(roomId);
+        if (room == null)
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM);
-        if (foundRoom.getGameStatus() == GameStatus.SETTING_WORDS)
+        if (room.getGameStatus() == GameStatus.SETTING_WORDS)
             throw ExceptionFactory.create(RoomError.GAME_ALREADY_STARTED);
 
         User user = userRepository.findOne(userId);
         if (user == null)
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER);
 
-        if (foundRoom.getGameStatus() != GameStatus.GUESSING_WORDS) {
-            if (foundRoom.getUserCount() == foundRoom.getMaxPlayers())
+        if (room.getGameStatus() != GameStatus.GUESSING_WORDS) {
+            if (room.getUserCount() == room.getMaxPlayers())
                 throw ExceptionFactory.create(RoomError.ROOM_FULL);
-            if (!TextUtils.isEmpty(foundRoom.getPassword()) && !TextUtils.isEmpty(password))
-                if (!foundRoom.getPassword().equals(password))
+            if (!TextUtils.isEmpty(room.getPassword()) && !TextUtils.isEmpty(password))
+                if (!room.getPassword().equals(password))
                     throw ExceptionFactory.create(RoomError.WRONG_PASSWORD);
-            if(TextUtils.isEmpty(password) && !TextUtils.isEmpty(foundRoom.getPassword()) ) {
-                if(!user.isInvitedToRoom(foundRoom))
+            if(TextUtils.isEmpty(password) && !TextUtils.isEmpty(room.getPassword()) ) {
+                if(!user.isInvitedToRoom(room))
                     throw ExceptionFactory.create(RoomError.WRONG_PASSWORD);
             }
-            player = conversionService.convert(user, Player.class);
+            Player player = conversionService.convert(user, Player.class);
             player.setStatus(PlayerStatus.ACTIVE);
             player.setAttempt(0);
-            foundRoom.addPlayer(player);
-            foundRoom.setCurrentPlayersNumber(foundRoom.getPlayers().size());
-            foundRoom = roomRepository.saveAndFlush(foundRoom);
+            room.addPlayer(player);
+            room.setCurrentPlayersNumber(room.getPlayers().size());
+            roomRepository.save(room);
         } else {
-            player = playerRepository.findPlayerByUser_UserIdAndRoom_Id(userId, roomId);
+            Player player = playerRepository.findPlayerByUser_UserIdAndRoom_Id(userId, roomId);
             if (player == null)
                 throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER_IN_ROOM);
             player.setStatus(PlayerStatus.ACTIVE);
-            playerRepository.saveAndFlush(player);
+            room.setCurrentPlayersNumber(getActivePlayersNumber(room.getPlayers()));
+            playerRepository.save(player);
         }
-        return foundRoom;
+    }
+
+    private Integer getActivePlayersNumber(List<Player> players) {
+        int activePlayersNumber = 0;
+        for (Player player: players) {
+            if(player.getStatus() != PlayerStatus.LEFT)
+                activePlayersNumber++;
+        }
+        return activePlayersNumber;
     }
 
     @Transactional(isolation = Isolation.READ_UNCOMMITTED, readOnly = true)

@@ -7,11 +7,16 @@ import org.springframework.core.convert.converter.Converter;
 import java.sql.Timestamp;
 
 public class MessageToMessageDtoConverter implements Converter<Message, MessageDto> {
+    private final UserToUserDtoConverter userToUserDtoConverter;
+
+    public MessageToMessageDtoConverter(UserToUserDtoConverter userToUserDtoConverter) {
+        this.userToUserDtoConverter = userToUserDtoConverter;
+    }
+
     @Override
     public MessageDto convert(Message message) {
-        UserToUserDtoConverter toUserDtoConverter = new UserToUserDtoConverter();
         return new MessageDto.MessageDTOBuilder()
-                .setSenderUser(message.getSenderUser() != null ? toUserDtoConverter.convert(message.getSenderUser()) : null)
+                .setSenderUser(message.getSenderUser() != null ? userToUserDtoConverter.convert(message.getSenderUser()) : null)
                 .setRoomId(message.getRoom().getId())
                 .setText(message.getText())
                 .setType(message.getType().getCode())

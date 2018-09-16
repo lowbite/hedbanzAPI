@@ -55,6 +55,14 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
                 new CustomError(e.getCode(), e.getMessage()), null);
     }
 
+    @ExceptionHandler(MessageException.class)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseBody<?> userError(MessageException e) {
+        log.error("Vote error", e.getMessage());
+        return new ResponseBody<>(ResultStatus.ERROR_STATUS,
+                new CustomError(e.getCode(), e.getMessage()), null);
+    }
+
     @ExceptionHandler(FcmException.class)
     @ResponseStatus(HttpStatus.OK)
     public ResponseBody<?> fcmError(FcmException e) {

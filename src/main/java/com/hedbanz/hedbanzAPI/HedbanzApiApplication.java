@@ -24,33 +24,14 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
-@EnableCaching
 @EnableJpaAuditing
 @EnableAsync
 @SpringBootApplication
 public class HedbanzApiApplication {
 
-    @Value("${socketIO.hostname}")
-    private String socketIOHostname;
-
-    @Value("${socketIO.port}")
-    private Integer socketIOPort;
-
     @Bean
-    public SocketIOServer socketIOServer() {
-        Configuration configuration = new Configuration();
-        configuration.setHostname(socketIOHostname);
-
-        SocketConfig socketConfig = new SocketConfig();
-        socketConfig.setReuseAddress(true);
-        configuration.setPingInterval(1000);
-        configuration.setPingTimeout(5000);
-        configuration.setExceptionListener(new SocketExceptionListener());
-        configuration.setSocketConfig(socketConfig);
-        configuration.setWorkerThreads(100);
-
-        configuration.setPort(socketIOPort);
-        return new SocketIOServer(configuration);
+    public UserToFriendConverter userToFriendConverter() {
+        return new UserToFriendConverter();
     }
 
     @Bean
@@ -64,18 +45,18 @@ public class HedbanzApiApplication {
     }
 
     @Bean
-    public UserDtoToUserConverter userToUserDTOConverter() {
+    public UserDtoToUserConverter userDtoToUserConverter() {
         return new UserDtoToUserConverter();
     }
 
     @Bean
-    public UserToUserDtoConverter userDTOToUserConverter() {
+    public UserToUserDtoConverter userToUserDtoConverter() {
         return new UserToUserDtoConverter();
     }
 
     @Bean
     public MessageDtoToMessageConverter messageDTOToMessageConverter() {
-        return new MessageDtoToMessageConverter();
+        return new MessageDtoToMessageConverter(userDtoToUserConverter());
     }
 
     @Bean
@@ -85,12 +66,12 @@ public class HedbanzApiApplication {
 
     @Bean
     public MessageToMessageDtoConverter messageToMessageDTOConverter() {
-        return new MessageToMessageDtoConverter();
+        return new MessageToMessageDtoConverter(userToUserDtoConverter());
     }
 
     @Bean
     public MessageToSetWordDtoConverter messageToWordSettingDtoConverter() {
-        return new MessageToSetWordDtoConverter();
+        return new MessageToSetWordDtoConverter(userToUserDtoConverter());
     }
 
     @Bean
@@ -115,7 +96,7 @@ public class HedbanzApiApplication {
 
     @Bean
     public MessageToQuestionDtoConverter questionToQuestionDTOConversion() {
-        return new MessageToQuestionDtoConverter();
+        return new MessageToQuestionDtoConverter(playerToPlayerDTOConverter(), userToUserDtoConverter());
     }
 
     @Bean
@@ -125,7 +106,7 @@ public class HedbanzApiApplication {
 
     @Bean
     public QuestionToQuestionDtoConverter questionToQuestionDtoConverter() {
-        return new QuestionToQuestionDtoConverter();
+        return new QuestionToQuestionDtoConverter(playerToPlayerDTOConverter());
     }
 
     @Bean
@@ -146,8 +127,8 @@ public class HedbanzApiApplication {
         //add the converter
         converters.add(roomDTOToRoomConverter());
         converters.add(roomToRoomDTOConverter());
-        converters.add(userDTOToUserConverter());
-        converters.add(userToUserDTOConverter());
+        converters.add(userToUserDtoConverter());
+        converters.add(userDtoToUserConverter());
         converters.add(messageToMessageDTOConverter());
         converters.add(messageToMessageNotificationDtoConverter());
         converters.add(messageDTOToMessageConverter());
@@ -161,6 +142,7 @@ public class HedbanzApiApplication {
         converters.add(questionToQuestionDtoConverter());
         converters.add(feedbackDtoToFeedbackConverter());
         converters.add(feedbackToFeedbackDtoConverter());
+        converters.add(userToFriendConverter());
 
         bean.setConverters(converters);
         bean.afterPropertiesSet();

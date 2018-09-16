@@ -5,11 +5,16 @@ import com.hedbanz.hedbanzAPI.transfer.SetWordDto;
 import org.springframework.core.convert.converter.Converter;
 
 public class MessageToSetWordDtoConverter implements Converter<Message, SetWordDto> {
+    private final UserToUserDtoConverter userToUserDtoConverter;
+
+    public MessageToSetWordDtoConverter(UserToUserDtoConverter userToUserDtoConverter) {
+        this.userToUserDtoConverter = userToUserDtoConverter;
+    }
+
     @Override
     public SetWordDto convert(Message message) {
-        UserToUserDtoConverter toUserDtoConverter = new UserToUserDtoConverter();
         return new SetWordDto.Builder()
-                .setSenderUser(toUserDtoConverter.convert(message.getSenderUser()))
+                .setSenderUser(userToUserDtoConverter.convert(message.getSenderUser()))
                 .setRoomId(message.getRoom().getId())
                 .setType(message.getType().getCode())
                 .build();
