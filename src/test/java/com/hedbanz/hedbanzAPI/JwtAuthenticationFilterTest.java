@@ -27,7 +27,7 @@ import static org.mockito.Mockito.mock;
 import static org.springframework.http.HttpStatus.Series.CLIENT_ERROR;
 import static org.springframework.http.HttpStatus.Series.SERVER_ERROR;
 
-@SpringBootTest
+//@SpringBootTest
 public class JwtAuthenticationFilterTest {
     public static RestTemplate restTemplate = new RestTemplate();
     public static UserDto userDto = new UserDto();

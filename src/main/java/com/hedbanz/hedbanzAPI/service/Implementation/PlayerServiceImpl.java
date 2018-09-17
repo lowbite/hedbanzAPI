@@ -106,14 +106,4 @@ public class PlayerServiceImpl implements PlayerService {
         player.setIsWinner(true);
         return playerRepository.saveAndFlush(player);
     }
-
-    @Override
-    public Integer getActivePlayersNumber(List<Player> players) {
-        int activePlayersNumber = 0;
-        for (Player player: players) {
-            if(player.getStatus() != PlayerStatus.LEFT)
-                activePlayersNumber++;
-        }
-        return activePlayersNumber;
-    }
 }

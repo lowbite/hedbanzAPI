@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@SpringBootTest
+//@SpringBootTest
 public class HedbanzApiApplicationTests{
     @Test
     public void contextLoads() {

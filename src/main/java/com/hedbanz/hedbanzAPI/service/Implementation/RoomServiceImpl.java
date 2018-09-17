@@ -17,6 +17,7 @@ import com.hedbanz.hedbanzAPI.model.RoomFilterSpecification;
 import com.hedbanz.hedbanzAPI.repository.*;
 import com.hedbanz.hedbanzAPI.service.RoomService;
 import com.hedbanz.hedbanzAPI.model.RoomFilter;
+import com.hedbanz.hedbanzAPI.utils.PlayersUtil;
 import org.apache.http.util.TextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -196,7 +197,7 @@ public class RoomServiceImpl implements RoomService {
 
         if (room.getGameStatus() == GameStatus.GUESSING_WORDS || room.getGameStatus() == GameStatus.GAME_OVER) {
             leavingPlayer.setStatus(PlayerStatus.LEFT);
-            room.setCurrentPlayersNumber(getActivePlayersNumber(room.getPlayers()));
+            room.setCurrentPlayersNumber(PlayersUtil.getActivePlayersNumber(room.getPlayers()));
             playerRepository.save(leavingPlayer);
             roomRepository.save(room);
         } else if (room.getGameStatus() == GameStatus.SETTING_WORDS) {
@@ -262,18 +263,9 @@ public class RoomServiceImpl implements RoomService {
             if (player == null)
                 throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER_IN_ROOM);
             player.setStatus(PlayerStatus.ACTIVE);
-            room.setCurrentPlayersNumber(getActivePlayersNumber(room.getPlayers()));
+            room.setCurrentPlayersNumber(PlayersUtil.getActivePlayersNumber(room.getPlayers()));
             playerRepository.save(player);
         }
-    }
-
-    private Integer getActivePlayersNumber(List<Player> players) {
-        int activePlayersNumber = 0;
-        for (Player player: players) {
-            if(player.getStatus() != PlayerStatus.LEFT)
-                activePlayersNumber++;
-        }
-        return activePlayersNumber;
     }
 
     @Transactional(isolation = Isolation.READ_UNCOMMITTED, readOnly = true)

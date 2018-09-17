@@ -19,6 +19,4 @@ public interface PlayerService {
     Player setPlayerStatus(Long userId, Long roomId, PlayerStatus status);
 
     Player setPlayerWinner(Long userId, Long roomId);
-
-    Integer getActivePlayersNumber(List<Player> players);
 }

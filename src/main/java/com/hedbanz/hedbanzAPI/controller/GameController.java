@@ -15,6 +15,7 @@ import com.hedbanz.hedbanzAPI.model.*;
 import com.hedbanz.hedbanzAPI.model.ResponseBody;
 import com.hedbanz.hedbanzAPI.service.*;
 import com.hedbanz.hedbanzAPI.transfer.*;
+import com.hedbanz.hedbanzAPI.utils.PlayersUtil;
 import org.apache.http.util.TextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -183,7 +184,7 @@ public class GameController {
         Message message = messageService.getMessageByQuestionId(questionDto.getQuestionId());
         Question lastQuestion = messageService.getLastQuestionInRoom(room.getId());
         Player player = null;
-        if ((double) message.getQuestion().getWinVoters().size() / (playerService.getActivePlayersNumber(room.getPlayers()) - 1) >= MIN_WIN_PERCENTAGE) {
+        if ((double) message.getQuestion().getWinVoters().size() / (PlayersUtil.getActivePlayersNumber(room.getPlayers()) - 1) >= MIN_WIN_PERCENTAGE) {
             player = playerService.getPlayer(message.getSenderUser().getUserId(), room.getId());
             if (!player.getIsWinner()) {
                 player = playerService.setPlayerWinner(message.getSenderUser().getUserId(), room.getId());
@@ -192,9 +193,9 @@ public class GameController {
             }
         } else if (lastQuestion.getId().equals(message.getQuestion().getId())) {
             double yesNoVotersPercentage = (double) (message.getQuestion().getNoVoters().size() + message.getQuestion().getYesVoters().size())
-                    / (playerService.getActivePlayersNumber(room.getPlayers()) - 1);
+                    / (PlayersUtil.getActivePlayersNumber(room.getPlayers()) - 1);
             double allVotersPercentage = (double) (message.getQuestion().getNoVoters().size() + message.getQuestion().getYesVoters().size()
-                    + message.getQuestion().getWinVoters().size()) / (playerService.getActivePlayersNumber(room.getPlayers()) - 1);
+                    + message.getQuestion().getWinVoters().size()) / (PlayersUtil.getActivePlayersNumber(room.getPlayers()) - 1);
             if (yesNoVotersPercentage >= MIN_NEXT_GUESS_PERCENTAGE || allVotersPercentage == 1) {
                 return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, receiveNextGuessingPlayer(room.getId(), questionDto.getAttempt()));
             }
@@ -210,7 +211,7 @@ public class GameController {
     public ResponseBody<?> setPlayerWin(@RequestBody QuestionDto questionDto, @PathVariable("roomId") long roomId) {
         Room room = roomService.getRoom(roomId);
         Message message = messageService.getMessageByQuestionId(questionDto.getQuestionId());
-        if ((double) message.getQuestion().getWinVoters().size() / (playerService.getActivePlayersNumber(room.getPlayers()) - 1) >= MIN_WIN_PERCENTAGE) {
+        if ((double) message.getQuestion().getWinVoters().size() / (PlayersUtil.getActivePlayersNumber(room.getPlayers()) - 1) >= MIN_WIN_PERCENTAGE) {
             Player player = playerService.getPlayer(message.getSenderUser().getUserId(), room.getId());
             if (!player.getIsWinner()) {
                 player = playerService.setPlayerWinner(message.getSenderUser().getUserId(), room.getId());
