@@ -28,7 +28,6 @@ import static com.hedbanz.hedbanzAPI.constant.Constants.ROOM_PAGE_SIZE;
 
 @RestController
 public class AdminPanelRestController {
-    private final AdminService adminService;
     private final ApplicationService applicationService;
     private final FcmService fcmService;
     private final UserService userService;
@@ -36,10 +35,9 @@ public class AdminPanelRestController {
     private final ConversionService conversionService;
 
     @Autowired
-    public AdminPanelRestController(AdminService adminService, ApplicationService applicationService,
+    public AdminPanelRestController( ApplicationService applicationService,
                                     FcmService fcmService, UserService userService, FeedbackService feedbackService,
                                     @Qualifier("APIConversionService") ConversionService conversionService) {
-        this.adminService = adminService;
         this.applicationService = applicationService;
         this.fcmService = fcmService;
         this.userService = userService;

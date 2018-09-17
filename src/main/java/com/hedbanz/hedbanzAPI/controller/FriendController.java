@@ -12,7 +12,6 @@ import com.hedbanz.hedbanzAPI.service.FcmService;
 import com.hedbanz.hedbanzAPI.service.RoomService;
 import com.hedbanz.hedbanzAPI.service.UserService;
 import com.hedbanz.hedbanzAPI.transfer.InviteDto;
-import com.hedbanz.hedbanzAPI.transfer.InvitePushDto;
 import com.hedbanz.hedbanzAPI.transfer.PushMessageDto;
 import org.apache.http.util.TextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,12 +23,16 @@ import java.util.List;
 @RestController
 @RequestMapping("/user")
 public class FriendController {
+    private final UserService userService;
+    private final FcmService fcmService;
+    private final RoomService roomService;
+
     @Autowired
-    private UserService userService;
-    @Autowired
-    private FcmService fcmService;
-    @Autowired
-    private RoomService roomService;
+    public FriendController(UserService userService, FcmService fcmService, RoomService roomService) {
+        this.userService = userService;
+        this.fcmService = fcmService;
+        this.roomService = roomService;
+    }
 
     @RequestMapping(method = RequestMethod.PUT, value = "/{userId}/friends/{friendId}")
     @ResponseStatus(HttpStatus.OK)

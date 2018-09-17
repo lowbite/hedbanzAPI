@@ -21,14 +21,12 @@ public class SocketMessagingController {
     private final PlayerService playerService;
     private final ConversionService conversionService;
     private final UserService userService;
-    private final MessageService messageService;
 
     public SocketMessagingController(PlayerService playerService, @Qualifier("APIConversionService") ConversionService conversionService,
-                                     UserService userService, MessageService messageService) {
+                                     UserService userService) {
         this.playerService = playerService;
         this.conversionService = conversionService;
         this.userService = userService;
-        this.messageService = messageService;
     }
 
     @RequestMapping(method = RequestMethod.PATCH, value = "/reconnect/user/{userId}/room/{roomId}")
@@ -44,7 +42,6 @@ public class SocketMessagingController {
         Player player = playerService.getPlayer(userId, roomId);
         if (player.getStatus() != PlayerStatus.LEFT) {
             player = playerService.setPlayerStatus(userId, roomId, PlayerStatus.AFK);
-            //messageService.deleteEmptyQuestions(roomId, userId);
         }
         return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, conversionService.convert(player, PlayerDto.class));
     }

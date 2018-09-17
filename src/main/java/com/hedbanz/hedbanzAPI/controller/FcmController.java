@@ -11,6 +11,7 @@ import com.hedbanz.hedbanzAPI.model.ResponseBody;
 import com.hedbanz.hedbanzAPI.service.FcmService;
 import com.hedbanz.hedbanzAPI.service.MessageService;
 import com.hedbanz.hedbanzAPI.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +22,7 @@ public class FcmController {
     private final UserService userService;
     private final MessageService messageService;
 
+    @Autowired
     public FcmController(FcmService fcmService, UserService userService, MessageService messageService) {
         this.fcmService = fcmService;
         this.userService = userService;

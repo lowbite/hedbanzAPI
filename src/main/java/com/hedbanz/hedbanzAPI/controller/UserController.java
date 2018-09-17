@@ -32,18 +32,16 @@ import java.util.List;
 public class UserController {
     private final FeedbackService feedbackService;
     private final UserService userService;
-    private final PlayerService playerService;
     private final ConversionService conversionService;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserController(FeedbackService feedbackService, UserService userService, PlayerService playerService, @Qualifier("APIConversionService") ConversionService conversionService,
+    public UserController(FeedbackService feedbackService, UserService userService, @Qualifier("APIConversionService") ConversionService conversionService,
                           AuthenticationManager authenticationManager, JwtTokenProvider tokenProvider, PasswordEncoder passwordEncoder) {
         this.feedbackService = feedbackService;
         this.userService = userService;
-        this.playerService = playerService;
         this.conversionService = conversionService;
         this.authenticationManager = authenticationManager;
         this.tokenProvider = tokenProvider;

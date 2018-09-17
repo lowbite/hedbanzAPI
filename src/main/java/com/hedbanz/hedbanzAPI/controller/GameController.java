@@ -34,21 +34,26 @@ import java.util.stream.Collectors;
 public class GameController {
     private static final double MIN_WIN_PERCENTAGE = 0.8;
     private static final double MIN_NEXT_GUESS_PERCENTAGE = 0.8;
-    @Autowired
-    private RoomService roomService;
-    @Autowired
-    private MessageService messageService;
-    @Autowired
-    private FcmService fcmService;
-    @Autowired
-    private PlayerService playerService;
-    @Autowired
-    private GameService gameService;
-    @Autowired
-    @Qualifier("APIConversionService")
-    private ConversionService conversionService;
+    private final RoomService roomService;
+    private final MessageService messageService;
+    private final FcmService fcmService;
+    private final PlayerService playerService;
+    private final GameService gameService;
+    private final ConversionService conversionService;
 
     private final Logger log = LoggerFactory.getLogger(GameController.class);
+
+    @Autowired
+    public GameController(RoomService roomService, MessageService messageService, FcmService fcmService,
+                          PlayerService playerService, GameService gameService,
+                          @Qualifier("APIConversionService") ConversionService conversionService) {
+        this.roomService = roomService;
+        this.messageService = messageService;
+        this.fcmService = fcmService;
+        this.playerService = playerService;
+        this.gameService = gameService;
+        this.conversionService = conversionService;
+    }
 
     @PostMapping(value = "/start/room/{roomId}")
     @ResponseStatus(HttpStatus.OK)
