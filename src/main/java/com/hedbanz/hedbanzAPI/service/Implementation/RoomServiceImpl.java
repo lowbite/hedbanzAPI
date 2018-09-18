@@ -156,7 +156,7 @@ public class RoomServiceImpl implements RoomService {
 
     @Transactional(readOnly = true)
     public List<Room> getActiveRooms(Long userId) {
-        if(userId == null){
+        if (userId == null) {
             throw ExceptionFactory.create(InputError.EMPTY_USER_ID);
         }
         return roomRepository.findActiveRooms(userId);
@@ -205,7 +205,7 @@ public class RoomServiceImpl implements RoomService {
                 if (player.getWordReceiverUserId().equals(leavingPlayer.getUser().getUserId())) {
                     player.setWordReceiverUserId(leavingPlayer.getWordReceiverUserId());
                 }
-                if(leavingPlayer.getWord() != null && player.getUser().getUserId().equals(leavingPlayer.getWordReceiverUserId())){
+                if (leavingPlayer.getWord() != null && player.getUser().getUserId().equals(leavingPlayer.getWordReceiverUserId())) {
                     player.setWord(leavingPlayer.getWord());
                 }
             }
@@ -241,6 +241,7 @@ public class RoomServiceImpl implements RoomService {
         User user = userRepository.findOne(userId);
         if (user == null)
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER);
+        Player player = playerRepository.findPlayerByUser_UserIdAndRoom_Id(userId, roomId);
 
         if (room.getGameStatus() != GameStatus.GUESSING_WORDS) {
             if (room.getUserCount() == room.getMaxPlayers())
@@ -248,18 +249,20 @@ public class RoomServiceImpl implements RoomService {
             if (!TextUtils.isEmpty(room.getPassword()) && !TextUtils.isEmpty(password))
                 if (!room.getPassword().equals(password))
                     throw ExceptionFactory.create(RoomError.WRONG_PASSWORD);
-            if(TextUtils.isEmpty(password) && !TextUtils.isEmpty(room.getPassword()) ) {
-                if(!user.isInvitedToRoom(room))
+            if (TextUtils.isEmpty(password) && !TextUtils.isEmpty(room.getPassword())) {
+                if (!user.isInvitedToRoom(room))
                     throw ExceptionFactory.create(RoomError.WRONG_PASSWORD);
             }
-            Player player = conversionService.convert(user, Player.class);
+            if (player == null) {
+                player = conversionService.convert(user, Player.class);
+                player.setAttempt(0);
+                room.addPlayer(player);
+            }
             player.setStatus(PlayerStatus.ACTIVE);
-            player.setAttempt(0);
-            room.addPlayer(player);
             room.setCurrentPlayersNumber(room.getPlayers().size());
             roomRepository.save(room);
         } else {
-            Player player = playerRepository.findPlayerByUser_UserIdAndRoom_Id(userId, roomId);
+            player = playerRepository.findPlayerByUser_UserIdAndRoom_Id(userId, roomId);
             if (player == null)
                 throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER_IN_ROOM);
             player.setStatus(PlayerStatus.ACTIVE);

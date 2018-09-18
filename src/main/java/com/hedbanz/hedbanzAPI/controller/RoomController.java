@@ -6,6 +6,7 @@ import com.hedbanz.hedbanzAPI.model.*;
 import com.hedbanz.hedbanzAPI.model.ResponseBody;
 import com.hedbanz.hedbanzAPI.service.*;
 import com.hedbanz.hedbanzAPI.transfer.*;
+import com.hedbanz.hedbanzAPI.utils.PlayersUtil;
 import org.apache.http.util.TextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -186,7 +187,7 @@ public class RoomController {
         roomService.leaveUserFromRoom(userToRoomDto.getUserId(), userToRoomDto.getRoomId());
         Room room = roomService.getRoom(userToRoomDto.getRoomId());
         if (room.getGameStatus() != GameStatus.WAITING_FOR_PLAYERS) {
-            Player lastPlayer = getLastPlayer(room);
+            Player lastPlayer = PlayersUtil.getLastPlayer(room.getPlayers());
             if (lastPlayer != null && !TextUtils.isEmpty(lastPlayer.getUser().getFcmToken())) {
                 Notification notification = new Notification("Last player in room!",
                         "You are the last player in room");
@@ -215,34 +216,11 @@ public class RoomController {
                 messageService.deleteEmptyQuestions(room.getId(), user.getUserId());
             }*/
         }
-        if (room.getCurrentPlayersNumber() == 0 || isPlayersAbsent(room)) {
+        if (room.getCurrentPlayersNumber() == 0 || PlayersUtil.isPlayersAbsent(room.getPlayers())) {
             roomService.deleteRoom(room.getId());
         }
 
         return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, conversionService.convert(user, UserDto.class));
-    }
-
-    private Player getLastPlayer(Room room) {
-        int activePLayers = 0;
-        Player onlyOnePlayer = null;
-        for (Player player : room.getPlayers()) {
-            if (player.getStatus() != PlayerStatus.LEFT) {
-                if (activePLayers == 1)
-                    return null;
-                activePLayers++;
-                onlyOnePlayer = player;
-            }
-        }
-        return onlyOnePlayer;
-    }
-
-    private boolean isPlayersAbsent(Room room) {
-        for (Player player : room.getPlayers()) {
-            if (player.getStatus() != PlayerStatus.LEFT) {
-                return false;
-            }
-        }
-        return true;
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "{roomId}/player/{userId}")
@@ -277,57 +255,5 @@ public class RoomController {
         return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, playerDtos);
     }
 
-    @RequestMapping(method = RequestMethod.PUT, value = "/messages/add", consumes = "application/json")
-    @ResponseStatus(OK)
-    public ResponseBody<MessageDto> addUserMessage(@RequestBody MessageDto messageDto) {
-        Message message = messageService.addMessage(conversionService.convert(messageDto, Message.class));
-        Room room = roomService.getRoom(messageDto.getRoomId());
-        for (Player player : room.getPlayers()) {
-            if (player.getStatus() == PlayerStatus.AFK && !TextUtils.isEmpty(player.getUser().getFcmToken())) {
-                PushMessageDto pushMessageDto = conversionService.convert(message, PushMessageDto.class);
-                Notification notification = new Notification("New message!",
-                        "User " + pushMessageDto.getSenderName() + " sent a new message.");
-                FcmPush.FcmPushData<PushMessageDto> fcmPushData =
-                        new FcmPush.FcmPushData<>(NotificationMessageType.MESSAGE.getCode(), pushMessageDto);
-                FcmPush fcmPush = new FcmPush.Builder().setNotification(notification)
-                        .setTo(player.getUser().getFcmToken())
-                        .setPriority("normal")
-                        .setData(fcmPushData)
-                        .build();
-                fcmService.sendPushNotification(fcmPush);
-            }
-        }
-        return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, conversionService.convert(message, MessageDto.class));
-    }
 
-    @RequestMapping(method = RequestMethod.PUT, value = "/{roomId}/messages/waiting-players")
-    @ResponseStatus(OK)
-    public ResponseBody<?> addWaitingForPlayersMessage(@PathVariable("roomId") long roomId) {
-        messageService.addRoomEventMessage(MessageType.WAITING_FOR_PLAYERS, roomId);
-        return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, null);
-    }
-
-    @RequestMapping(method = RequestMethod.GET, value = "/{roomId}/messages/last-question")
-    @ResponseStatus(OK)
-    public ResponseBody<QuestionDto> getLastQuestion(@PathVariable("roomId") long roomId) {
-        Question lastQuestion = messageService.getLastQuestionInRoom(roomId);
-        QuestionDto questionDto = conversionService.convert(lastQuestion, QuestionDto.class);
-        questionDto.setRoomId(roomId);
-        return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, questionDto);
-    }
-
-    @RequestMapping(method = RequestMethod.GET, value = "/{roomId}/messages/question/{questionId}/questioner")
-    @ResponseStatus(OK)
-    public ResponseBody<PlayerDto> getQuestioner(@PathVariable("roomId") long roomId, @PathVariable("questionId") long questionId) {
-        Message message = messageService.getMessageByQuestionId(questionId);
-        Player player = playerService.getPlayer(message.getSenderUser().getUserId(), message.getRoom().getId());
-        return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, conversionService.convert(player, PlayerDto.class));
-    }
-
-    @RequestMapping(method = RequestMethod.DELETE, value = "/{roomId}/messages/user/{userId}/empty-question")
-    @ResponseStatus(OK)
-    public ResponseBody<PlayerDto> deletePlayerEmptyQuestion(@PathVariable("roomId") long roomId, @PathVariable("userId") long userId){
-        messageService.deleteEmptyQuestions(roomId, userId);
-        return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, null);
-    }
 }
