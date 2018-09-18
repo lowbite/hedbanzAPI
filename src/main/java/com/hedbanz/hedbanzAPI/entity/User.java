@@ -15,7 +15,7 @@ public class User extends AuditModel implements Serializable {
     @Column(name = "user_id")
     private Long userId;
 
-    @Column(name = "login", nullable = false)
+    @Column(name = "login", unique = true, nullable = false)
     @NotNull
     private String login;
 
@@ -31,7 +31,7 @@ public class User extends AuditModel implements Serializable {
     @NotNull
     private Integer iconId = 0;
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email", unique = true, nullable = false)
     @NotNull
     private String email;
 
