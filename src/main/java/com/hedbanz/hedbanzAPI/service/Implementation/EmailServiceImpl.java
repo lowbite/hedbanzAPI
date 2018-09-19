@@ -14,10 +14,14 @@ import java.nio.charset.StandardCharsets;
 
 @Service
 public class EmailServiceImpl implements EmailService {
+    private final JavaMailSender mailSender;
+    private final SpringTemplateEngine templateEngine;
+
     @Autowired
-    private JavaMailSender mailSender;
-    @Autowired
-    private SpringTemplateEngine templateEngine;
+    public EmailServiceImpl(JavaMailSender mailSender, SpringTemplateEngine templateEngine) {
+        this.mailSender = mailSender;
+        this.templateEngine = templateEngine;
+    }
 
     @Override
     public void sendEmail(Mail mail) {

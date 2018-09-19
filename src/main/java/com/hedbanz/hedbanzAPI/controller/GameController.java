@@ -1,13 +1,11 @@
 package com.hedbanz.hedbanzAPI.controller;
 
+import com.hedbanz.hedbanzAPI.builder.*;
 import com.hedbanz.hedbanzAPI.constant.MessageType;
 import com.hedbanz.hedbanzAPI.constant.NotificationMessageType;
 import com.hedbanz.hedbanzAPI.constant.PlayerStatus;
 import com.hedbanz.hedbanzAPI.constant.ResultStatus;
-import com.hedbanz.hedbanzAPI.entity.Message;
-import com.hedbanz.hedbanzAPI.entity.Player;
-import com.hedbanz.hedbanzAPI.entity.Question;
-import com.hedbanz.hedbanzAPI.entity.Room;
+import com.hedbanz.hedbanzAPI.entity.*;
 import com.hedbanz.hedbanzAPI.error.RoomError;
 import com.hedbanz.hedbanzAPI.error.UserError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
@@ -26,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -70,19 +69,13 @@ public class GameController {
                         break;
                     }
                 }
-                FcmPush.FcmPushData<PushMessageDto> fcmPushData = new FcmPush.FcmPushData<>(
-                        NotificationMessageType.SET_WORD.getCode(),
-                        new PushMessageDto.Builder()
-                                .setSenderName(wordReceiverName)
-                                .setRoomId(room.getId())
-                                .setRoomName(room.getName())
-                                .build());
-                FcmPush fcmPush = new FcmPush.Builder()
-                        .setTo(player.getUser().getFcmToken())
-                        .setData(fcmPushData)
-                        .setPriority("normal")
-                        .setNotification(new Notification("Set word time", "It's time to set word in room " + room.getName()))
+                PushMessageDto pushMessageDto = new PushMessageDto.Builder()
+                        .setSenderName(wordReceiverName)
+                        .setRoomId(room.getId())
+                        .setRoomName(room.getName())
                         .build();
+                FcmPush fcmPush = new FcmPushDirector(new SetWordFcmPushBuilder())
+                        .buildFcmPush(player.getUser().getFcmToken(), pushMessageDto);
                 fcmService.sendPushNotification(fcmPush);
             }
         }
@@ -135,17 +128,12 @@ public class GameController {
         if (gameIsReady) {
             Player player = gameService.startGuessing(roomId);
             if (player.getStatus() == PlayerStatus.AFK && !TextUtils.isEmpty(player.getUser().getFcmToken())) {
-                FcmPush.FcmPushData<PushMessageDto> fcmPushData = new FcmPush.FcmPushData<>(NotificationMessageType.GUESS_WORD.getCode(),
-                        new PushMessageDto.Builder()
-                                .setRoomId(player.getRoom().getId())
-                                .setRoomName(player.getRoom().getName())
-                                .build());
-                FcmPush fcmPush = new FcmPush.Builder()
-                        .setTo(player.getUser().getFcmToken())
-                        .setData(fcmPushData)
-                        .setTo(player.getUser().getFcmToken())
-                        .setNotification(new Notification("Time to guess your word", "It's your turn to guess your word"))
+                PushMessageDto pushMessageDto = new PushMessageDto.Builder()
+                        .setRoomId(player.getRoom().getId())
+                        .setRoomName(player.getRoom().getName())
                         .build();
+                FcmPush fcmPush = new FcmPushDirector(new GuessWordFcmPushBuilder())
+                        .buildFcmPush(player.getUser().getFcmToken(), pushMessageDto);
                 fcmService.sendPushNotification(fcmPush);
             }
             Question newQuestion = messageService.addSettingQuestionMessage(roomId, player.getUser().getUserId());
@@ -162,6 +150,22 @@ public class GameController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseBody<QuestionDto> addPlayerQuestion(@RequestBody QuestionDto questionDto) {
         Message message = messageService.addQuestionText(questionDto.getQuestionId(), questionDto.getText());
+        List<Player> players = playerService.getPlayersFromRoom(message.getRoom().getId());
+        List<String> afkUsersFcmTokens = new ArrayList<>();
+        for (Player player: players) {
+            if(player.getStatus() == PlayerStatus.AFK && !TextUtils.isEmpty(player.getUser().getFcmToken())){
+                afkUsersFcmTokens.add(player.getUser().getFcmToken());
+            }
+        }
+        PushMessageDto pushMessageDto = new PushMessageDto.Builder()
+                .setSenderName(message.getSenderUser().getLogin())
+                .setRoomName(message.getRoom().getName())
+                .setRoomId(message.getRoom().getId())
+                .setText(message.getText())
+                .build();
+        FcmPush fcmPush = new FcmPushDirector(new AskingQuestionFcmPushBuilder())
+                .buildFcmPush(null, pushMessageDto);
+        fcmService.sendPushNotificationsToUsers(fcmPush, afkUsersFcmTokens);
         return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, conversionService.convert(message, QuestionDto.class));
     }
 
@@ -241,27 +245,16 @@ public class GameController {
             for (Player roomPlayer : room.getPlayers()) {
                 if (roomPlayer.getStatus() == com.hedbanz.hedbanzAPI.constant.PlayerStatus.AFK &&
                         !TextUtils.isEmpty(roomPlayer.getUser().getFcmToken())) {
-                    FcmPush.FcmPushData<PushMessageDto> fcmPushData = new FcmPush.FcmPushData<>(
-                            NotificationMessageType.GAME_OVER.getCode(),
-                            new PushMessageDto.Builder()
-                                    .setRoomId(room.getId())
-                                    .setRoomName(room.getName())
-                                    .build()
-                    );
-                    FcmPush fcmPush = new FcmPush.Builder()
-                            .setTo(roomPlayer.getUser().getFcmToken())
-                            .setData(fcmPushData)
-                            .setTo(roomPlayer.getUser().getFcmToken())
-                            .setNotification(new Notification("Game over",
-                                    "Game is over in room " + room.getName()))
+                    PushMessageDto pushMessageDto = new PushMessageDto.Builder()
+                            .setRoomId(room.getId())
+                            .setRoomName(room.getName())
                             .build();
+                    FcmPush fcmPush = new FcmPushDirector(new GameOverFcmPushBuilder())
+                            .buildFcmPush(roomPlayer.getUser().getFcmToken(), pushMessageDto);
                     fcmService.sendPushNotification(fcmPush);
                 }
             }
             messageService.addRoomEventMessage(MessageType.GAME_OVER, room.getId());
-            /*return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, null);
-        } else
-            return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, receiveNextGuessingPlayer(roomId));*/
             return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, new GameOverDto(true));
         } else
             return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, new GameOverDto(false));
@@ -279,18 +272,12 @@ public class GameController {
             Player player = gameService.getNextGuessingPlayer(roomId, currentAttempt);
             Room room = roomService.getRoom(roomId);
             if (player.getStatus() == PlayerStatus.AFK && !TextUtils.isEmpty(player.getUser().getFcmToken())) {
-                FcmPush.FcmPushData<PushMessageDto> fcmPushData = new FcmPush.FcmPushData<>(
-                        NotificationMessageType.GUESS_WORD.getCode(),
-                        new PushMessageDto.Builder()
-                                .setRoomId(room.getId())
-                                .setRoomName(room.getName())
-                                .build());
-                FcmPush fcmPush = new FcmPush.Builder()
-                        .setTo(player.getUser().getFcmToken())
-                        .setData(fcmPushData)
-                        .setTo(player.getUser().getFcmToken())
-                        .setNotification(new Notification("Time to guess your word", "It's your turn to guess your word"))
+                PushMessageDto pushMessageDto = new PushMessageDto.Builder()
+                        .setRoomId(room.getId())
+                        .setRoomName(room.getName())
                         .build();
+                FcmPush fcmPush = new FcmPushDirector(new GuessWordFcmPushBuilder())
+                        .buildFcmPush(player.getUser().getFcmToken(), pushMessageDto);
                 fcmService.sendPushNotification(fcmPush);
             }
             Question newQuestion = messageService.addSettingQuestionMessage(roomId, player.getUser().getUserId());

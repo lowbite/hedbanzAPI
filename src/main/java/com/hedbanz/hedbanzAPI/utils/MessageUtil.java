@@ -4,7 +4,7 @@ import com.hedbanz.hedbanzAPI.constant.MessageType;
 import com.hedbanz.hedbanzAPI.entity.Message;
 
 public class MessageUtil {
-    public static MessageType convertCodeIntoEnum(Integer code){
+    public static MessageType getEnum(Integer code){
         if(code == null){
             return null;
         }

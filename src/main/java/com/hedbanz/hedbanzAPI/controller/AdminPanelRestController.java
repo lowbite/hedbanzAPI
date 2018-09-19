@@ -1,5 +1,8 @@
 package com.hedbanz.hedbanzAPI.controller;
 
+import com.hedbanz.hedbanzAPI.builder.AppNewVersionFcmPushBuilder;
+import com.hedbanz.hedbanzAPI.builder.FcmPushDirector;
+import com.hedbanz.hedbanzAPI.builder.GlobalFcmPushBuilder;
 import com.hedbanz.hedbanzAPI.constant.NotificationMessageType;
 import com.hedbanz.hedbanzAPI.constant.ResultStatus;
 import com.hedbanz.hedbanzAPI.entity.Advertise;
@@ -35,7 +38,7 @@ public class AdminPanelRestController {
     private final ConversionService conversionService;
 
     @Autowired
-    public AdminPanelRestController( ApplicationService applicationService,
+    public AdminPanelRestController(ApplicationService applicationService,
                                     FcmService fcmService, UserService userService, FeedbackService feedbackService,
                                     @Qualifier("APIConversionService") ConversionService conversionService) {
         this.applicationService = applicationService;
@@ -57,13 +60,8 @@ public class AdminPanelRestController {
         List<User> users = userService.getAllUsers();
         new Thread(() -> users.forEach(user -> {
             if (user.getFcmToken() != null) {
-                FcmPush.FcmPushData fcmPushData = new FcmPush.FcmPushData<>(NotificationMessageType.APP_NEW_VERSION.getCode(), newApplication);
-                FcmPush fcmPush = new FcmPush.Builder()
-                        .setTo(user.getFcmToken())
-                        .setData(fcmPushData)
-                        .setNotification(new Notification("New version of hedbanz!", "Hurry up to update your favorite application"))
-                        .setPriority("normal")
-                        .build();
+                FcmPush fcmPush = new FcmPushDirector(new AppNewVersionFcmPushBuilder())
+                        .buildFcmPush(user.getFcmToken(), newApplication);
                 fcmService.sendPushNotification(fcmPush);
             }
         })).start();
@@ -72,33 +70,28 @@ public class AdminPanelRestController {
 
     @PostMapping(value = "/admin/notification/send")
     public ResponseBody<?> sendGlobalNotification(@RequestBody GlobalNotificationDto globalNotificationDto) {
-        if(TextUtils.isEmpty(globalNotificationDto.getText()))
+        if (TextUtils.isEmpty(globalNotificationDto.getText()))
             throw ExceptionFactory.create(InputError.EMPTY_MESSAGE_TEXT);
-        FcmPush.FcmPushData<String> fcmPushData = new FcmPush.FcmPushData<>(
-                NotificationMessageType.GLOBAL_NOTIFICATION.getCode(), globalNotificationDto.getText()
-        );
-        FcmPush fcmPush = new FcmPush.Builder()
-                .setData(fcmPushData)
-                .setPriority("normal")
-                .setNotification(new Notification("New global notification", "Global notification"))
-                .build();
+        FcmPush fcmPush = new FcmPushDirector(new GlobalFcmPushBuilder())
+                .buildFcmPush(null, globalNotificationDto.getText()
+                );
         List<String> fcmTokens = userService.getAllFcmTokens();
         fcmService.sendPushNotificationsToUsers(fcmPush, fcmTokens);
         return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, null);
     }
 
     @GetMapping(value = "/admin/feedback")
-    public ResponseBody<List<FeedbackDto>> getListOfFeedback(@RequestParam("page") int pageNumber){
+    public ResponseBody<List<FeedbackDto>> getListOfFeedback(@RequestParam("page") int pageNumber) {
         List<Feedback> feedbackList = feedbackService.getPageOfFeedbackRecords(pageNumber);
         List<FeedbackDto> feedbackDtos = new ArrayList<>();
-        for (Feedback feedback: feedbackList) {
+        for (Feedback feedback : feedbackList) {
             feedbackDtos.add(conversionService.convert(feedback, FeedbackDto.class));
         }
         return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, feedbackDtos);
     }
 
     @GetMapping(value = "/admin/feedback/pages-number")
-    public ResponseBody<Long> getNumberOfFeedbackPages(){
+    public ResponseBody<Long> getNumberOfFeedbackPages() {
         long records = feedbackService.getNumberOfFeedbackRecords();
         long left = records % FEEDBACK_PAGE_SIZE == 0 ? 0 : 1;
         Long pages = records / FEEDBACK_PAGE_SIZE + left;
@@ -106,7 +99,7 @@ public class AdminPanelRestController {
     }
 
     @PostMapping(value = "/admin/advertise")
-    public ResponseBody<?> setAdvertiseSettings(@RequestBody Advertise advertise){
+    public ResponseBody<?> setAdvertiseSettings(@RequestBody Advertise advertise) {
         applicationService.updateAdvertise(advertise);
         return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, null);
     }

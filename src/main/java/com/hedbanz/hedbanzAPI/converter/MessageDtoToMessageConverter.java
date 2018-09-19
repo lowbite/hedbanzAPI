@@ -21,7 +21,7 @@ public class MessageDtoToMessageConverter implements Converter<MessageDto, Messa
                         .setId(messageDto.getRoomId())
                         .build())
                 .setText(messageDto.getText())
-                .setType(MessageUtil.convertCodeIntoEnum(messageDto.getType()))
+                .setType(MessageUtil.getEnum(messageDto.getType()))
                 .build();
     }
 }

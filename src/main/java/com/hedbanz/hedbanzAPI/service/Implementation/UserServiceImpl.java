@@ -35,16 +35,14 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoomRepository roomRepository;
     private final RoleRepository roleRepository;
-    private final FeedbackRepository feedbackRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository, RoomRepository roomRepository, RoleRepository roleRepository,
-                           FeedbackRepository feedbackRepository, PasswordEncoder passwordEncoder) {
+                           PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roomRepository = roomRepository;
         this.roleRepository = roleRepository;
-        this.feedbackRepository = feedbackRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -64,12 +62,12 @@ public class UserServiceImpl implements UserService {
     public User updateUserInfo(User user) {
         if (TextUtils.isEmpty(user.getLogin()))
             throw ExceptionFactory.create(InputError.EMPTY_LOGIN);
-        if(user.getMoney() == null && user.getIconId() == null)
+        if (user.getMoney() == null && user.getIconId() == null)
             throw ExceptionFactory.create(InputError.EMPTY_UPDATE_INFO);
         User retrievedUser = userRepository.findUserByLogin(user.getLogin());
-        if(user.getMoney() != null)
+        if (user.getMoney() != null)
             retrievedUser.setMoney(user.getMoney());
-        if(user.getIconId() != null)
+        if (user.getIconId() != null)
             retrievedUser.setIconId(user.getIconId());
 
         return userRepository.save(retrievedUser);
@@ -90,7 +88,7 @@ public class UserServiceImpl implements UserService {
             throw ExceptionFactory.create(InputError.EMPTY_PASSWORD);
 
         User retrievedUser = userRepository.findOne(user.getUserId());
-        if(retrievedUser == null)
+        if (retrievedUser == null)
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER);
         retrievedUser.setPassword(passwordEncoder.encode(user.getPassword()));
         retrievedUser.setLogin(user.getLogin());
@@ -202,7 +200,7 @@ public class UserServiceImpl implements UserService {
         if (userId == null) {
             throw ExceptionFactory.create(InputError.EMPTY_USER_ID);
         }
-        if(TextUtils.isEmpty(fcmToken)){
+        if (TextUtils.isEmpty(fcmToken)) {
             throw ExceptionFactory.create(InputError.EMPTY_FCM_TOKEN);
         }
         if (userRepository.updateUserFcmToken(fcmToken, userId) == 0)
@@ -252,7 +250,7 @@ public class UserServiceImpl implements UserService {
 
         if (!user.removeFriend(friend))
             throw ExceptionFactory.create(UserError.NOT_FRIENDS);
-        if(!friend.removeFriend(user))
+        if (!friend.removeFriend(user))
             throw ExceptionFactory.create(UserError.NOT_FRIENDS);
 
         userRepository.saveAndFlush(user);
@@ -261,27 +259,27 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     public void addInvite(Long userId, Long roomId) {
-        if(userId == null)
+        if (userId == null)
             throw ExceptionFactory.create(InputError.EMPTY_USER_ID);
-        if(roomId == null)
+        if (roomId == null)
             throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
 
         User user = userRepository.findOne(userId);
-        if(user == null)
+        if (user == null)
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER);
 
         Room room = roomRepository.findOne(roomId);
-        if(room == null)
+        if (room == null)
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM);
         room.addInvitedUser(user);
         roomRepository.save(room);
     }
 
     @Transactional
-    public List<Friend> getAcceptedFriendsInRoom(Long userId, Long roomId){
-        if(userId == null)
+    public List<Friend> getAcceptedFriendsInRoom(Long userId, Long roomId) {
+        if (userId == null)
             throw ExceptionFactory.create(InputError.EMPTY_USER_ID);
-        if(roomId == null)
+        if (roomId == null)
             throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
 
         List<Friend> allFriends = new LinkedList<>(userRepository.findAcceptedFriends(userId));

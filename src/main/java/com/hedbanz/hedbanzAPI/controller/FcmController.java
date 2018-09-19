@@ -1,5 +1,8 @@
 package com.hedbanz.hedbanzAPI.controller;
 
+import com.hedbanz.hedbanzAPI.builder.AfkWarningFcmPushBuilder;
+import com.hedbanz.hedbanzAPI.builder.FcmPushDirector;
+import com.hedbanz.hedbanzAPI.builder.UserKickedFcmPushBuilder;
 import com.hedbanz.hedbanzAPI.constant.MessageType;
 import com.hedbanz.hedbanzAPI.constant.NotificationMessageType;
 import com.hedbanz.hedbanzAPI.constant.ResultStatus;
@@ -33,15 +36,7 @@ public class FcmController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseBody sendFcmPushAfkWarning(@RequestBody AfkWarning afkWarning, @PathVariable("userId") long userId){
         User user = userService.getUser(userId);
-        FcmPush.FcmPushData<AfkWarning> fcmPushData =
-                new FcmPush.FcmPushData<>(NotificationMessageType.AFK_WARNING.getCode(), afkWarning);
-        FcmPush fcmPush = new FcmPush.Builder()
-                .setTo(user.getFcmToken())
-                .setNotification(new Notification("Afk warning",
-                        "WARNING! In 30 secs you will be kicked out from the room with name" + afkWarning.getRoomName()))
-                .setPriority("normal")
-                .setData(fcmPushData)
-                .build();
+        FcmPush fcmPush = new FcmPushDirector(new AfkWarningFcmPushBuilder()).buildFcmPush(user.getFcmToken(), afkWarning);
         fcmService.sendPushNotification(fcmPush);
         messageService.addPlayerEventMessage(MessageType.USER_KICK_WARNING, userId, afkWarning.getRoomId());
         return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, null);
@@ -51,15 +46,8 @@ public class FcmController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseBody sendFcmPushKicked(@RequestBody AfkWarning afkWarning, @PathVariable("userId") long userId){
         User user = userService.getUser(userId);
-        FcmPush.FcmPushData<AfkWarning> fcmPushData =
-                new FcmPush.FcmPushData<>(NotificationMessageType.USER_KICKED.getCode(), afkWarning);
-        FcmPush fcmPush = new FcmPush.Builder()
-                .setTo(user.getFcmToken())
-                .setNotification(new Notification("Afk warning",
-                        "WARNING! In 30 secs you will be kicked out from the room with name" + afkWarning.getRoomName()))
-                .setPriority("normal")
-                .setData(fcmPushData)
-                .build();
+        FcmPush fcmPush = new FcmPushDirector(new UserKickedFcmPushBuilder())
+                .buildFcmPush(user.getFcmToken(), afkWarning);
         fcmService.sendPushNotification(fcmPush);
         messageService.addPlayerEventMessage(MessageType.USER_KICKED, userId, afkWarning.getRoomId());
         return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, null);

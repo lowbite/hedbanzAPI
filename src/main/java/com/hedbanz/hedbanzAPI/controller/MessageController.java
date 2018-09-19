@@ -1,5 +1,7 @@
 package com.hedbanz.hedbanzAPI.controller;
 
+import com.hedbanz.hedbanzAPI.builder.FcmPushDirector;
+import com.hedbanz.hedbanzAPI.builder.NewMessageFcmPushBuilder;
 import com.hedbanz.hedbanzAPI.constant.MessageType;
 import com.hedbanz.hedbanzAPI.constant.NotificationMessageType;
 import com.hedbanz.hedbanzAPI.constant.PlayerStatus;
@@ -55,15 +57,8 @@ public class MessageController {
         for (Player player : room.getPlayers()) {
             if (player.getStatus() == PlayerStatus.AFK && !TextUtils.isEmpty(player.getUser().getFcmToken())) {
                 PushMessageDto pushMessageDto = conversionService.convert(message, PushMessageDto.class);
-                Notification notification = new Notification("New message!",
-                        "User " + pushMessageDto.getSenderName() + " sent a new message.");
-                FcmPush.FcmPushData<PushMessageDto> fcmPushData =
-                        new FcmPush.FcmPushData<>(NotificationMessageType.MESSAGE.getCode(), pushMessageDto);
-                FcmPush fcmPush = new FcmPush.Builder().setNotification(notification)
-                        .setTo(player.getUser().getFcmToken())
-                        .setPriority("normal")
-                        .setData(fcmPushData)
-                        .build();
+                FcmPush fcmPush = new FcmPushDirector(new NewMessageFcmPushBuilder())
+                        .buildFcmPush(player.getUser().getFcmToken(), pushMessageDto);
                 fcmService.sendPushNotification(fcmPush);
             }
         }

@@ -101,14 +101,6 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
         }
     }
 
-    /*@ExceptionHandler(AuthenticationException.class)
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseBody<?> authenticationError(AuthenticationException e) {
-        log.error("Authentication error: " + e.getMessage());
-        return new ResponseBody<>(ResultStatus.ERROR_STATUS, new CustomError(e.getCode(), e.getMessage()), null);
-
-    }*/
-
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.OK)
     public ResponseBody<?> error(Exception e) {

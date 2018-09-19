@@ -1,5 +1,8 @@
 package com.hedbanz.hedbanzAPI.controller;
 
+import com.hedbanz.hedbanzAPI.builder.FcmPushDirector;
+import com.hedbanz.hedbanzAPI.builder.LastPlayerFcmPushBuilder;
+import com.hedbanz.hedbanzAPI.builder.NewRoomFcmPushBuilder;
 import com.hedbanz.hedbanzAPI.constant.*;
 import com.hedbanz.hedbanzAPI.entity.*;
 import com.hedbanz.hedbanzAPI.model.*;
@@ -66,14 +69,8 @@ public class RoomController {
         Notification notification = new Notification(
                 "New room!", "Room " + createdRoom.getName() + " is available to join"
         );
-        FcmPush.FcmPushData<RoomDto> fcmPushData = new FcmPush.FcmPushData<>(
-                NotificationMessageType.NEW_ROOM_CREATED.getCode(),
-                conversionService.convert(createdRoom, RoomDto.class)
-        );
-        FcmPush fcmPush = new FcmPush.Builder().setNotification(notification)
-                .setPriority("normal")
-                .setData(fcmPushData)
-                .build();
+        FcmPush fcmPush = new FcmPushDirector(new NewRoomFcmPushBuilder())
+                .buildFcmPush(null, conversionService.convert(createdRoom, RoomDto.class));
         fcmService.sendPushNotificationsToUsers(fcmPush, fcmTokens);
         messageService.addRoomEventMessage(MessageType.WAITING_FOR_PLAYERS, createdRoom.getId());
         return new ResponseBody<>(ResultStatus.SUCCESS_STATUS, null, conversionService.convert(createdRoom, RoomDto.class));
@@ -189,19 +186,12 @@ public class RoomController {
         if (room.getGameStatus() != GameStatus.WAITING_FOR_PLAYERS) {
             Player lastPlayer = PlayersUtil.getLastPlayer(room.getPlayers());
             if (lastPlayer != null && !TextUtils.isEmpty(lastPlayer.getUser().getFcmToken())) {
-                Notification notification = new Notification("Last player in room!",
-                        "You are the last player in room");
-                FcmPush.FcmPushData<PushMessageDto> fcmPushData = new FcmPush.FcmPushData<>(
-                        NotificationMessageType.LAST_PLAYER.getCode(),
-                        new PushMessageDto.Builder()
-                                .setRoomId(room.getId())
-                                .setRoomName(room.getName())
-                                .build());
-                FcmPush fcmPush = new FcmPush.Builder().setNotification(notification)
-                        .setTo(lastPlayer.getUser().getFcmToken())
-                        .setPriority("normal")
-                        .setData(fcmPushData)
+                PushMessageDto pushMessageDto = new PushMessageDto.Builder()
+                        .setRoomId(room.getId())
+                        .setRoomName(room.getName())
                         .build();
+                FcmPush fcmPush = new FcmPushDirector(new LastPlayerFcmPushBuilder())
+                        .buildFcmPush(lastPlayer.getUser().getFcmToken(), pushMessageDto);
                 fcmService.sendPushNotification(fcmPush);
             }
             if (TextUtils.isEmpty(playerService.getPlayer(player.getWordReceiverUserId(), room.getId()).getWord())) {
@@ -211,10 +201,6 @@ public class RoomController {
             if (room.getGameStatus() == GameStatus.SETTING_WORDS) {
                 messageService.addRoomEventMessage(MessageType.UPDATE_USERS_INFO, room.getId());
             }
-
-            /*if(room.getGameStatus() == GameStatus.GUESSING_WORDS) {
-                messageService.deleteEmptyQuestions(room.getId(), user.getUserId());
-            }*/
         }
         if (room.getCurrentPlayersNumber() == 0 || PlayersUtil.isPlayersAbsent(room.getPlayers())) {
             roomService.deleteRoom(room.getId());

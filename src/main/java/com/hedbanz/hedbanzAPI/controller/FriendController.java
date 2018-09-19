@@ -1,5 +1,8 @@
 package com.hedbanz.hedbanzAPI.controller;
 
+import com.hedbanz.hedbanzAPI.builder.FcmPushDirector;
+import com.hedbanz.hedbanzAPI.builder.FriendRequestFcmPushBuilder;
+import com.hedbanz.hedbanzAPI.builder.RoomInviteFcmPushBuilder;
 import com.hedbanz.hedbanzAPI.constant.NotificationMessageType;
 import com.hedbanz.hedbanzAPI.constant.ResultStatus;
 import com.hedbanz.hedbanzAPI.entity.Room;
@@ -43,13 +46,11 @@ public class FriendController {
         User friend = userService.getUser(friendId);
         try {
             if (!TextUtils.isEmpty(friend.getFcmToken())) {
-                FcmPush fcmPush = new FcmPush.Builder().setTo(friend.getFcmToken())
-                        .setNotification(new Notification("New friend request!",
-                                "Player " + friend.getLogin() + " wants to add to his friend list."))
-                        .setData(new FcmPush.FcmPushData<>(NotificationMessageType.FRIEND.getCode(),
-                                new PushMessageDto.Builder().setSenderName(user.getLogin()).build()))
-                        .setPriority("normal")
+                PushMessageDto pushMessageDto = new PushMessageDto.Builder()
+                        .setSenderName(user.getLogin())
                         .build();
+                FcmPush fcmPush = new FcmPushDirector(new FriendRequestFcmPushBuilder())
+                        .buildFcmPush(friend.getFcmToken(), pushMessageDto);
                 fcmService.sendPushNotification(fcmPush);
             }
         } catch (RuntimeException e) {
@@ -103,13 +104,8 @@ public class FriendController {
                         .setRoomName(room.getName())
                         .setRoomId(inviteDto.getRoomId())
                         .build();
-                FcmPush.FcmPushData<PushMessageDto> fcmPushData = new FcmPush.FcmPushData<>(NotificationMessageType.INVITE.getCode(), pushMessageDto);
-                FcmPush fcmPush = new FcmPush.Builder()
-                        .setTo(user.getFcmToken())
-                        .setNotification(new Notification("Invite to room", "Friend inviting you to room"))
-                        .setData(fcmPushData)
-                        .setPriority("normal")
-                        .build();
+                FcmPush fcmPush = new FcmPushDirector(new RoomInviteFcmPushBuilder())
+                        .buildFcmPush(user.getFcmToken(), pushMessageDto);
                 fcmService.sendPushNotification(fcmPush);
             }
         }
