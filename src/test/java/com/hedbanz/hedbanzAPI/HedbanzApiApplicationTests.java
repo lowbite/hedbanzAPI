@@ -1,23 +1,11 @@
 package com.hedbanz.hedbanzAPI;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.hedbanz.hedbanzAPI.entity.Room;
 import com.hedbanz.hedbanzAPI.error.CustomError;
-import com.hedbanz.hedbanzAPI.model.ResponseBody;
-import com.hedbanz.hedbanzAPI.transfer.PlayerDto;
-import com.hedbanz.hedbanzAPI.transfer.RoomDto;
-import com.hedbanz.hedbanzAPI.transfer.SetWordDto;
-import com.hedbanz.hedbanzAPI.transfer.UserToRoomDto;
-import org.junit.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.web.client.RestTemplate;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 //@SpringBootTest
 public class HedbanzApiApplicationTests{
@@ -61,9 +49,9 @@ public class HedbanzApiApplicationTests{
 
 }
 class RequestResponse<T> {
-    private String status;
-    private CustomError error;
-    private T data;
+    private final String status;
+    private final CustomError error;
+    private final T data;
 
     public RequestResponse(String status, CustomError error, T data){
         this.status = status;

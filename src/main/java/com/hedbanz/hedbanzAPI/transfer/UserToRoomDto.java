@@ -2,8 +2,9 @@ package com.hedbanz.hedbanzAPI.transfer;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.hedbanz.hedbanzAPI.deserializer.UserToRoomDeserializer;
+import jakarta.validation.constraints.NotNull;
 
-import javax.validation.constraints.NotNull;
+import java.util.Objects;
 
 @JsonDeserialize(using = UserToRoomDeserializer.class)
 public class UserToRoomDto {
@@ -59,9 +60,9 @@ public class UserToRoomDto {
 
         UserToRoomDto that = (UserToRoomDto) o;
 
-        if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
-        if (roomId != null ? !roomId.equals(that.roomId) : that.roomId != null) return false;
-        return password != null ? password.equals(that.password) : that.password == null;
+        if (!Objects.equals(userId, that.userId)) return false;
+        if (!Objects.equals(roomId, that.roomId)) return false;
+        return Objects.equals(password, that.password);
     }
 
     @Override

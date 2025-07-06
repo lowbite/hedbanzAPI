@@ -40,9 +40,9 @@ public class GameServiceImpl implements GameService {
         if (players == null) {
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM);
         }
-        Player player = playerRepository.findOne(players.get(0).getId());
+        Player player = playerRepository.findById(players.get(0).getId()).get();
         player.setAttempt(1);
-        Room room = roomRepository.findOne(roomId);
+        Room room = roomRepository.findById(roomId).get();
         if (room.getGameStatus() == GameStatus.GUESSING_WORDS)
             throw ExceptionFactory.create(RoomError.GAME_ALREADY_STARTED);
         room.setGameStatus(GameStatus.GUESSING_WORDS);
@@ -164,10 +164,7 @@ public class GameServiceImpl implements GameService {
         if (roomId == null)
             throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
 
-        Room room = roomRepository.findOne(roomId);
-        if (room == null)
-            throw ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM);
-
+        Room room = roomRepository.findById(roomId).orElseThrow(() ->  ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM));
         for (Player player : room.getPlayers()) {
             if (!player.getIsWinner() && player.getStatus() != PlayerStatus.LEFT) {
                 return false;
@@ -181,10 +178,7 @@ public class GameServiceImpl implements GameService {
         if (roomId == null)
             throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
 
-        Room room = roomRepository.findOne(roomId);
-        if (room == null)
-            throw ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM);
-
+        Room room = roomRepository.findById(roomId).orElseThrow(() ->  ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM));
         room.setGameStatus(GameStatus.WAITING_FOR_PLAYERS);
 
         Player player;
@@ -210,11 +204,7 @@ public class GameServiceImpl implements GameService {
             throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
         }
 
-        Room room = roomRepository.findOne(roomId);
-        if (room == null) {
-            throw ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM);
-        }
-
+        Room room = roomRepository.findById(roomId).orElseThrow(() ->  ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM));
         if (room.getGameStatus() != GameStatus.WAITING_FOR_PLAYERS
                 || !room.getMaxPlayers().equals(room.getPlayers().size())) {
             throw ExceptionFactory.create(RoomError.CANT_START_GAME);
@@ -241,10 +231,7 @@ public class GameServiceImpl implements GameService {
             throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
         }
 
-        Room room = roomRepository.findOne(roomId);
-        if (room == null)
-            throw ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM);
-
+        Room room = roomRepository.findById(roomId).orElseThrow(() ->  ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM));
         room.setGameStatus(GameStatus.GAME_OVER);
         roomRepository.saveAndFlush(room);
     }

@@ -17,11 +17,11 @@ public class AdvertiseServiceImpl implements AdvertiseService {
 
     @Transactional
     public Integer getAdvertiseType() {
-        return advertiseRepository.findOne(1l).getType();
+        return advertiseRepository.findById(1L).get().getType();
     }
 
     @Transactional
     public Integer getAdvertiseRate() {
-        return advertiseRepository.findOne(1l).getDelay();
+        return advertiseRepository.findById(1L).get().getDelay();
     }
 }

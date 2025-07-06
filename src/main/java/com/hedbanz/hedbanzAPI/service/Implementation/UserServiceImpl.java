@@ -1,19 +1,16 @@
 package com.hedbanz.hedbanzAPI.service.Implementation;
 
-import static com.hedbanz.hedbanzAPI.constant.Constants.*;
-
 import com.hedbanz.hedbanzAPI.constant.RoleName;
 import com.hedbanz.hedbanzAPI.entity.Role;
 import com.hedbanz.hedbanzAPI.entity.Room;
+import com.hedbanz.hedbanzAPI.entity.User;
 import com.hedbanz.hedbanzAPI.error.InputError;
 import com.hedbanz.hedbanzAPI.error.NotFoundError;
-import com.hedbanz.hedbanzAPI.repository.FeedbackRepository;
-import com.hedbanz.hedbanzAPI.repository.RoleRepository;
-import com.hedbanz.hedbanzAPI.repository.RoomRepository;
-import com.hedbanz.hedbanzAPI.model.Friend;
-import com.hedbanz.hedbanzAPI.entity.User;
 import com.hedbanz.hedbanzAPI.error.UserError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
+import com.hedbanz.hedbanzAPI.model.Friend;
+import com.hedbanz.hedbanzAPI.repository.RoleRepository;
+import com.hedbanz.hedbanzAPI.repository.RoomRepository;
 import com.hedbanz.hedbanzAPI.repository.UserRepository;
 import com.hedbanz.hedbanzAPI.service.UserService;
 import org.apache.http.util.TextUtils;
@@ -27,6 +24,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static com.hedbanz.hedbanzAPI.constant.Constants.*;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -87,9 +86,7 @@ public class UserServiceImpl implements UserService {
         if (TextUtils.isEmpty(user.getPassword()))
             throw ExceptionFactory.create(InputError.EMPTY_PASSWORD);
 
-        User retrievedUser = userRepository.findOne(user.getUserId());
-        if (retrievedUser == null)
-            throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER);
+        User retrievedUser = userRepository.findById(user.getUserId()).orElseThrow(() -> ExceptionFactory.create(NotFoundError.NO_SUCH_USER));
         retrievedUser.setPassword(passwordEncoder.encode(user.getPassword()));
         retrievedUser.setLogin(user.getLogin());
         return userRepository.saveAndFlush(retrievedUser);
@@ -142,7 +139,7 @@ public class UserServiceImpl implements UserService {
         if (userId == null) {
             throw ExceptionFactory.create(InputError.EMPTY_USER_ID);
         }
-        return userRepository.findOne(userId);
+        return userRepository.findById(userId).orElse(null);
     }
 
     @Override
@@ -220,8 +217,8 @@ public class UserServiceImpl implements UserService {
     public void addFriend(Long userId, Long friendId) {
         if (userId == null || friendId == null)
             throw ExceptionFactory.create(InputError.EMPTY_USER_ID);
-        User friend = userRepository.findOne(friendId);
-        User user = userRepository.findOne(userId);
+        User friend = userRepository.findById(friendId).orElseThrow(() -> ExceptionFactory.create(NotFoundError.NO_SUCH_USER));
+        User user = userRepository.findById(userId).orElseThrow(() -> ExceptionFactory.create(NotFoundError.NO_SUCH_USER));
 
         if (!user.addFriend(friend))
             throw ExceptionFactory.create(UserError.ALREADY_FRIENDS);
@@ -233,8 +230,8 @@ public class UserServiceImpl implements UserService {
     public void declineFriendship(Long userId, Long friendId) {
         if (userId == null || friendId == null)
             throw ExceptionFactory.create(InputError.EMPTY_USER_ID);
-        User friend = userRepository.findOne(friendId);
-        User user = userRepository.findOne(userId);
+        User friend = userRepository.findById(friendId).orElseThrow(() -> ExceptionFactory.create(NotFoundError.NO_SUCH_USER));
+        User user = userRepository.findById(userId).orElseThrow(() -> ExceptionFactory.create(NotFoundError.NO_SUCH_USER));
 
         if (!user.removeFriend(friend))
             throw ExceptionFactory.create(UserError.NOT_FRIENDS);
@@ -245,8 +242,8 @@ public class UserServiceImpl implements UserService {
     public void deleteFriend(Long userId, Long friendId) {
         if (userId == null || friendId == null)
             throw ExceptionFactory.create(InputError.EMPTY_USER_ID);
-        User friend = userRepository.findOne(friendId);
-        User user = userRepository.findOne(userId);
+        User friend = userRepository.findById(friendId).orElseThrow(() -> ExceptionFactory.create(NotFoundError.NO_SUCH_USER));
+        User user = userRepository.findById(userId).orElseThrow(() -> ExceptionFactory.create(NotFoundError.NO_SUCH_USER));
 
         if (!user.removeFriend(friend))
             throw ExceptionFactory.create(UserError.NOT_FRIENDS);
@@ -264,13 +261,11 @@ public class UserServiceImpl implements UserService {
         if (roomId == null)
             throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
 
-        User user = userRepository.findOne(userId);
+        User user = userRepository.findById(userId).orElseThrow(() -> ExceptionFactory.create(NotFoundError.NO_SUCH_USER));
         if (user == null)
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER);
 
-        Room room = roomRepository.findOne(roomId);
-        if (room == null)
-            throw ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM);
+        Room room = roomRepository.findRoomById(roomId).orElseThrow(() -> ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM));
         room.addInvitedUser(user);
         roomRepository.save(room);
     }

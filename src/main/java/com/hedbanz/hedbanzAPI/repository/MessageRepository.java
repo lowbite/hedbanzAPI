@@ -1,18 +1,14 @@
 package com.hedbanz.hedbanzAPI.repository;
 
-import com.hedbanz.hedbanzAPI.entity.Question;
-import com.hedbanz.hedbanzAPI.transfer.MessageDto;
 import com.hedbanz.hedbanzAPI.entity.Message;
+import com.hedbanz.hedbanzAPI.entity.Question;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
-
-import javax.persistence.QueryHint;
 
 public interface MessageRepository extends JpaRepository<Message, Long>, PagingAndSortingRepository<Message, Long> {
     @Query("SELECT m FROM Message m join m.room r WHERE r.id = :roomId ORDER BY m.id DESC")

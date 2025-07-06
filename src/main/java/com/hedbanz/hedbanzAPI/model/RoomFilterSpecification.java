@@ -5,17 +5,16 @@ import com.hedbanz.hedbanzAPI.entity.Player;
 import com.hedbanz.hedbanzAPI.entity.Room;
 import com.hedbanz.hedbanzAPI.entity.User;
 import com.hedbanz.hedbanzAPI.error.InputError;
-import com.hedbanz.hedbanzAPI.error.RoomError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
+import jakarta.persistence.criteria.*;
 import org.apache.http.util.TextUtils;
 import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class RoomFilterSpecification implements Specification<Room> {
-    private RoomFilter filter;
+    private final RoomFilter filter;
     private Long userId;
 
     public RoomFilterSpecification(RoomFilter filter) {
@@ -36,7 +35,7 @@ public class RoomFilterSpecification implements Specification<Room> {
                 if (filter.getRoomName().length() == 1)
                     throw ExceptionFactory.create(InputError.INCORRECT_FILTER);
 
-                long roomId = Long.valueOf(filter.getRoomName().substring(1, filter.getRoomName().length()));
+                long roomId = Long.valueOf(filter.getRoomName().substring(1));
                 predicates.add(cb.equal(root.get("id"), roomId));
             } else {
                 predicates.add(cb.like(cb.lower(root.get("name")), "%" + filter.getRoomName().toLowerCase() + "%"));

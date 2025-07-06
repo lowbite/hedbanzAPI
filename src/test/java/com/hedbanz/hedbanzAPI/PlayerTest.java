@@ -1,39 +1,5 @@
 package com.hedbanz.hedbanzAPI;
 
-import com.hedbanz.hedbanzAPI.constant.NotificationMessageType;
-import com.hedbanz.hedbanzAPI.constant.VoteType;
-import com.hedbanz.hedbanzAPI.entity.Message;
-import com.hedbanz.hedbanzAPI.entity.Player;
-import com.hedbanz.hedbanzAPI.entity.Question;
-import com.hedbanz.hedbanzAPI.entity.Room;
-import com.hedbanz.hedbanzAPI.model.FcmPush;
-import com.hedbanz.hedbanzAPI.model.Notification;
-import com.hedbanz.hedbanzAPI.model.SetWordNotification;
-import com.hedbanz.hedbanzAPI.model.Vote;
-import com.hedbanz.hedbanzAPI.repository.QuestionRepository;
-import com.hedbanz.hedbanzAPI.service.MessageService;
-import com.hedbanz.hedbanzAPI.service.PlayerService;
-import com.hedbanz.hedbanzAPI.service.RoomService;
-import com.hedbanz.hedbanzAPI.transfer.*;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.embedded.LocalServerPort;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.client.RestTemplate;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.*;
 /*
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)*/

@@ -1,8 +1,7 @@
 package com.hedbanz.hedbanzAPI.entity;
 
-import org.springframework.data.annotation.CreatedDate;
+import jakarta.persistence.*;
 
-import javax.persistence.*;
 import java.sql.Timestamp;
 
 @Entity

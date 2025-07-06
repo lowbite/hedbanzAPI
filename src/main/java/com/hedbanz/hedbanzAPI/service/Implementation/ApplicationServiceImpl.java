@@ -24,14 +24,14 @@ public class ApplicationServiceImpl implements ApplicationService{
 
     @Override
     public Application getApplication() {
-        return applicationRepository.findOne(1);
+        return applicationRepository.findById(1).orElse(null);
     }
 
     @Transactional
     public Application updateVersion(Application application) {
         if(application.getVersion() == null)
             throw ExceptionFactory.create(InputError.EMPTY_VERSION_FIELD);
-        Application dbApplication = applicationRepository.findOne(1);
+        Application dbApplication = applicationRepository.findById(1).get();
         if(dbApplication.getVersion() >= application.getVersion())
             throw ExceptionFactory.create(InputError.INCORRECT_VERSION_FIELD);
         dbApplication.setVersion(application.getVersion());
@@ -40,7 +40,7 @@ public class ApplicationServiceImpl implements ApplicationService{
 
     @Override
     public Advertise getAdvertise() {
-        return advertiseRepository.findOne(1l);
+        return advertiseRepository.findById(1L).orElse(null);
     }
 
     @Transactional
@@ -49,7 +49,7 @@ public class ApplicationServiceImpl implements ApplicationService{
             throw ExceptionFactory.create(InputError.EMPTY_ADVERTISE_DELAY);
         if(advertise.getType() == null)
             throw ExceptionFactory.create(InputError.EMPTY_ADVERTISE_TYPE);
-        Advertise currentAdvertise = advertiseRepository.findOne(1l);
+        Advertise currentAdvertise = advertiseRepository.findById(1L).get();
         currentAdvertise.setDelay(advertise.getDelay());
         currentAdvertise.setType(advertise.getType());
         return advertiseRepository.save(currentAdvertise);

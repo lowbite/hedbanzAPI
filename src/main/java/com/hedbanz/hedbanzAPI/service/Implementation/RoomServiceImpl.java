@@ -13,14 +13,15 @@ import com.hedbanz.hedbanzAPI.error.NotFoundError;
 import com.hedbanz.hedbanzAPI.error.RoomError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
 import com.hedbanz.hedbanzAPI.model.AdminRoomFilterSpecification;
-import com.hedbanz.hedbanzAPI.model.RoomFilterSpecification;
-import com.hedbanz.hedbanzAPI.repository.*;
-import com.hedbanz.hedbanzAPI.service.RoomService;
 import com.hedbanz.hedbanzAPI.model.RoomFilter;
+import com.hedbanz.hedbanzAPI.model.RoomFilterSpecification;
+import com.hedbanz.hedbanzAPI.repository.MessageRepository;
+import com.hedbanz.hedbanzAPI.repository.PlayerRepository;
+import com.hedbanz.hedbanzAPI.repository.RoomRepository;
+import com.hedbanz.hedbanzAPI.repository.UserRepository;
+import com.hedbanz.hedbanzAPI.service.RoomService;
 import com.hedbanz.hedbanzAPI.utils.PlayersUtil;
 import org.apache.http.util.TextUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
@@ -33,7 +34,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.xml.soap.Text;
 import java.util.List;
 
 @Service
@@ -74,9 +74,7 @@ public class RoomServiceImpl implements RoomService {
         if (repositoryRoomByName != null)
             throw ExceptionFactory.create(RoomError.ROOM_WITH_SUCH_NAME_ALREADY_EXIST);
 
-        User user = userRepository.findOne(creatorUserId);
-        if (user == null)
-            throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER);
+        User user = userRepository.findById(creatorUserId).orElseThrow(() -> ExceptionFactory.create(NotFoundError.NO_SUCH_USER));
         List<Room> activeRooms = roomRepository.findActiveRooms(creatorUserId);
         if (activeRooms.size() >= MAX_ACTIVE_ROOMS)
             throw ExceptionFactory.create(RoomError.MAX_ACTIVE_ROOMS_NUMBER);
@@ -109,10 +107,7 @@ public class RoomServiceImpl implements RoomService {
     public void deleteRoom(Long roomId) {
         if (roomId == null)
             throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
-        Room room = roomRepository.findOne(roomId);
-        if (room == null) {
-            throw ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM);
-        }
+        Room room = roomRepository.findById(roomId).orElseThrow(() -> ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM));
         room.clearInvites();
         roomRepository.delete(room);
     }
@@ -121,11 +116,7 @@ public class RoomServiceImpl implements RoomService {
     public Room getRoom(Long roomId) {
         if (roomId == null)
             throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
-        Room room = roomRepository.findOne(roomId);
-        if (room == null) {
-            throw ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM);
-        }
-        return room;
+        return roomRepository.findById(roomId).orElseThrow(() -> ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM));
     }
 
     @Transactional(readOnly = true, isolation = Isolation.READ_UNCOMMITTED)
@@ -149,7 +140,7 @@ public class RoomServiceImpl implements RoomService {
 
     @Transactional(readOnly = true)
     public List<Room> getAllRooms(Integer pageNumber) {
-        Pageable pageable = new PageRequest(pageNumber, Constants.ROOM_PAGE_SIZE, Sort.Direction.DESC, "id");
+        Pageable pageable = PageRequest.of(pageNumber, Constants.ROOM_PAGE_SIZE, Sort.Direction.DESC, "id");
         Page<Room> page = roomRepository.findAllRooms(pageable);
         return page.getContent();
     }
@@ -164,7 +155,7 @@ public class RoomServiceImpl implements RoomService {
 
     @Transactional(readOnly = true)
     public List<Room> getRoomsByFilter(RoomFilter roomFilter, Integer pageNumber) {
-        Pageable pageable = new PageRequest(pageNumber, Constants.ROOM_PAGE_SIZE, Sort.Direction.DESC, "id");
+        Pageable pageable = PageRequest.of(pageNumber, Constants.ROOM_PAGE_SIZE, Sort.Direction.DESC, "id");
         Page<Room> rooms = roomRepository.findAll(new RoomFilterSpecification(roomFilter), pageable);
         return rooms.getContent();
     }
@@ -186,11 +177,8 @@ public class RoomServiceImpl implements RoomService {
             throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
         }
 
-        User user = userRepository.findOne(userId);
-        if (user == null)
-            throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER);
-
-        Room room = roomRepository.findById(roomId);
+        User user = userRepository.findById(userId).orElseThrow(() -> ExceptionFactory.create(NotFoundError.NO_SUCH_USER));
+        Room room = roomRepository.findRoomById(roomId).orElseThrow(() -> ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM));
         Player leavingPlayer = room.getPlayerByLogin(user.getLogin());
         if (leavingPlayer == null)
             throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER_IN_ROOM);
@@ -232,15 +220,11 @@ public class RoomServiceImpl implements RoomService {
         if (activeRooms.size() >= MAX_ACTIVE_ROOMS)
             throw ExceptionFactory.create(RoomError.MAX_ACTIVE_ROOMS_NUMBER);
 
-        Room room = roomRepository.findById(roomId);
-        if (room == null)
-            throw ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM);
+        Room room = roomRepository.findRoomById(roomId).orElseThrow(() -> ExceptionFactory.create(NotFoundError.NO_SUCH_ROOM));
         if (room.getGameStatus() == GameStatus.SETTING_WORDS)
             throw ExceptionFactory.create(RoomError.GAME_ALREADY_STARTED);
 
-        User user = userRepository.findOne(userId);
-        if (user == null)
-            throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER);
+        User user = userRepository.findById(userId).orElseThrow(() -> ExceptionFactory.create(NotFoundError.NO_SUCH_USER));
         Player player = playerRepository.findPlayerByUser_UserIdAndRoom_Id(userId, roomId);
 
         if (room.getGameStatus() != GameStatus.GUESSING_WORDS) {
@@ -276,7 +260,7 @@ public class RoomServiceImpl implements RoomService {
         if (roomId == null) {
             throw ExceptionFactory.create(InputError.EMPTY_ROOM_ID);
         }
-        Room foundRoom = roomRepository.findOne(roomId);
+        Room foundRoom = roomRepository.findById(roomId).get();
         if (!TextUtils.isEmpty(foundRoom.getPassword())) {
             if (TextUtils.isEmpty(password) || !foundRoom.getPassword().equals(password))
                 throw ExceptionFactory.create(RoomError.WRONG_PASSWORD);

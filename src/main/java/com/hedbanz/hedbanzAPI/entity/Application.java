@@ -2,8 +2,7 @@ package com.hedbanz.hedbanzAPI.entity;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.hedbanz.hedbanzAPI.deserializer.ApplicationDeserializer;
-
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table

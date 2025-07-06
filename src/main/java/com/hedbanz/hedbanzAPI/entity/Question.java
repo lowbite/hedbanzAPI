@@ -1,7 +1,9 @@
 package com.hedbanz.hedbanzAPI.entity;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -85,8 +87,7 @@ public class Question {
     }
 
     public void removeYesVoter(Player player){
-        if(yesVoters.contains(player))
-            yesVoters.remove(player);
+        yesVoters.remove(player);
     }
 
     public boolean addNoVoter(Player player) {
@@ -98,8 +99,7 @@ public class Question {
     }
 
     public void removeNoVoter(Player player){
-        if(noVoters.contains(player))
-            noVoters.remove(player);
+        noVoters.remove(player);
     }
 
     public boolean addWinVoter(Player player) {
@@ -111,8 +111,7 @@ public class Question {
     }
 
     public void removeWinVoter(Player player){
-        if(winVoters.contains(player))
-            winVoters.remove(player);
+        winVoters.remove(player);
     }
 
     public boolean noVotersContainPlayer(Player player){
@@ -134,7 +133,7 @@ public class Question {
 
         Question question = (Question) o;
 
-        return id != null ? id.equals(question.id) : question.id == null;
+        return Objects.equals(id, question.id);
     }
 
     @Override

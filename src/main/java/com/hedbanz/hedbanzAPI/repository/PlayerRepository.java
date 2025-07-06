@@ -1,16 +1,15 @@
 package com.hedbanz.hedbanzAPI.repository;
 
 import com.hedbanz.hedbanzAPI.entity.Player;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.OrderBy;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
-import org.springframework.security.access.method.P;
 
-import javax.persistence.LockModeType;
-import javax.persistence.OrderBy;
 import java.util.List;
 
 public interface PlayerRepository extends JpaRepository<Player, Long>, PagingAndSortingRepository<Player, Long> {

@@ -1,9 +1,10 @@
 package com.hedbanz.hedbanzAPI.entity;
 
 import com.hedbanz.hedbanzAPI.constant.PlayerStatus;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import java.util.Objects;
 
 @Entity
 @Table(name = "players")
@@ -115,8 +116,8 @@ public class Player implements Cloneable{
 
         Player player = (Player) o;
 
-        if (id != null ? !id.equals(player.id) : player.id != null) return false;
-        return user != null ? user.equals(player.user) : player.user == null;
+        if (!Objects.equals(id, player.id)) return false;
+        return Objects.equals(user, player.user);
     }
 
     @Override

@@ -2,10 +2,8 @@ package com.hedbanz.hedbanzAPI.security;
 
 import com.hedbanz.hedbanzAPI.entity.User;
 import com.hedbanz.hedbanzAPI.error.NotFoundError;
-import com.hedbanz.hedbanzAPI.error.UserError;
 import com.hedbanz.hedbanzAPI.exception.ExceptionFactory;
 import com.hedbanz.hedbanzAPI.repository.UserRepository;
-import com.hedbanz.hedbanzAPI.security.UserPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -31,10 +29,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Transactional
     public UserDetails loadUserById(Long id) {
-        User user = userRepository.findOne(id);
-        if (user == null)
-            throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER);
-
+        User user = userRepository.findById(id).orElseThrow(() -> ExceptionFactory.create(NotFoundError.NO_SUCH_USER));
         return UserPrincipal.create(user);
     }
 }

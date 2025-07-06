@@ -31,17 +31,14 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     @Transactional
     public void saveFeedback(Feedback feedback) {
-        if(TextUtils.isEmpty(feedback.getFeedbackText()))
+        if (TextUtils.isEmpty(feedback.getFeedbackText()))
             throw ExceptionFactory.create(InputError.EMPTY_FEEDBACK_TEXT);
-        if(feedback.getUser() == null)
+        if (feedback.getUser() == null)
             throw ExceptionFactory.create(InputError.EMPTY_USER_ID);
-        if(feedback.getUser().getUserId() == null)
+        if (feedback.getUser().getUserId() == null)
             throw ExceptionFactory.create(InputError.EMPTY_USER_ID);
 
-        User user = userRepository.findOne(feedback.getUser().getUserId());
-        if(user == null)
-            throw ExceptionFactory.create(NotFoundError.NO_SUCH_USER);
-
+        User user = userRepository.findById(feedback.getUser().getUserId()).orElseThrow(() -> ExceptionFactory.create(NotFoundError.NO_SUCH_USER));
         feedback.setUser(user);
         feedbackRepository.save(feedback);
     }
@@ -53,7 +50,7 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     @Transactional
     public List<Feedback> getPageOfFeedbackRecords(int pageNumber) {
-        Pageable pageable = new PageRequest(pageNumber, Constants.FEEDBACK_PAGE_SIZE, Sort.Direction.DESC, "createdAt");
+        Pageable pageable = PageRequest.of(pageNumber, Constants.FEEDBACK_PAGE_SIZE, Sort.Direction.DESC, "createdAt");
         Page<Feedback> page = feedbackRepository.findAll(pageable);
         return page.getContent();
     }

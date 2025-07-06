@@ -1,6 +1,7 @@
 package com.hedbanz.hedbanzAPI.entity;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
 import java.util.Calendar;
 import java.util.Date;
 

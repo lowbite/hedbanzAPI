@@ -1,9 +1,8 @@
 package com.hedbanz.hedbanzAPI.entity;
 
 import com.hedbanz.hedbanzAPI.constant.RoleName;
+import jakarta.persistence.*;
 import org.hibernate.annotations.NaturalId;
-
-import javax.persistence.*;
 
 @Entity
 @Table(name = "roles")

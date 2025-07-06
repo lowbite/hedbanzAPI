@@ -1,11 +1,12 @@
 package com.hedbanz.hedbanzAPI.entity;
 
 import com.hedbanz.hedbanzAPI.constant.MessageType;
+import jakarta.persistence.*;
 
-import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.Objects;
 
-import static javax.persistence.FetchType.EAGER;
+import static jakarta.persistence.FetchType.EAGER;
 
 @Entity(name = "Message")
 @Table(name = "message")
@@ -91,10 +92,10 @@ public class Message extends AuditModel implements Cloneable {
 
         Message message = (Message) o;
 
-        if (id != null ? !id.equals(message.id) : message.id != null) return false;
-        if (senderUser != null ? !senderUser.equals(message.senderUser) : message.senderUser != null) return false;
-        if (text != null ? !text.equals(message.text) : message.text != null) return false;
-        return type != null ? !type.equals(message.type) : message.type != null;
+        if (!Objects.equals(id, message.id)) return false;
+        if (!Objects.equals(senderUser, message.senderUser)) return false;
+        if (!Objects.equals(text, message.text)) return false;
+        return !Objects.equals(type, message.type);
     }
 
     @Override
